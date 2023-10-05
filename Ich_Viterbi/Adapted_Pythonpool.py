@@ -1,5 +1,6 @@
-#source: https://www.pythonpool.com/viterbi-algorithm-python/ 05th Oct 2023
-observations = ("normal", "cold", "dizzy")
+import numpy as np
+#source: https://www.pythonpool.com/viterbi-algorithm-python/ 05th Oct 2023  now adapted
+"""observations = ("normal", "cold", "dizzy") # brauchen wir auch nicht
 states = ("Healthy", "Fever")
 start_p = {"Healthy": 0.6, "Fever": 0.4}
 trans_p = {
@@ -9,12 +10,20 @@ trans_p = {
 emit_p = {
     "Healthy": {"normal": 0.5, "cold": 0.4, "dizzy": 0.1},
     "Fever": {"normal": 0.1, "cold": 0.3, "dizzy": 0.6},
-}
+}""" # wir brauchen emit nicht - wir haben gleich die Wkt der einzelnen States
 
-def viterbi_algorithm(observations, states, start_p, trans_p, emit_p):
-    V = [{}]
-    for st in states: #Berechne Wkt dafür, zu Zeitpunkt 0 in State st zu landen
-        V[0][st] = {"prob": start_p[st] * emit_p[st][observations[0]], "prev": None}
+states = np.array(["Healthy", "Fever"]) # hier also: Healthy = 0, Fever = 1
+start_p = np.array([0.6, 0.4]) #Wkt Healthy im Start = 0.6, Wkt Fever im Start = 0.4
+trans_p = np.array([[0.7, 0.3], [0.4, 0.6]]) #Bsp: Wkt von Healthy zu Healthy = 0.7, von Healthy zu Fever = 0.3
+probs_states = np.array([[0.8, 0.2], [0.3, 0.7], [0.5, 0.5]]) #Bsp: Wkt durch unsere beobachteten Daten, dass am Anfang State = Healthy liegt bei 0.4;  Wkt zu Zeit t (3 Zeitpunkte) im State i zu sein (2 States)
+
+def viterbi_algorithm(states, start_p, trans_p,probs_states):
+    V = np.ones((len(probs_states), len(probs_states[0]), 2)) * (-1) #[[Healthy:[prob, prev], Fever:[prob, prev]], Zeitpunkt 2]: hier wird jeweils die aktuelle Wkt und der zug. Vorgänger gespeichert
+    print(start_p * probs_states[0])
+    print(V)
+    for st in range(len(states)): #Berechne Wkt dafür, zu Zeitpunkt 0 in State st zu landen
+        print(st)
+        V[0] = [start_p[st] * probs_states[0][st], None]
         print(V)
 
     for t in range(1, len(observations)): #jetzt für alle zukünftigen Zeitpunkte
@@ -60,4 +69,4 @@ def dptable(V):
     for state in V[0]:
         yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
 
-viterbi_algorithm(observations, states, start_p, trans_p, emit_p)
+viterbi_algorithm(states, start_p, trans_p, probs_states)
