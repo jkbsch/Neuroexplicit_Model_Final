@@ -12,3 +12,10 @@ V = np.ones((4, 3, 2)) * (-1)
 print(V)
 V[0][0][0] = 1
 print("\n \n", V)
+
+P = np.array([[0.3, 0.7], [0.2, 0.8], [0.5, 0.5]])
+print(np.shape(P))
+print(((P[np.newaxis, 1]).T))
+
+for i in range(1,5):
+    print(i)

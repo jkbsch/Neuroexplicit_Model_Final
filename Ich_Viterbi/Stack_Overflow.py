@@ -41,10 +41,13 @@ def viterbi(y, A, B, Pi=None):
     T1[:, 0] = Pi * B[:, y[0]]
     T2[:, 0] = 0
 
+    print("T1: \n", T1, "\n \n T2: \n ", T2, "\n\n")
+
     # Iterate throught the observations updating the tracking tables
     for i in range(1, T):
-        T1[:, i] = np.max(T1[:, i - 1] * A.T * B[np.newaxis, :, y[i]].T, 1)
+        T1[:, i] = np.max(T1[:, i - 1] * A.T * B[np.newaxis, :, y[i]].T, 1) #[[0.4], [0,3]], shape = (2,1)
         T2[:, i] = np.argmax(T1[:, i - 1] * A.T, 1)
+        print("\n i:", i, "\nT1: \n", T1, "\n \n T2: \n ", T2, "\n\n")
 
     # Build the output, optimal model trajectory
     x = np.empty(T, 'B')
@@ -68,4 +71,4 @@ print(x, T1, T2)
 #   [0.04    0.027   0.01512]]
 # means prob. of 0.3 to be in Healthy first, prob. of 0.04 to start in Fever; prob of 0.084 to have healthy - healthy;
 # prob of 0.027 to have healthy - fever (only the most likely path is considered) etc.
-# T2: the x_j-1 of the most likely path so far?
+# T2: the x_j-1 of the most likely path so far? The previous state that maximizes probability
