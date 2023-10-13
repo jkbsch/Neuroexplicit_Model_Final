@@ -1,4 +1,4 @@
-#Source: https://stackoverflow.com/questions/9729968/python-implementation-of-viterbi-algorithm checked 05th Oct 2023
+#Source: https://stackoverflow.com/questions/9729968/python-implementation-of-viterbi-algorithm checked 05th Oct 2023 - adapted
 import numpy as np
 
 def viterbi(A, P, Pi=None, logscale = False):
@@ -12,12 +12,14 @@ def viterbi(A, P, Pi=None, logscale = False):
         details. Example: [[1->1, 1->2],[2->1, 2->2]]
     P: array(T, K)
         Probability of being of state k given observation in time t - calculated via DNN.
-        Example: [[Prob. of 0.3 to be in state 1 at time 0 given the data, Prob of 0.7 to be in state 2 at t = 0], [prob of 0.4 for state 1 at time 1, prob of 0.6 for state 2 at time 2]]
+        Example: [[Prob. of 0.3 to be in state 1 at time 0 given the data, Prob of 0.7 to be in state 2 at t = 0],
+        [prob of 0.4 for state 1 at time 1, prob of 0.6 for state 2 at time 2]]
     Pi: optional, (K,)
         Initial state probabilities: Pi[i] is the probability x[0] == i. If
         None, uniform initial distribution is assumed (Pi[:] == 1/K).
     logscale: optional, (bool)
-        Defines whether the calculation is logarithmic or not. Default is False
+        Defines whether the calculation is logarithmic or not. Default is False; if true, T1 will contain logarithmic
+        probabilities
 
 
 
@@ -33,7 +35,8 @@ def viterbi(A, P, Pi=None, logscale = False):
         Example:
         [[0.3     0.084   0.00588]
        [0.04    0.027   0.01512]]
-       means prob. of 0.3 to be in State 0 at time 0 and  prob. of 0.04 to be in Staate 1 at t=0;  prob. of 0.084 to be in State 0 at t=1, (c.f. T2 to find the most likely path to get there);
+       means prob. of 0.3 to be in State 0 at time 0 and  prob. of 0.04 to be in Staate 1 at t=0;  prob. of 0.084 to be
+       in State 0 at t=1, (c.f. T2 to find the most likely path to get there);
        prob of 0.027 to be in State 1 at time t=1 (c.f. T2 to find the most likely path to get there)
         the x_j-1 of the most likely path so far
     """
@@ -65,18 +68,22 @@ def viterbi(A, P, Pi=None, logscale = False):
 
 
     T2[:, 0] = 0
-    print("T1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
+    #print("T1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
 
     # Iterate through the observations updating the tracking tables
     for i in range(1, T):
         if logscale:
-            T1[:, i] = np.max(T1[:, i - 1] + A.T + (P[np.newaxis, 1]).T,1)  # multipliziere Wkt des letzten States mit Transitionswahrscheinlichkeit mit Wkt für den aktuellen Zustand aus DNN; suche den State aus vorheriger Periode, der Wkt maximiert
+            T1[:, i] = np.max(T1[:, i - 1] + A.T + (P[np.newaxis, 1]).T,1)  # addiere Wkt des letzten States
+            # mit Transitionswahrscheinlichkeit mit Wkt für den aktuellen Zustand aus DNN; suche den State aus
+            # vorheriger Periode, der Wkt maximiert
             T2[:, i] = np.argmax(T1[:, i - 1] + A.T, 1)
 
         else:
-            T1[:, i] = np.max(T1[:, i - 1] * A.T * (P[np.newaxis, 1]).T, 1) # multipliziere Wkt des letzten States mit Transitionswahrscheinlichkeit mit Wkt für den aktuellen Zustand aus DNN; suche den State aus vorheriger Periode, der Wkt maximiert
+            T1[:, i] = np.max(T1[:, i - 1] * A.T * (P[np.newaxis, 1]).T, 1) # multipliziere Wkt des letzten States
+            # mit Transitionswahrscheinlichkeit mit Wkt für den aktuellen Zustand aus DNN; suche den State aus
+            # vorheriger  Periode, der Wkt maximiert
             T2[:, i] = np.argmax(T1[:, i - 1] * A.T, 1)
-        print("\n i:",i, "\nT1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
+        # print("\n i:",i, "\nT1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
 
     # Build the output, optimal model trajectory
     x = np.empty(T, 'B')
@@ -84,31 +91,26 @@ def viterbi(A, P, Pi=None, logscale = False):
     for i in reversed(range(1, T)):
         x[i - 1] = T2[x[i], i]
 
-    if logscale:
-        T1 = np.exp(T1)
+    #if logscale:
+    #    T1 = np.exp(T1)
 
     return x, T1, T2
 
 #observations: normal = 0, cold = 1, dizzy = 2
 #states: Healthy = 0, Fever = 1
 #y = np.array([0, 1, 2]) #observation state sequence; expl.: observations are normal(0) then cold (1) then dizzy (2)
-A = np.array([[0.7, 0.3], [0.4, 0.6]]) #state transition matrix: e.g. prob of 0.7 to transition from Healthy to Healthy, prob of 0.3 to transition from healthy to fever
-#B = np.array([[0.5, 0.4, 0.1],[0.1, 0.3, 0.6]]) #Emission matrix: e.g. prob of 0.5 to feel normal if you're healthy, prob of 0.4 to feel cold when healthy
-Pi = np.array([0.1, 0.9]) #initial distribution, expl.: prob. of 0.6 to start healthy, prob of 0.4 to start ill
-P = np.array([[.5, .5], [0.2, 0.8], [0.4, 0.6]]) #e.g. DNN has calculated that - given the data - there's a 30% chance that the first state is Healthy (shape 3,2)
+A = np.array([[0.8, 0.2], [0.9, 0.1]]) #state transition matrix: e.g. prob of 0.7 to transition from Healthy to Healthy,
+# prob of 0.3 to transition from healthy to fever
+#B = np.array([[0.5, 0.4, 0.1],[0.1, 0.3, 0.6]]) #Emission matrix: e.g. prob of 0.5 to feel normal if you're healthy,
+# prob of 0.4 to feel cold when healthy
+Pi = np.array([0.8, 0.2]) #initial distribution, expl.: prob. of 0.6 to start healthy, prob of 0.4 to start ill
+P = np.array([[.5, .5], [0.2, 0.8], [0.4, 0.6]]) #e.g. DNN has calculated that - given the data - there's a 30% chance
+# that the first state is Healthy (shape 3,2)
 
 
 x_1, T1_1, T2_1 = viterbi(A, P, Pi, False)
 x_2, T1_2, T2_2 = viterbi(A, P, Pi, True)
-print(x_1 == x_2, np.round(T1_1, 4) == np.round(T1_2,4), T2_1 == T2_2)
+print(x_1 == x_2, np.round(T1_1, 4) == np.round(np.exp(T1_2),4), T2_1 == T2_2)
+print(x_1)
 
-
-
-
-# x: most likely trajectory: e.g. [0 0 1] means Healthy, Healthy, Fever
-# T1: probability of most likely path so far, e.g.:
-#   [[0.3     0.084   0.00588]
-#   [0.04    0.027   0.01512]]
-# means prob. of 0.3 to be in Healthy first, prob. of 0.04 to start in Fever; prob of 0.084 to have healthy - healthy;
-# prob of 0.027 to have healthy - fever (only the most likely path is considered) etc.
-# T2: the x_j-1 of the most likely path so far?
+##maybe add normalization?

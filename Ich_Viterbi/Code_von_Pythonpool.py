@@ -1,4 +1,4 @@
-#source: https://www.pythonpool.com/viterbi-algorithm-python/ 05th Oct 2023
+# source: https://www.pythonpool.com/viterbi-algorithm-python/ 05th Oct 2023
 observations = ("normal", "cold", "dizzy")
 states = ("Healthy", "Fever")
 start_p = {"Healthy": 0.6, "Fever": 0.4}
@@ -11,18 +11,19 @@ emit_p = {
     "Fever": {"normal": 0.1, "cold": 0.3, "dizzy": 0.6},
 }
 
+
 def viterbi_algorithm(observations, states, start_p, trans_p, emit_p):
     V = [{}]
-    for st in states: #Berechne Wkt dafür, zu Zeitpunkt 0 in State st zu landen
+    for st in states:  # Berechne Wkt dafür, zu Zeitpunkt 0 in State st zu landen
         V[0][st] = {"prob": start_p[st] * emit_p[st][observations[0]], "prev": None}
         print(V)
 
-    for t in range(1, len(observations)): #jetzt für alle zukünftigen Zeitpunkte
-        #print(V)
+    for t in range(1, len(observations)):  # jetzt für alle zukünftigen Zeitpunkte
+        # print(V)
         V.append({})
         for st in states:
             max_tr_prob = V[t - 1][states[0]]["prob"] * trans_p[states[0]][st]
-            prev_st_selected = states[0] # zuerst für st 0, dann für die restlichen: berechne den vorherigen State, der am wahrscheinlichsten der Vorgängerstate war
+            prev_st_selected = states[0]  # zuerst für st 0, dann für die restlichen: berechne den vorherigen State, der am wahrscheinlichsten der Vorgängerstate war
             for prev_st in states[1:]:
                 tr_prob = V[t - 1][prev_st]["prob"] * trans_p[prev_st][st]
                 if tr_prob > max_tr_prob:

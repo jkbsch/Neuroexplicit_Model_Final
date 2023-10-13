@@ -21,7 +21,7 @@ class OneFoldTrainer:
         self.cfg = config
         self.tp_cfg = config['training_params']
         self.es_cfg = self.tp_cfg['early_stopping']
-        
+
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print('[INFO] Config name: {}'.format(config['name']))
         

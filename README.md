@@ -120,6 +120,7 @@ python train_mtcl.py --config configs/SleePyCo-Transformer_SL-10_numScales-3_Sle
 3. Evaluate the dataset using the following command.
 ```
 python test.py --config configs/SleePyCo-Transformer_SL-10_numScales-3_{DATASET_NAME}_freezefinetune.json --gpu $GPU_IDs
+python test.py --config configs/SleePyCo-Transformer_SL-10_numScales-3_Sleep-EDF-2013_freezefinetune.json --gpu 0
 ```
 
 ## Authors

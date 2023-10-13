@@ -193,6 +193,7 @@ def main():
 
     with open(args.config) as config_file:
         config = json.load(config_file)
+        print("config: ", config)
     config['name'] = os.path.basename(args.config).replace('.json', '')
     
     Y_true = np.zeros(0)
