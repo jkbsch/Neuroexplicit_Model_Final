@@ -23,11 +23,16 @@ for i in range(5):
 P = np.array([0, 1, 2, 3])
 print(P[1])"""
 
-A = np.array([[1,2, 3],
+"""A = np.array([[1,2, 3],
      [3,4, 5]])
 print(A)
 row_sums = A.sum(axis=1)
 normalized_A = A / row_sums[:, np.newaxis]
 print(normalized_A)
 #divided = A / sum
-#print(divided)
+#print(divided)"""
+A = [[1,2, 3],
+     [3,4, 5]]
+
+A.extend([[6, 7, 8], [9, 10, 11]])
+print(A)
