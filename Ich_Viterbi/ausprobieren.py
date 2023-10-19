@@ -26,7 +26,8 @@ print(P[1])"""
 A = np.array([[1,2, 3],
      [3,4, 5]])
 print(A)
-sum = np.sum(A, axis=1)
-print(sum)
-divided = A / sum
-print(divided)
+row_sums = A.sum(axis=1)
+normalized_A = A / row_sums[:, np.newaxis]
+print(normalized_A)
+#divided = A / sum
+#print(divided)

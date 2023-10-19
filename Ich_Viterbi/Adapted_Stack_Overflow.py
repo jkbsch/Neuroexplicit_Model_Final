@@ -99,7 +99,7 @@ def viterbi(A, P, Pi=None, logscale = False):
 #observations: normal = 0, cold = 1, dizzy = 2
 #states: Healthy = 0, Fever = 1
 #y = np.array([0, 1, 2]) #observation state sequence; expl.: observations are normal(0) then cold (1) then dizzy (2)
-A = np.array([[0.8, 0.2], [0.9, 0.1]]) #state transition matrix: e.g. prob of 0.7 to transition from Healthy to Healthy,
+A = np.array([[0.7, 0.3], [0.9, 0.1]]) #state transition matrix: e.g. prob of 0.7 to transition from Healthy to Healthy,
 # prob of 0.3 to transition from healthy to fever
 #B = np.array([[0.5, 0.4, 0.1],[0.1, 0.3, 0.6]]) #Emission matrix: e.g. prob of 0.5 to feel normal if you're healthy,
 # prob of 0.4 to feel cold when healthy
