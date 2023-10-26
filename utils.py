@@ -10,8 +10,9 @@ from terminaltables import SingleTable
 from termcolor import colored
 
 
-_, term_width = os.popen('stty size', 'r').read().split()
-term_width = int(term_width)
+#_, term_width = os.popen('stty size', 'r').read().split()
+#term_width = int(term_width)
+term_width = 80
 
 TOTAL_BAR_LENGTH = 25.
 last_time = time.time()
