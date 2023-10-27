@@ -146,7 +146,7 @@ class OneFoldTrainer:
                 outputs_sum += outputs[j]
                 
             eval_loss += loss.item()
-            predicted = torch.argmax(outputs_sum, 1) #  kann hier argmax einfach weggelassen werden?
+            predicted = torch.argmax(outputs_sum, 1) #  kann hier argmax einfach weggelassen werden - nein, aber stattdessen ist hier softmax möglich
             correct += predicted.eq(labels).sum().item()
             
             y_true = np.concatenate([y_true, labels.cpu().numpy()])

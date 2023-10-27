@@ -51,7 +51,7 @@ class OneFoldEvaluator(OneFoldTrainer):
     def run(self):
         print('\n[INFO] Fold: {}'.format(self.fold))
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))
-        y_true, y_pred = self.evaluate(mode='test')
+        y_true, y_pred = self.evaluate(mode='test')  # hier evtl softmax einbauen
         print('')
 
         return y_true, y_pred
