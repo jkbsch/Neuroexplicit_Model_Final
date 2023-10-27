@@ -161,7 +161,46 @@ class OneFoldTrainer:
             return y_true, y_pred
         else:
             raise NotImplementedError
-    
+
+    @torch.no_grad()
+    def Evalute_P_Matr(self, mode):
+        self.model.eval()
+        correct, total, eval_loss = 0, 0, 0
+        y_true = np.zeros(0)
+        y_pred = np.zeros((0, self.cfg['classifier']['num_classes']))
+
+        for i, (inputs, labels) in enumerate(self.loader_dict[mode]):
+            loss = 0
+            total += labels.size(0)
+            inputs = inputs.to(self.device)
+            labels = labels.view(-1).to(self.device)
+
+            outputs = self.model(inputs)
+            outputs_sum = torch.zeros_like(outputs[0])
+
+            for j in range(len(outputs)):
+                loss += self.criterion(outputs[j], labels)
+                outputs_sum += outputs[j]
+
+            eval_loss += loss.item()
+            predicted = torch.argmax(outputs_sum,
+                                     1)  # kann hier argmax einfach weggelassen werden - nein, aber stattdessen ist hier softmax möglich
+            correct += predicted.eq(labels).sum().item()
+
+            y_true = np.concatenate([y_true, labels.cpu().numpy()])
+            y_pred = np.concatenate([y_pred, outputs_sum.cpu().numpy()])
+
+            progress_bar(i, len(self.loader_dict[mode]), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                         % (eval_loss / (i + 1), 100. * correct / total, correct, total))
+
+        if mode == 'val':
+            return 100. * correct / total, eval_loss
+        elif mode == 'test':
+            return y_true, y_pred
+        else:
+            raise NotImplementedError
+
+
     def run(self):
         for epoch in range(self.tp_cfg['max_epochs']):
             print('\n[INFO] Fold: {}, Epoch: {}'.format(self.fold, epoch))
