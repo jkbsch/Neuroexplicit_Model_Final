@@ -1,10 +1,8 @@
-import os
 import json
 import argparse
 import warnings
-import scipy
+from copy import deepcopy
 
-import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
@@ -43,16 +41,45 @@ class OneFoldEvaluator(OneFoldTrainer):
         return model
     
     def build_dataloader(self):
-        test_dataset = EEGDataLoader(self.cfg, self.fold, set='test')
-        test_loader = DataLoader(dataset=test_dataset, batch_size=self.tp_cfg['batch_size'], shuffle=False, num_workers=4*len(self.args.gpu.split(",")), pin_memory=True)
+        P_dataset = EEGDataLoader(self.cfg, self.fold, set='train')
+        P_dataset_zero = deepcopy(P_dataset)
+        P_dataset_zero.labels = P_dataset_zero.labels[0]
+        P_dataset_zero.labels = P_dataset_zero.labels[np.newaxis, :]
+        P_dataset_zero.inputs = P_dataset_zero.inputs[0]
+        P_dataset_zero.inputs = P_dataset_zero.inputs[np.newaxis, :]
+        P_dataset_zero.epochs = P_dataset_zero.epochs[0:len(P_dataset_zero.labels[0])]
+
+        P_loader = DataLoader(dataset=P_dataset_zero, batch_size=self.tp_cfg['batch_size'], shuffle=False, num_workers=4*len(self.args.gpu.split(",")), pin_memory=True)
         print('[INFO] Dataloader prepared')
 
-        return {'test': test_loader} 
+        return {'P': P_loader}
+        #return self.build_dataloader_separate()
+
+    def build_dataloader_separate(self):
+        P_dataset = EEGDataLoader(self.cfg, self.fold, set='train')
+
+        P_dataset_separate = []
+        len_previous = 0
+
+        for i in range(len(P_dataset.labels)):
+            P_dataset_separate = P_dataset_separate.extend(deepcopy(P_dataset))
+            P_dataset_separate[i].labels = P_dataset_separate[i].labels[i]
+            P_dataset_separate[i].labels = P_dataset_separate[i].labels[np.newaxis, :]
+            P_dataset_separate[i].inputs = P_dataset_separate[i].inpus[i]
+            P_dataset_separate[i].inputs = P_dataset_separate[i].inputs[np.newaxis, :]
+            P_dataset_separate[i].epochs = P_dataset_separate[i].epochs[len_previous:len(P_dataset_separate[i].labels[0])]
+            len_previous = len(P_dataset_separate[i].labels[0])
+
+        P_loader = DataLoader(dataset=P_dataset_separate[0], batch_size=self.tp_cfg['batch_size'], shuffle=False,
+                              num_workers=4 * len(self.args.gpu.split(",")), pin_memory=True)
+        print('[INFO] Dataloader prepared')
+
+        return {'P': P_loader}
    
     def run(self):
         print('\n[INFO] Fold: {}'.format(self.fold))
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))
-        y_true, y_pred, y_probs = self.Evalute_P_Matr(mode='test')  # hier evtl softmax einbauen
+        y_true, y_pred, y_probs = self.Evalute_P_Matr()
         print('')
 
         return y_true, y_pred, y_probs
@@ -80,15 +107,15 @@ def main():
     Y_pred = np.zeros((0, config['classifier']['num_classes']))
     Y_probs = np.zeros((0, config['classifier']['num_classes']))
 
-    for fold in range(1, config['dataset']['num_splits'] + 1):
-        evaluator = OneFoldEvaluator(args, fold, config)
-        y_true, y_pred, y_probs = evaluator.run()
-        Y_true = np.concatenate([Y_true, y_true])
-        Y_pred = np.concatenate([Y_pred, y_pred])
-        Y_probs = np.concatenate([Y_probs, y_probs])
-    
-        summarize_result(config, fold, Y_true, Y_pred)
-    
+    evaluator = OneFoldEvaluator(args, 1, config)
+    y_true, y_pred, y_probs = evaluator.run()
+    Y_true = np.concatenate([Y_true, y_true])
+    Y_pred = np.concatenate([Y_pred, y_pred])
+    Y_probs = np.concatenate([Y_probs, y_probs])
+    print("Hey!")
+    ## Fold verstanden: wenn fold = 1, dann werden die Daten fürs Testen genommen, die fürs Trainieren von Fold
+    # 1 ausgelassen wurden; außerdem wird dann der Checkpoint genutzt, der erstellt wurde durch das Trainieren von Fold1
+
 
 if __name__ == "__main__":
     main()
