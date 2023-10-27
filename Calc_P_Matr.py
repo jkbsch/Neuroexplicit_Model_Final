@@ -56,8 +56,6 @@ class OneFoldEvaluator(OneFoldTrainer):
 
         return y_true, y_pred
 
-    # new from here:
-
 
 
 def main():
