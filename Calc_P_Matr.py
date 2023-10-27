@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import warnings
+import scipy
 
 import torch
 import torch.nn as nn
@@ -51,10 +52,10 @@ class OneFoldEvaluator(OneFoldTrainer):
     def run(self):
         print('\n[INFO] Fold: {}'.format(self.fold))
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))
-        y_true, y_pred = self.Evalute_P_Matr(mode='test')  # hier evtl softmax einbauen
+        y_true, y_pred, y_probs = self.Evalute_P_Matr(mode='test')  # hier evtl softmax einbauen
         print('')
 
-        return y_true, y_pred
+        return y_true, y_pred, y_probs
 
 
 
@@ -77,12 +78,14 @@ def main():
     
     Y_true = np.zeros(0)
     Y_pred = np.zeros((0, config['classifier']['num_classes']))
+    Y_probs = np.zeros((0, config['classifier']['num_classes']))
 
     for fold in range(1, config['dataset']['num_splits'] + 1):
         evaluator = OneFoldEvaluator(args, fold, config)
-        y_true, y_pred = evaluator.run()
+        y_true, y_pred, y_probs = evaluator.run()
         Y_true = np.concatenate([Y_true, y_true])
         Y_pred = np.concatenate([Y_pred, y_pred])
+        Y_probs = np.concatenate([Y_probs, y_probs])
     
         summarize_result(config, fold, Y_true, Y_pred)
     

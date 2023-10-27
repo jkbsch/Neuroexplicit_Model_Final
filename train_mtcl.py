@@ -168,6 +168,7 @@ class OneFoldTrainer:
         correct, total, eval_loss = 0, 0, 0
         y_true = np.zeros(0)
         y_pred = np.zeros((0, self.cfg['classifier']['num_classes']))
+        y_probs = np.zeros((0, self.cfg['classifier']['num_classes']))
 
         for i, (inputs, labels) in enumerate(self.loader_dict[mode]):
             loss = 0
@@ -183,21 +184,20 @@ class OneFoldTrainer:
                 outputs_sum += outputs[j]
 
             eval_loss += loss.item()
+            softmax_output = torch.softmax(outputs_sum, dim=1)
             predicted = torch.argmax(outputs_sum,1)  # kann hier argmax einfach weggelassen werden - nein, aber stattdessen ist hier softmax möglich
             correct += predicted.eq(labels).sum().item()
 
             y_true = np.concatenate([y_true, labels.cpu().numpy()])
             y_pred = np.concatenate([y_pred, outputs_sum.cpu().numpy()])
+            y_probs = np.concatenate([y_probs, softmax_output.cpu().numpy()])
 
             progress_bar(i, len(self.loader_dict[mode]), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (eval_loss / (i + 1), 100. * correct / total, correct, total))
 
-        if mode == 'val':
-            return 100. * correct / total, eval_loss
-        elif mode == 'test':
-            return y_true, y_pred
-        else:
-            raise NotImplementedError
+            break
+
+        return y_true, y_pred, y_probs
 
 
     def run(self):
