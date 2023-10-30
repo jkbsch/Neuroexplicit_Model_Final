@@ -132,7 +132,9 @@ class OneFoldTrainer:
         y_true = np.zeros(0)
         y_pred = np.zeros((0, self.cfg['classifier']['num_classes']))
 
-        for i, (inputs, labels) in enumerate(self.loader_dict[mode]):
+        for i, (inputs, labels) in enumerate(self.loader_dict[mode]):  # hier ist es seltsam: wenn man die indizes exakt verfolgt (i * batch_size), dann sind die verwendeten Labels nicht exakt
+            # entsprechend der passenden Position in den Labels aus den Input-Data (Bsp.: i=12, 12*64 = 768; labels im Tensor sind z.B. (ausgedacht): 1, 1, 2, 3, 0, 0; an stelle 768 in original-Labels z.B. 0, 0, 0, 1, 1, 2, 3, 0, 0
+            print("i: ", i, "\n labels.size(): ", labels.size())
             loss = 0
             total += labels.size(0)
             inputs = inputs.to(self.device)
@@ -163,7 +165,7 @@ class OneFoldTrainer:
             raise NotImplementedError
 
     @torch.no_grad()
-    def Evalute_P_Matr(self):
+    def Evalute_P_Matr(self): #  hier ist SleePyCo eigtl seltsam: nimmt als input die letzten 64 - auch aus vorherigem Subject? (d.h. z.B. Subject 1 hat 840 Epochen, Subject 2 1000; dann nach 13 Schleifendurchgängen (64*13 = 832) sind die nächsten Labels die letzten 8 vom Subject 1 und dann die vom Subject 2
         self.model.eval()
         correct, total, eval_loss = 0, 0, 0
         y_true = np.zeros(0)
@@ -171,7 +173,7 @@ class OneFoldTrainer:
         y_probs = np.zeros((0, self.cfg['classifier']['num_classes']))
 
         for i, (inputs, labels) in enumerate(self.loader_dict['P']):
-            print("i: ", i)
+            print("i: ", i, "\n labels.size(): ", labels.size())
             loss = 0
             total += labels.size(0)
             inputs = inputs.to(self.device)
@@ -193,8 +195,8 @@ class OneFoldTrainer:
             y_pred = np.concatenate([y_pred, outputs_sum.cpu().numpy()])
             y_probs = np.concatenate([y_probs, softmax_output.cpu().numpy()])
 
-            if(i >= 14): # Hier muss eine Abbruchbedingung gesetzt werden
-                break
+            #if(i >= 14): # Hier muss eine Abbruchbedingung gesetzt werden
+                #break
 
 
         print("Hey!")

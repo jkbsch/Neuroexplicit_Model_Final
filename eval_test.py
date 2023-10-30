@@ -41,7 +41,7 @@ class OneFoldEvaluator(OneFoldTrainer):
 
         return model
     
-    def build_dataloader(self):
+    def build_dataloader(self):  # im Test-Set sind z.B. im Fold 1 zwei Datensätze, zusammen 1950 Epochs, das entspricht 30.47*64 (Batch size) - deshalb wird Schleife 31 Mal durchlaufen - aber warum kein Fehler?
         test_dataset = EEGDataLoader(self.cfg, self.fold, set='test')
         test_loader = DataLoader(dataset=test_dataset, batch_size=self.tp_cfg['batch_size'], shuffle=False, num_workers=4*len(self.args.gpu.split(",")), pin_memory=True)
         print('[INFO] Dataloader prepared')
@@ -51,7 +51,7 @@ class OneFoldEvaluator(OneFoldTrainer):
     def run(self):
         print('\n[INFO] Fold: {}'.format(self.fold))
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))
-        y_true, y_pred = self.evaluate(mode='test')  # hier evtl softmax einbauen
+        y_true, y_pred = self.evaluate(mode='test')
         print('')
 
         return y_true, y_pred
