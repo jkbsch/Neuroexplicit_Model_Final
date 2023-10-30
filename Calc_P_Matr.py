@@ -127,11 +127,11 @@ def main():
 
         prev = 0
         for i in range(len(evaluator.lengths)):
-            out_name = "./Probability_Data/"+"_set"+evaluator.set+"_fold"+str(evaluator.fold)
+            out_name = "./Probability_Data/"+"_set_"+evaluator.set+"_fold_"+str(evaluator.fold)
             current = prev + evaluator.lengths[i]
-            np.savetxt(out_name+"_subject"+str(i)+"_labels.txt", (Y_true[prev:current]), fmt="%d", delimiter=",")
-            np.savetxt(out_name+"_subject"+str(i)+"_pred.txt", (Y_pred[prev:current]), fmt="%.15f", delimiter=",")
-            np.savetxt(out_name+"_subject"+str(i)+"_probs.txt", (Y_probs[prev:current]), fmt="%.15f", delimiter=",")
+            np.savetxt(out_name+"_nr_"+str(i)+"_labels.txt", (Y_true[prev:current]), fmt="%d", delimiter=",")
+            np.savetxt(out_name+"_nr_"+str(i)+"_pred.txt", (Y_pred[prev:current]), fmt="%.15f", delimiter=",")
+            np.savetxt(out_name+"_nr_"+str(i)+"_probs.txt", (Y_probs[prev:current]), fmt="%.15f", delimiter=",")
             prev = evaluator.lengths[i]
 
     print("Hey!")
