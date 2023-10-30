@@ -34,5 +34,9 @@ print(normalized_A)
 A = [[1,2, 3],
      [3,4, 5]]
 
-A.extend([[6, 7, 8], [9, 10, 11]])
-print(A)
+A.append([[6, 7, 8], [9, 10, 11]])
+#print(A)
+
+A = [1, 2, 3, 4, 5, 6]
+print(A[0:2])
+print(A[2:4])
