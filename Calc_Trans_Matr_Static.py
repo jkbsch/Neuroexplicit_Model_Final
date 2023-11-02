@@ -143,16 +143,13 @@ class TransMatrStatic:
         # transition probabilities and thus each row should add up to one
         return average_trans_matr
 
-    def get_all_trans_matr(self):  # returns all transition matrices
-        return self.all_trans_matr
 
-    def get_avg_trans_matr(self):  # returns the averaged transition matrix
-        return self.average_trans_matr
 
 
 def main():
     trans_matrix = TransMatrStatic(edf_2013=True, edf_2018=True, mass=False, shhs=False, physio_2018=False)
-    print("success")
+    #out_name = "./Transition_Matrix/"
+    #np.savetxt(out_name + "edf-2013-and-edf-2018.txt",trans_matrix.average_trans_matr, fmt="%.15f", delimiter=",")
 
 
 if __name__ == "__main__":
