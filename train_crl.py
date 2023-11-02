@@ -125,6 +125,7 @@ def main():
     parser.add_argument('--config', type=str, help='config file path')
     args = parser.parse_args()
 
+    # Source set gpu_devides: ChatGPT
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   
     #os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
