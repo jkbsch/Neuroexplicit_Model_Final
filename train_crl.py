@@ -133,6 +133,7 @@ def main():
 
     # Set CUDA_VISIBLE_DEVICES to the allocated GPU devices
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
+    print(gpu_devices)
 
     # Now, you can run your GPU-accelerated program
 
