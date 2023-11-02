@@ -46,7 +46,7 @@ class OneFoldEvaluator(OneFoldTrainer):
         return model
     
     def build_dataloader(self):
-        self.set = 'test'
+        self.set = 'train'
         P_dataset = EEGDataLoader(self.cfg, self.fold, set=self.set)  # muss wieder zu train werden - hier möchte ich ja nicht mit dem Test-Dataset trainieren, was ich später noch zum evaulieren brauche
         """P_dataset_zero = deepcopy(P_dataset)
         P_dataset_zero.labels = P_dataset_zero.labels[0]
@@ -113,6 +113,8 @@ def main():
         config = json.load(config_file)
     config['name'] = os.path.basename(args.config).replace('.json', '')
 
+
+
     for fold in range(1, config['dataset']['num_splits'] + 1):
     
         Y_true = np.zeros(0)
@@ -127,7 +129,7 @@ def main():
 
         prev = 0
         for i in range(len(evaluator.lengths)):
-            out_name = "./Probability_Data/"+"_set_"+evaluator.set+"_fold_"+str(evaluator.fold)
+            out_name = "./Probability_Data/"+"_dataset_"+config['dataset']['name']+"_set_"+evaluator.set+"_fold_"+str(evaluator.fold)
             current = prev + evaluator.lengths[i]
             np.savetxt(out_name+"_nr_"+str(i)+"_labels.txt", (Y_true[prev:current]), fmt="%d", delimiter=",")
             np.savetxt(out_name+"_nr_"+str(i)+"_pred.txt", (Y_pred[prev:current]), fmt="%.15f", delimiter=",")
