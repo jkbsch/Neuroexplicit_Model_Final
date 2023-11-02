@@ -173,7 +173,7 @@ class OneFoldTrainer:
         y_probs = np.zeros((0, self.cfg['classifier']['num_classes']))
 
         for i, (inputs, labels) in enumerate(self.loader_dict['P']):
-            print("i: ", i, "\n labels.size(): ", labels.size())
+            #print("i: ", i, "\n labels.size(): ", labels.size())
             loss = 0
             total += labels.size(0)
             inputs = inputs.to(self.device)
