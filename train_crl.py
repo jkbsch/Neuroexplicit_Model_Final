@@ -32,7 +32,7 @@ class OneFoldTrainer:
         self.criterion = SupConLoss(temperature=self.tp_cfg['temperature'])
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.tp_cfg['lr'], weight_decay=self.tp_cfg['weight_decay'])
         
-        self.ckpt_path = os.path.join('checkpoints', config['name'])
+        self.ckpt_path = os.path.join('checkpoints_created', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
         self.early_stopping = EarlyStopping(patience=self.es_cfg['patience'], verbose=True, ckpt_path=self.ckpt_path, ckpt_name=self.ckpt_name, mode=self.es_cfg['mode'])
 

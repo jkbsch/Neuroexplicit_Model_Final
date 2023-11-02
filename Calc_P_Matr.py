@@ -31,7 +31,7 @@ class OneFoldEvaluator(OneFoldTrainer):
         self.loader_dict = self.build_dataloader()
         
         self.criterion = nn.CrossEntropyLoss()
-        self.ckpt_path = os.path.join('checkpoints', config['name'])
+        self.ckpt_path = os.path.join('checkpoints_copied', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
 
 

@@ -35,7 +35,7 @@ class OneFoldTrainer:
         self.activate_train_mode()
         self.optimizer = optim.Adam([p for p in self.model.parameters() if p.requires_grad], lr=self.tp_cfg['lr'], weight_decay=self.tp_cfg['weight_decay'])
         
-        self.ckpt_path = os.path.join('checkpoints', config['name'])
+        self.ckpt_path = os.path.join('checkpoints_created', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
         self.early_stopping = EarlyStopping(patience=self.es_cfg['patience'], verbose=True, ckpt_path=self.ckpt_path, ckpt_name=self.ckpt_name, mode=self.es_cfg['mode'])
         
@@ -49,7 +49,7 @@ class OneFoldTrainer:
             load_name = self.cfg['name'].replace('SL-{:02d}'.format(self.ds_cfg['seq_len']), 'SL-01')
             load_name = load_name.replace('numScales-{}'.format(self.fp_cfg['num_scales']), 'numScales-1')
             load_name = load_name.replace(self.tp_cfg['mode'], 'pretrain')
-            load_path = os.path.join('checkpoints', load_name, 'ckpt_fold-{0:02d}.pth'.format(self.fold))
+            load_path = os.path.join('checkpoints_created', load_name, 'ckpt_fold-{0:02d}.pth'.format(self.fold))
             model.load_state_dict(torch.load(load_path), strict=False)
         model.to(self.device)
         print('[INFO] Model prepared, Device used: {} GPU:{}'.format(self.device, self.args.gpu))
