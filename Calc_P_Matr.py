@@ -106,8 +106,21 @@ def main():
     parser.add_argument('--config', type=str, help='config file path')
     args = parser.parse_args()
 
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
+    # Source set gpu_devides: ChatGPT
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
+    # Get the allocated GPU device IDs from the SLURM environment
+    gpu_devices = os.environ.get('SLURM_JOB_GPUS', '0')
+
+    # Set CUDA_VISIBLE_DEVICES to the allocated GPU devices
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
+    print(gpu_devices)
+
+    # Now, you can run your GPU-accelerated program
 
     with open(args.config) as config_file:
         config = json.load(config_file)
