@@ -1,9 +1,7 @@
-import os
 import json
 import argparse
 import warnings
 
-import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -148,7 +146,7 @@ class OneFoldTrainer:
                 outputs_sum += outputs[j]
                 
             eval_loss += loss.item()
-            predicted = torch.argmax(outputs_sum, 1) #  kann hier argmax einfach weggelassen werden - nein, aber stattdessen ist hier softmax möglich
+            predicted = torch.argmax(outputs_sum, 1)
             correct += predicted.eq(labels).sum().item()
             
             y_true = np.concatenate([y_true, labels.cpu().numpy()])
@@ -165,42 +163,36 @@ class OneFoldTrainer:
             raise NotImplementedError
 
     @torch.no_grad()
-    def Evalute_P_Matr(self): #  hier ist SleePyCo eigtl seltsam: nimmt als input die letzten 64 - auch aus vorherigem Subject? (d.h. z.B. Subject 1 hat 840 Epochen, Subject 2 1000; dann nach 13 Schleifendurchgängen (64*13 = 832) sind die nächsten Labels die letzten 8 vom Subject 1 und dann die vom Subject 2
-        self.model.eval()
-        correct, total, eval_loss = 0, 0, 0
-        y_true = np.zeros(0)
+    def Evalute_P_Matr(self):
+        self.model.eval()  # set model in evaluation mode
+        correct, total, eval_loss = 0, 0, 0  # init counters
+        y_true = np.zeros(0)  # init arrays
         y_pred = np.zeros((0, self.cfg['classifier']['num_classes']))
         y_probs = np.zeros((0, self.cfg['classifier']['num_classes']))
 
-        for i, (inputs, labels) in enumerate(self.loader_dict['P']):
-            #print("i: ", i, "\n labels.size(): ", labels.size())
+        for i, (inputs, labels) in enumerate(self.loader_dict['P']):  # enumerate the dataloader
             loss = 0
             total += labels.size(0)
             inputs = inputs.to(self.device)
             labels = labels.view(-1).to(self.device)
 
-            outputs = self.model(inputs)
-            outputs_sum = torch.zeros_like(outputs[0])
+            outputs = self.model(inputs)  # push data to cpu/gpu and run the model
+            outputs_sum = torch.zeros_like(outputs[0])  # init empty tensor
 
-            for j in range(len(outputs)):
+            for j in range(len(outputs)):  # sum over outputs
                 loss += self.criterion(outputs[j], labels)
                 outputs_sum += outputs[j]
 
             eval_loss += loss.item()
-            softmax_output = torch.softmax(outputs_sum, dim=1)
-            predicted = torch.argmax(outputs_sum,1)
-            correct += predicted.eq(labels).sum().item()
+            softmax_output = torch.softmax(outputs_sum, dim=1)  # calculate softmax
+            predicted = torch.argmax(outputs_sum,1)  # use argmax to calculate model prediction
+            correct += predicted.eq(labels).sum().item()  # evaluate predicted ?= label
 
-            y_true = np.concatenate([y_true, labels.cpu().numpy()])
+            y_true = np.concatenate([y_true, labels.cpu().numpy()])  # convert tensors to numpy arrays
             y_pred = np.concatenate([y_pred, outputs_sum.cpu().numpy()])
             y_probs = np.concatenate([y_probs, softmax_output.cpu().numpy()])
 
-            #if(i >= 14): # Hier muss eine Abbruchbedingung gesetzt werden
-                #break
-
-
-        print("Hey!")
-        return y_true, y_pred, y_probs
+        return y_true, y_pred, y_probs  # return results
 
 
     def run(self):
