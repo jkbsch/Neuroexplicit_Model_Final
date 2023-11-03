@@ -149,7 +149,7 @@ def main():
             np.savetxt(out_name+"_nr_"+str(i)+"_probs.txt", (Y_probs[prev:current]), fmt="%.15f", delimiter=",")
             prev = evaluator.lengths[i]
 
-    print("Hey!")
+    #print("Hey!")
     ## Fold verstanden: wenn fold = 1, dann werden die Daten fürs Testen genommen, die fürs Trainieren von Fold
     # 1 ausgelassen wurden; außerdem wird dann der Checkpoint genutzt, der erstellt wurde durch das Trainieren von Fold1 ? Nicht ganz sicher, warum gibt's dann Checkpoints aber nur eine 10-fold CV?
 
