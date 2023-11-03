@@ -1,5 +1,6 @@
-    #Source: https://stackoverflow.com/questions/9729968/python-implementation-of-viterbi-algorithm checked 05th Oct 2023 - adapted
+# Source: https://stackoverflow.com/questions/9729968/python-implementation-of-viterbi-algorithm checked 05th Oct 2023 - adapted
 import numpy as np
+
 
 class Viterbi:
     """
@@ -41,7 +42,8 @@ class Viterbi:
                prob of 0.027 to be in State 1 at time t=1 (c.f. T2 to find the most likely path to get there)
                 the x_j-1 of the most likely path so far
             """
-    def __init__(self, A, P, Pi=None, logscale = False):
+
+    def __init__(self, A, P, Pi=None, logscale=False):
         self.A = A
         self.P = P
         self.logscale = logscale
@@ -60,17 +62,14 @@ class Viterbi:
 
         (self.x, self.T1, self.T2) = self.calc_viterbi()
 
-
     def calc_viterbi(self):
-
-
 
         T1 = np.empty((self.K, self.T), 'd')
         T2 = np.empty((self.K, self.T), 'B')
 
         # Initialize the tracking tables from first observation
-        #T1[:, 0] = Pi * B[:, y[0]]
-        #print("B[:, y[0]]: \n", B[:, y[0]], "\n")
+        # T1[:, 0] = Pi * B[:, y[0]]
+        # print("B[:, y[0]]: \n", B[:, y[0]], "\n")
 
         if self.logscale:
             T1[:, 0] = self.Pi + self.P[0]
@@ -78,21 +77,21 @@ class Viterbi:
         else:
             T1[:, 0] = self.Pi * self.P[0]
 
-
-
         T2[:, 0] = 0
-        #print("T1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
+        # print("T1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
 
         # Iterate through the observations updating the tracking tables
         for i in range(1, self.T):
             if self.logscale:
-                T1[:, i] = np.max(T1[:, i - 1] + self.A.T + (self.P[np.newaxis, 1]).T,1)  # addiere Wkt des letzten States
+                T1[:, i] = np.max(T1[:, i - 1] + self.A.T + (self.P[np.newaxis, 1]).T,
+                                  1)  # addiere Wkt des letzten States
                 # mit Transitionswahrscheinlichkeit mit Wkt für den aktuellen Zustand aus DNN; suche den State aus
                 # vorheriger Periode, der Wkt maximiert
                 T2[:, i] = np.argmax(T1[:, i - 1] + self.A.T, 1)
 
             else:
-                T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, 1]).T, 1) # Add the probability of the last state's occurrence
+                T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, 1]).T,
+                                  1)  # Add the probability of the last state's occurrence
                 # to the transition probability with the probability for the current state from the DNN (Deep Neural Network).
                 # Find the state from the previous period that maximizes the probability.
 
@@ -105,7 +104,7 @@ class Viterbi:
         for i in reversed(range(1, self.T)):
             x[i - 1] = T2[x[i], i]
 
-        #if logscale:
+        # if logscale:
         #    T1 = np.exp(T1)
 
         return x, T1, T2
@@ -121,8 +120,8 @@ class Viterbi:
     P = np.array([[.5, .5], [0.2, 0.8], [0.4, 0.6]]) #e.g. DNN has calculated that - given the data - there's a 30% chance
     # that the first state is Healthy (shape 3,2)"""
 
-
     ##maybe add normalization?
+
 
 def main():
     A = np.array([[0.7, 0.3], [0.9, 0.1]])
