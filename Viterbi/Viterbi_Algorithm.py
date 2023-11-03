@@ -55,7 +55,7 @@ class Viterbi:
 
         self.T = len(P)
 
-        if self.logscale:
+        if self.logscale:  # convert to logscale
             self.A = np.log(self.A)
             self.P = np.log(self.P)
             self.Pi = np.log(self.Pi)
@@ -84,16 +84,16 @@ class Viterbi:
         for i in range(1, self.T):
             if self.logscale:
                 T1[:, i] = np.max(T1[:, i - 1] + self.A.T + (self.P[np.newaxis, 1]).T,
-                                  1)  # addiere Wkt des letzten States
-                # mit Transitionswahrscheinlichkeit mit Wkt für den aktuellen Zustand aus DNN; suche den State aus
-                # vorheriger Periode, der Wkt maximiert
+                                  1)  # Add the probability (logscale) of the last state's occurrence
+                # to the transition probability and to the probability for the current state from the DNN.
+                # Find the state from the previous period that maximizes this probability.
                 T2[:, i] = np.argmax(T1[:, i - 1] + self.A.T, 1)
 
             else:
                 T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, 1]).T,
-                                  1)  # Add the probability of the last state's occurrence
-                # to the transition probability with the probability for the current state from the DNN (Deep Neural Network).
-                # Find the state from the previous period that maximizes the probability.
+                                  1)  # Multiply the probability of the last state's occurrence
+                # with the transition probability and with the probability for the current state from the DNN.
+                # Find the state from the previous period that maximizes this probability.
 
                 T2[:, i] = np.argmax(T1[:, i - 1] * self.A.T, 1)
             # print("\n i:",i, "\nT1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
