@@ -134,7 +134,7 @@ class OneFoldTrainer:
 
         for i, (inputs, labels) in enumerate(self.loader_dict[mode]):  # hier ist es seltsam: wenn man die indizes exakt verfolgt (i * batch_size), dann sind die verwendeten Labels nicht exakt
             # entsprechend der passenden Position in den Labels aus den Input-Data (Bsp.: i=12, 12*64 = 768; labels im Tensor sind z.B. (ausgedacht): 1, 1, 2, 3, 0, 0; an stelle 768 in original-Labels z.B. 0, 0, 0, 1, 1, 2, 3, 0, 0
-            print("i: ", i, "\n labels.size(): ", labels.size())
+            # print("i: ", i, "\n labels.size(): ", labels.size())
             loss = 0
             total += labels.size(0)
             inputs = inputs.to(self.device)
