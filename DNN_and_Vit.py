@@ -91,10 +91,12 @@ class DnnAndVit:
 
 
 def main():
-    dnn2 = DnnAndVit(length=None, logscale=True)
+    dnn2 = DnnAndVit(length=30, fold=1, nr = 1, logscale=True)
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions, "\nHybrid Prediction:\t",
           dnn2.hybrid_predictions)
+
+
 
 
 if __name__ == '__main__':

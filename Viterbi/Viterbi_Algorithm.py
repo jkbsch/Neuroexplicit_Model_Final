@@ -83,14 +83,14 @@ class Viterbi:
         # Iterate through the observations updating the tracking tables
         for i in range(1, self.T):
             if self.logscale:
-                T1[:, i] = np.max(T1[:, i - 1] + self.A.T + (self.P[np.newaxis, 1]).T,
-                                  1)  # Add the probability (logscale) of the last state's occurrence
-                # to the transition probability and to the probability for the current state from the DNN.
-                # Find the state from the previous period that maximizes this probability.
+                T1[:, i] = np.max(T1[:, i - 1] + self.A.T + (self.P[np.newaxis, i]).T,1)  # Add the probability
+                # (logscale) of the last state's occurrence to the transition probability and to the probability for
+                # the current state from the DNN. Find the state from the previous period that maximizes this
+                # probability.
                 T2[:, i] = np.argmax(T1[:, i - 1] + self.A.T, 1)
 
             else:
-                T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, 1]).T,
+                T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, i]).T,
                                   1)  # Multiply the probability of the last state's occurrence
                 # with the transition probability and with the probability for the current state from the DNN.
                 # Find the state from the previous period that maximizes this probability.
