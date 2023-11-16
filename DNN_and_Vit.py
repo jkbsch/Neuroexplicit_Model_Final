@@ -91,12 +91,15 @@ class DnnAndVit:
 
 
 def main():
-    dnn2 = DnnAndVit(length=30, fold=1, nr = 1, logscale=True)
+    dnn2 = DnnAndVit(length=300, start=800, fold=1, nr=2, logscale=False)
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions, "\nHybrid Prediction:\t",
           dnn2.hybrid_predictions)
 
-
+    korrekt_SleePy = np.sum(dnn2.P_Matrix_labels == dnn2.pure_predictions)
+    korrekt_hybrid = np.sum(dnn2.P_Matrix_labels == dnn2.hybrid_predictions)
+    print("Korrekt SleePy: ", korrekt_SleePy, " Korrekt Hybrid: ", korrekt_hybrid)
+    print("Korrekt SleePy: ", korrekt_SleePy/dnn2.length, "Korrekt Hybrid: ", korrekt_hybrid/dnn2.length)
 
 
 if __name__ == '__main__':
