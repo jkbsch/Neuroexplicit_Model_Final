@@ -40,6 +40,8 @@ A.append([[6, 7, 8], [9, 10, 11]])
 A = [1, 2, 3, 4, 5, 6]
 print(A[0:2])
 print(A[2:4])"""
-A = np.array([1, 2, 3])
+"""A = np.array([1, 2, 3])
 B = np.array([1, 3, 2])
-print(np.sum(A==B))
+print(np.sum(A==B))"""
+for i in range(1,10):
+    print(i)
