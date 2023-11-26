@@ -40,8 +40,8 @@ class DnnAndVit:
 
     def load_P_Matrix(self):
         P_path = (
-                "./Probability_Data/" + self.dataset + "/_dataset_" + self.dataset + "_set_" + self.used_set + "_fold_" + str(
-            self.fold) + "_nr_" + str(self.nr))
+                "./Probability_Data/" + self.dataset + "/_dataset_" + self.dataset + "_set_" + self.used_set +
+                "_fold_" + str(self.fold) + "_nr_" + str(self.nr))
 
         self.P_Matrix_labels = np.loadtxt(P_path + "_labels.txt", delimiter=",", dtype=int)
         self.P_Matrix_probs = np.loadtxt(P_path + "_probs.txt", delimiter=",")
@@ -56,12 +56,12 @@ class DnnAndVit:
             self.length = length
 
         elif length > len(self.P_Matrix_labels):
-            l = len(self.P_Matrix_labels)
+            length = len(self.P_Matrix_labels)
             if self.print_info:
                 print(
                     "[INFO]: Length is higher than data length. Length is set to the length of the input file: " + str(
-                        l))
-            self.length = l
+                        length))
+            self.length = length
         else:
             self.length = len(self.P_Matrix_labels)
             if self.print_info:
@@ -99,7 +99,8 @@ class DnnAndVit:
         self.pure_predictions = self.pure_predictions[beg:end]
 
     def hybrid_predictions(self):
-        vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha)
+        vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
+                      print_info=self.print_info)
         result = vit.x
         return result
 

@@ -2,14 +2,14 @@ import DNN_and_Vit
 
 
 def set_alphas(start_alpha, end_alpha, step):
-    start_alpha = int(start_alpha / step)
-    end_alpha = int(end_alpha / step) +1
+    start_alpha = int(round(start_alpha / step))
+    end_alpha = int(round(end_alpha / step)) + 1
     return start_alpha, end_alpha, step
 
 
 class OptimizeAlpha:
 
-    def __init__(self, start_alpha=0, end_alpha=1, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
+    def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
                  used_set='train', print_all_results=False):
 
         self.best_correct = 0
@@ -69,10 +69,11 @@ class OptimizeAlpha:
             sum_length = 0
             alpha = alpha * self.step
 
-            for fold in range(1, self.end_fold+1):
-                for nr in range(1, self.end_nr+1):
-                    dnn_vit = DNN_and_Vit.DnnAndVit(start=0, length=None, dataset="Sleep-EDF-2013", fold=fold, nr=nr,
-                                                    used_set="train", trans_matr="EDF_2013", alpha=alpha, infos=False)
+            for fold in range(1, self.end_fold + 1):
+                for nr in range(1, self.end_nr + 1):
+                    dnn_vit = DNN_and_Vit.DnnAndVit(start=0, length=None, dataset=self.dataset, fold=fold, nr=nr,
+                                                    used_set="train", trans_matr=self.trans_matrix, alpha=alpha,
+                                                    print_info=False)
                     sum_correct += dnn_vit.korrekt_hybrid
                     sum_length += dnn_vit.length
                     if self.print_all_results:
@@ -88,12 +89,13 @@ class OptimizeAlpha:
             print("alpha:", alpha, "best alpha: ", self.alpha, "correct:", sum_correct, "accuracy",
                   sum_correct / sum_length)
 
-        print("best alpha:", self.alpha)
+        print("best alpha between", self.start_alpha*self.step, "and", (self.end_alpha - 1) *self.step, "is: ", self.alpha)
         print("best accuracy:", self.best_correct / self.length)
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.1, end_alpha=0.1,print_all_results=True, trans_matrix='edf-2013-and-edf-2018')
+    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1.0, print_all_results=False,
+                  trans_matrix='edf-2013-and-edf-2018')
 
 
 if __name__ == "__main__":
