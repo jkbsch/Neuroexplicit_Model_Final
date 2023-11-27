@@ -40,15 +40,17 @@ class DnnAndVit:
         return a
 
     def load_P_Matrix(self):
-        if (self.checkpoints == "given"):
+        if self.checkpoints == "given":
             chkpt = ""
-        elif (self.checkpoints == "own"):
+        elif self.checkpoints == "own":
             chkpt = "Own-"
         else:
             if self.print_info:
-                print("[INFO]: checkpoints must be chosen between 'given' or 'own'. No checkpoints were (correctly) chosen. default is set to 'given'")
+                print("[INFO]: checkpoints must be chosen between 'given' or 'own'. No checkpoints were (correctly) "
+                      "chosen. default is set to 'given'")
             chkpt = ""
-        P_path = ("./" + chkpt + "Probability_Data/" + chkpt + self.dataset + "-" + self.used_set + "/_dataset_" + self.dataset + "_set_" + self.used_set + "_fold_" + str(self.fold) + "_nr_" + str(self.nr))
+        P_path = ("./" + chkpt + "Probability_Data/" + chkpt + self.dataset + "-" + self.used_set + "/_dataset_" +
+                  self.dataset + "_set_" + self.used_set + "_fold_" + str(self.fold) + "_nr_" + str(self.nr))
 
         self.P_Matrix_labels = np.loadtxt(P_path + "_labels.txt", delimiter=",", dtype=int)
         self.P_Matrix_probs = np.loadtxt(P_path + "_probs.txt", delimiter=",")
@@ -108,12 +110,12 @@ class DnnAndVit:
     def hybrid_predictions(self):
         vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
                       print_info=self.print_info)
-        result = vit.x
-        return result
+        return vit.x
 
 
 def main():
-    dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='test', logscale=False, alpha=0.1, checkpoints='given', dataset = 'Sleep-EDF-2018')
+    dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='test', logscale=False, alpha=0.1,
+                     checkpoints='given', dataset='Sleep-EDF-2018')
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
           "\nHybrid Prediction:\t",
