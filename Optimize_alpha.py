@@ -23,6 +23,7 @@ class OptimizeAlpha:
         self.step = step
         self.dataset, self.trans_matrix = self.set_dataset(dataset, trans_matrix)
 
+
         self.alpha = 0
 
         self.optim()
@@ -43,7 +44,7 @@ class OptimizeAlpha:
                 self.end_fold = 10
                 self.end_nr = 122
         else:
-            print("[INFO]: Dataset is not or incorrectly defined. Dataset is set to Sleep EDF 2013")
+            print("[INFO]: Dataset is not or incorrectly defined. Dataset is set to Sleep-EDF-2013")
             dataset = 'Sleep-EDF-2013'
             if self.used_set == 'test':
                 self.end_fold = 20
@@ -52,10 +53,10 @@ class OptimizeAlpha:
                 self.end_fold = 20
                 self.end_nr = 32
 
-        if trans_matrix == 'EDF_2013' or 'EDF_2018' or 'edf-2013-and-edf-2018':
+        if (trans_matrix == 'EDF_2013' or trans_matrix == 'EDF_2018' or trans_matrix == 'edf-2013-and-edf-2018'):
             return dataset, trans_matrix
         elif trans_matrix is not None:
-            print("transmatrix was not defined. It is set to the one according to the dataset")
+            print("[INFO]: transmatrix was not (correctly) defined. It is set to the one according to the dataset")
 
         if dataset == 'Sleep-EDF-2013':
             return dataset, 'EDF_2013'
@@ -71,9 +72,10 @@ class OptimizeAlpha:
 
             for fold in range(1, self.end_fold + 1):
                 for nr in range(1, self.end_nr + 1):
-                    dnn_vit = DNN_and_Vit.DnnAndVit(start=0, length=None, dataset=self.dataset, fold=fold, nr=nr,
-                                                    used_set="train", trans_matr=self.trans_matrix, alpha=alpha,
-                                                    print_info=False)
+                    if(self.dataset == 'Sleep-EDF-2013' and fold==14 and nr ==1):
+                        continue
+                    dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=fold, nr=nr, used_set=self.used_set,
+                                                    trans_matr=self.trans_matrix, alpha=alpha, print_info=False)
                     sum_correct += dnn_vit.korrekt_hybrid
                     sum_length += dnn_vit.length
                     if self.print_all_results:
@@ -94,9 +96,11 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1.0, print_all_results=False,
+    OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1.0, print_all_results=False,
                   trans_matrix='edf-2013-and-edf-2018')
 
 
 if __name__ == "__main__":
     main()
+# warum ist accuracy so hoch? Vielleicht weil nur 30 min wake eingerechnet werden sollen?
+# warum ging es, als ich andere Werte für Fold genommen hatte?
