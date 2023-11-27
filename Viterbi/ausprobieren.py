@@ -43,5 +43,5 @@ print(A[2:4])"""
 """A = np.array([1, 2, 3])
 B = np.array([1, 3, 2])
 print(np.sum(A==B))"""
-for i in range(1,10):
-    print(i)
+"""for i in range(1,10):
+    print(i)"""

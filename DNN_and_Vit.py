@@ -4,7 +4,7 @@ from Viterbi.Viterbi_Algorithm import *
 class DnnAndVit:
 
     def __init__(self, dataset="Sleep-EDF-2013", fold=1, nr=0, used_set="train", trans_matr="edf-2013-and-edf-2018",
-                 length=None, start=None, logscale=True, alpha=None, print_info=True):
+                 length=None, start=None, logscale=True, alpha=None, print_info=True, checkpoints='given'):
         self.P_Matrix_labels = None
         self.P_Matrix_probs = None
         self.start = None
@@ -18,6 +18,7 @@ class DnnAndVit:
         self.logscale = logscale
         self.alpha = alpha
         self.print_info = print_info
+        self.checkpoints = checkpoints
 
         self.Transition_Matrix = self.load_Transition_Matrix()
         self.load_P_Matrix()
@@ -39,9 +40,15 @@ class DnnAndVit:
         return a
 
     def load_P_Matrix(self):
-        P_path = (
-                "./Probability_Data/" + self.dataset + "/_dataset_" + self.dataset + "_set_" + self.used_set +
-                "_fold_" + str(self.fold) + "_nr_" + str(self.nr))
+        if (self.checkpoints == "given"):
+            chkpt = ""
+        elif (self.checkpoints == "own"):
+            chkpt = "Own-"
+        else:
+            if self.print_info:
+                print("[INFO]: checkpoints must be chosen between 'given' or 'own'. No checkpoints were (correctly) chosen. default is set to 'given'")
+            chkpt = ""
+        P_path = ("./" + chkpt + "Probability_Data/" + chkpt + self.dataset + "-" + self.used_set + "/_dataset_" + self.dataset + "_set_" + self.used_set + "_fold_" + str(self.fold) + "_nr_" + str(self.nr))
 
         self.P_Matrix_labels = np.loadtxt(P_path + "_labels.txt", delimiter=",", dtype=int)
         self.P_Matrix_probs = np.loadtxt(P_path + "_probs.txt", delimiter=",")
@@ -106,7 +113,7 @@ class DnnAndVit:
 
 
 def main():
-    dnn2 = DnnAndVit(length=None, start=-20, fold=2, nr=0, used_set='test', logscale=False, alpha=0.1)
+    dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='test', logscale=False, alpha=0.1, checkpoints='given', dataset = 'Sleep-EDF-2018')
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
           "\nHybrid Prediction:\t",
