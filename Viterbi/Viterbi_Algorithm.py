@@ -29,7 +29,7 @@ class Viterbi:
             c.f. T2 to find the most likely path to get there) the x_j-1 of the most likely path so far
     """
 
-    def __init__(self, A, P, Pi=None, logscale=False, alpha=None, print_info=True):
+    def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True):
         if torch.is_tensor(A):
             self.is_torch = True
         else:
@@ -39,6 +39,9 @@ class Viterbi:
         self.P = P
         self.logscale = logscale
         self.print_info = print_info
+
+        if return_log is None: self.return_log = self.logscale
+        else: self.return_log = return_log
 
         # Cardinality of the state space
         self.K = A.shape[0]
@@ -137,8 +140,17 @@ class Viterbi:
         for i in reversed(range(1, self.T)):
             x[i - 1] = T2[x[i], i]
 
-        # if logscale:
-        #    T1 = np.exp(T1)
+        if self.logscale != self.return_log:
+            if self.return_log:
+                if self.is_torch:
+                    T1 = torch.log(T1)
+                else:
+                    T1 = np.log(T1)
+            else:
+                if self.is_torch:
+                    T1 = torch.exp(T1)
+                else:
+                    T1 = np.exp(T1)
 
         return x, T1, T2
 
@@ -161,13 +173,13 @@ def main():
     Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64)
     P1 = torch.from_numpy(P).to(dtype=torch.float64)
 
-    Viterbi_1 = Viterbi(A, P, Pi, logscale=False)
-    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=True)
+    Viterbi_1 = Viterbi(A, P, Pi, logscale=False, return_log=True)
+    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=False, return_log=True)
 
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
     x_2, T1_2, T2_2 = Viterbi_2.x.numpy(), Viterbi_2.T1.numpy(), Viterbi_2.T2.numpy()
 
-    print(x_1 == x_2, np.round(T1_1, 4) == np.round(np.exp(T1_2), 4), T2_1 == T2_2)
+    print(x_1 == x_2, np.round(T1_1, 4) == np.round((T1_2), 4), T2_1 == T2_2)
 
 
 if __name__ == "__main__":

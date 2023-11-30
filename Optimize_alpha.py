@@ -56,7 +56,7 @@ class OptimizeAlpha:
                 self.end_fold = 20
                 self.end_nr = 32
 
-        if trans_matrix == 'EDF_2013' or trans_matrix == 'EDF_2018' or trans_matrix == 'edf-2013-and-edf-2018':
+        if trans_matrix == 'EDF_2013' or trans_matrix == 'EDF_2018' or trans_matrix == 'edf-2013-and-edf-2018' or trans_matrix == 'first_optimized_trans_matrix':
             return dataset, trans_matrix
         elif trans_matrix is not None:
             print("[INFO]: transmatrix was not (correctly) defined. It is set to the one according to the dataset")
@@ -103,9 +103,8 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.0, end_alpha=1.0, print_all_results=False,
-                  trans_matrix=None)
-
+    OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=0.5, print_all_results=False,
+                  trans_matrix='first_optimized_trans_matrix')
 
 if __name__ == "__main__":
     main()

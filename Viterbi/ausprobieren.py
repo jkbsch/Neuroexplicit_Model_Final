@@ -49,9 +49,14 @@ print(np.sum(A==B))"""
 """A = torch.tensor([1], dtype = torch.int64)
 print(torch.is_tensor(A))"""
 
-A = np.array([[1, 2, 3],[4, 5, 6]])
+"""A = np.array([[1, 2, 3],[4, 5, 6]])
 B = torch.from_numpy(A)
 print(A.shape[0])
 print(A)
 print(type(B.shape[0]))
-print(len(B))
+print(len(B))"""
+
+A = torch.tensor([[2, 2, 2],[4,4,4]], dtype=torch.float64)
+print(A.shape)
+print(A)
+print(A.div(A.sum(dim=0)))
