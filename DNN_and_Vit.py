@@ -108,14 +108,17 @@ class DnnAndVit:
         self.pure_predictions = self.pure_predictions[beg:end]
 
     def hybrid_predictions(self):
-        vit = Viterbi(A=torch.from_numpy(self.Transition_Matrix), P=torch.from_numpy(self.P_Matrix_probs), logscale=self.logscale, alpha=self.alpha,
+        """vit = Viterbi(A=torch.from_numpy(self.Transition_Matrix), P=torch.from_numpy(self.P_Matrix_probs), logscale=self.logscale, alpha=self.alpha,
+                      print_info=self.print_info)
+        return vit.x.numpy()"""
+        vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
                       print_info=self.print_info)
         return vit.x
 
 
 def main():
-    dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='test', logscale=False, alpha=None,
-                     checkpoints='given', dataset='Sleep-EDF-2018')
+    dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='train', logscale=True, alpha=None,
+                     checkpoints='given', dataset='Sleep-EDF-2013')
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
           "\nHybrid Prediction:\t",
