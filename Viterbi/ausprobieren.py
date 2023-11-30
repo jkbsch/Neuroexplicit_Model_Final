@@ -57,6 +57,9 @@ print(type(B.shape[0]))
 print(len(B))"""
 
 A = torch.tensor([[2, 2, 2],[4,4,4]], dtype=torch.float64)
-print(A.shape)
+B = torch.tensor([[3, 3, 3], [5, 5, 5]])
 print(A)
-print(A.div(A.sum(dim=0)))
+print(B)
+C = [A]
+C.append(B)
+print(C)

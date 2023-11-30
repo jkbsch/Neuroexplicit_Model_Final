@@ -101,7 +101,6 @@ class Viterbi:
             T1[:, 0] = self.Pi * self.P[0]
 
         T2[:, 0] = 0
-        # print("T1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
 
         # Iterate through the observations updating the tracking tables
         for i in range(1, self.T):
@@ -173,7 +172,7 @@ def main():
     Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64)
     P1 = torch.from_numpy(P).to(dtype=torch.float64)
 
-    Viterbi_1 = Viterbi(A, P, Pi, logscale=False, return_log=True)
+    Viterbi_1 = Viterbi(A, P, Pi, logscale=True, return_log=True)
     Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=False, return_log=True)
 
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
