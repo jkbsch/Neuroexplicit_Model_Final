@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 """a = np.zeros((3,2))
 print(a)
@@ -45,3 +46,5 @@ B = np.array([1, 3, 2])
 print(np.sum(A==B))"""
 """for i in range(1,10):
     print(i)"""
+A = torch.tensor([1], dtype = torch.int64)
+print(torch.is_tensor(A))

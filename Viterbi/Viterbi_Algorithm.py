@@ -1,6 +1,7 @@
 # Source: https://stackoverflow.com/questions/9729968/python-implementation-of-viterbi-algorithm checked 05th Oct
 # 2023 - adapted
 import numpy as np
+import torch
 
 
 class Viterbi:
@@ -27,7 +28,12 @@ class Viterbi:
             c.f. T2 to find the most likely path to get there) the x_j-1 of the most likely path so far
     """
 
-    def __init__(self, A, P, Pi=None, logscale=False, alpha=None, print_info = True):
+    def __init__(self, A, P, Pi=None, logscale=False, alpha=None, print_info=True):
+        if(torch.is_tensor(A)):
+            self.is_torch = True
+        else:
+            self.is_torch = False
+
         self.A = A
         self.P = P
         self.logscale = logscale
@@ -54,9 +60,7 @@ class Viterbi:
             return 0.5
         elif self.logscale is False:
             if self.print_info:
-                print(
-                    "[INFO]: changing alpha without calculation using logscale is not implemented. Calculation is done "
-                    "using logscale.")
+                print("[INFO]: Specifying alpha with logscale = False is not implemented. Logscale is set to True.")
             self.logscale = True
             return alpha
         else:
