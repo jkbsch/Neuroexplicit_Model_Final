@@ -7,7 +7,8 @@
 
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from DNN_and_Vit import *
+from HMM_utils import *
+from Viterbi.Viterbi_Algorithm import *
 
 
 # Linear regression
@@ -21,8 +22,6 @@ class First_Optim_Transmatrix():
         # Device configuration
         #torch.autograd.set_detect_anomaly(True)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        self.source = DnnAndVit(print_info=False)
 
         self.sleepy, self.labels = self.load_data()
         self.one_hot = nn.functional.one_hot(self.labels)
@@ -41,11 +40,11 @@ class First_Optim_Transmatrix():
 
         self.training()
 
-    class TrainSleepDataset(Dataset):
+    """class TrainSleepDataset(Dataset):
         def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given'):
             self.dataset = dataset
             self.checkpoints = checkpoints
-            len = self.len(data)
+            len = self.len(data)"""
 
 
 
@@ -56,15 +55,16 @@ class First_Optim_Transmatrix():
         """X = torch.tensor([1, 2, 3, 4], dtype=torch.float32)
         Y = torch.tensor([2, 4, 6, 8], dtype=torch.float32)
         return X, Y"""
-        labels = torch.from_numpy(self.source.P_Matrix_labels).to(device=self.device, dtype=torch.int64)
-        sleepy = torch.from_numpy(self.source.P_Matrix_probs).to(device=self.device, dtype=torch.float64)
+        P_Matrix_labels, P_Matrix_probs = load_P_Matrix()
+        labels = torch.from_numpy(P_Matrix_labels).to(device=self.device, dtype=torch.int64)
+        sleepy = torch.from_numpy(P_Matrix_probs).to(device=self.device, dtype=torch.float64)
         return sleepy, labels
 
     def trainable(self):
         # 1) Design Model: Weights to optimize and forward function
         """w = torch.tensor(0.0, dtype=torch.float32, requires_grad=True)
         return w"""
-        trans = torch.from_numpy(self.source.Transition_Matrix).to(device=self.device, dtype=torch.float64)
+        trans = torch.from_numpy(load_Transition_Matrix()).to(device=self.device, dtype=torch.float64)
         trans.requires_grad_()
         return trans
 

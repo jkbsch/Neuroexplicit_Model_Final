@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def load_Transition_Matrix(trans_matr):
+def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018"):
     Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
     return transitionmatrix
