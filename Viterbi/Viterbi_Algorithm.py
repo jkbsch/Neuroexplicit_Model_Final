@@ -4,6 +4,7 @@ import numpy as np
 import torch
 
 
+
 class Viterbi:
     """
             Return the MAP estimate of state trajectory of Hidden Markov Model.
@@ -29,7 +30,7 @@ class Viterbi:
     """
 
     def __init__(self, A, P, Pi=None, logscale=False, alpha=None, print_info=True):
-        if(torch.is_tensor(A)):
+        if torch.is_tensor(A):
             self.is_torch = True
         else:
             self.is_torch = False
@@ -42,22 +43,33 @@ class Viterbi:
         # Cardinality of the state space
         self.K = A.shape[0]
         # Initialize the priors with default (uniform dist) if not given by caller
-        self.Pi = Pi if Pi is not None else np.full(self.K, 1 / self.K)
+        if self.is_torch:
+            self.Pi = Pi if Pi is not None else torch.full(size=(self.K,), fill_value=1 / self.K)
+        else:
+            self.Pi = Pi if Pi is not None else np.full(self.K, 1 / self.K)
 
         self.alpha = self.alpha(alpha)
 
         self.T = len(P)
 
         if self.logscale:  # convert to logscale
-            self.A = np.log(self.A)
-            self.P = np.log(self.P)
-            self.Pi = np.log(self.Pi)
+            if self.is_torch:
+                self.A = torch.log(self.A)
+                self.P = torch.log(self.P)
+                self.Pi = torch.log(self.Pi)
+            else:
+                self.A = np.log(self.A)
+                self.P = np.log(self.P)
+                self.Pi = np.log(self.Pi)
 
         (self.x, self.T1, self.T2) = self.calc_viterbi()
 
     def alpha(self, alpha):
         if alpha is None:
-            return 0.5
+            if self.is_torch:
+                return torch.tensor([0.5], dtype=torch.float64)
+            else:
+                return 0.5
         elif self.logscale is False:
             if self.print_info:
                 print("[INFO]: Specifying alpha with logscale = False is not implemented. Logscale is set to True.")
@@ -68,8 +80,12 @@ class Viterbi:
 
     def calc_viterbi(self):
 
-        T1 = np.empty((self.K, self.T), 'd')
-        T2 = np.empty((self.K, self.T), 'B')
+        if self.is_torch:
+            T1 = torch.empty((self.K, self.T), dtype=torch.float64)
+            T2 = torch.empty((self.K, self.T), dtype=torch.int)
+        else:
+            T1 = np.empty((self.K, self.T), 'd')
+            T2 = np.empty((self.K, self.T), 'B')
 
         # Initialize the tracking tables from first observation
         # T1[:, 0] = Pi * B[:, y[0]]
@@ -87,26 +103,37 @@ class Viterbi:
         # Iterate through the observations updating the tracking tables
         for i in range(1, self.T):
             if self.logscale:
-                T1[:, i] = np.max(
-                    T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T,
-                    1)  # Add the probability
-                # (logscale) of the last state's occurrence to the transition probability and to the probability for
-                # the current state from the DNN. Find the state from the previous period that maximizes this
-                # probability.
-                T2[:, i] = np.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                if self.is_torch:
+                    T1[:, i] = torch.max(T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
+                    T2[:, i] = torch.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                else:
+                    T1[:, i] = np.max(T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T,1)
+                    # Add the probability
+                    # (logscale) of the last state's occurrence to the transition probability and to the probability for
+                    # the current state from the DNN. Find the state from the previous period that maximizes this
+                    # probability.
+                    T2[:, i] = np.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
 
             else:
-                T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, i]).T,
-                                  1)  # Multiply the probability of the last state's occurrence
-                # with the transition probability and with the probability for the current state from the DNN.
-                # Find the state from the previous period that maximizes this probability.
+                if self.is_torch:
+                    T1[:, i] = torch.max(T1[:, i - 1] * self.A.T * (self.P[None, i]).T, 1).values
+                    T2[:, i] = torch.argmax(T1[:, i - 1] * self.A.T, 1)
+                else:
+                    T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, i]).T,1)  # Multiply the probability of the last state's occurrence
+                    # with the transition probability and with the probability for the current state from the DNN.
+                    # Find the state from the previous period that maximizes this probability.
 
-                T2[:, i] = np.argmax(T1[:, i - 1] * self.A.T, 1)
+                    T2[:, i] = np.argmax(T1[:, i - 1] * self.A.T, 1)
             # print("\n i:",i, "\nT1: \n", T1,"\n \n T2: \n ", T2, "\n\n")
 
         # Build the output, optimal model trajectory
-        x = np.empty(self.T, 'B')
-        x[-1] = np.argmax(T1[:, self.T - 1])
+        if self.is_torch:
+            x = torch.empty(self.T, dtype=torch.int)
+            x[-1] = torch.argmax(T1[:, self.T - 1])
+        else:
+            x = np.empty(self.T, 'B')
+            x[-1] = np.argmax(T1[:, self.T - 1])
+
         for i in reversed(range(1, self.T)):
             x[i - 1] = T2[x[i], i]
 
@@ -130,14 +157,17 @@ def main():
     Pi = np.array([0.8, 0.2])
     P = np.array([[.3, .3], [0.8, 0.3], [0.4, 0.6]])
 
-    Viterbi_1 = Viterbi(A, P, Pi, False)
-    Viterbi_2 = Viterbi(A, P, Pi, True)
+    A1 = torch.from_numpy(A).to(dtype=torch.float64)
+    Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64)
+    P1 = torch.from_numpy(P).to(dtype=torch.float64)
+
+    Viterbi_1 = Viterbi(A, P, Pi, logscale=False)
+    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=True)
 
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
-    x_2, T1_2, T2_2 = Viterbi_2.x, Viterbi_2.T1, Viterbi_2.T2
+    x_2, T1_2, T2_2 = Viterbi_2.x.numpy(), Viterbi_2.T1.numpy(), Viterbi_2.T2.numpy()
 
     print(x_1 == x_2, np.round(T1_1, 4) == np.round(np.exp(T1_2), 4), T2_1 == T2_2)
-    print(x_1)
 
 
 if __name__ == "__main__":
