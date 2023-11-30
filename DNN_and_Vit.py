@@ -1,4 +1,5 @@
 from Viterbi.Viterbi_Algorithm import *
+from HMM_utils import *
 
 
 class DnnAndVit:
@@ -20,9 +21,9 @@ class DnnAndVit:
         self.print_info = print_info
         self.checkpoints = checkpoints
 
-        self.Transition_Matrix = self.load_Transition_Matrix()
-        self.load_P_Matrix()
-        self.pure_predictions = self.pure_predictions()
+        self.Transition_Matrix = load_Transition_Matrix(trans_matr)
+        self.P_Matrix_labels, self.P_Matrix_probs = load_P_Matrix(checkpoints, dataset, used_set, fold, nr, print_info)
+        self.pure_predictions = pure_predictions(self.P_Matrix_probs)
 
         self.set_length(length)
         self.set_start(start)
@@ -34,29 +35,7 @@ class DnnAndVit:
         self.korrekt_SleePy = np.sum(self.P_Matrix_labels == self.pure_predictions)
         self.korrekt_hybrid = np.sum(self.P_Matrix_labels == self.hybrid_predictions)
 
-    def load_Transition_Matrix(self):
-        Trans_path = "./Transition_Matrix/" + self.trans_matr + ".txt"
-        a = np.loadtxt(Trans_path, delimiter=",")
-        return a
 
-    def load_P_Matrix(self):
-        if self.checkpoints == "given":
-            chkpt = ""
-        elif self.checkpoints == "own":
-            chkpt = "Own-"
-        else:
-            if self.print_info:
-                print("[INFO]: checkpoints must be chosen between 'given' or 'own'. No checkpoints were (correctly) "
-                      "chosen. default is set to 'given'")
-            chkpt = ""
-        P_path = ("./" + chkpt + "Probability_Data/" + chkpt + self.dataset + "-" + self.used_set + "/_dataset_" +
-                  self.dataset + "_set_" + self.used_set + "_fold_" + str(self.fold) + "_nr_" + str(self.nr))
-
-        self.P_Matrix_labels = np.loadtxt(P_path + "_labels.txt", delimiter=",", dtype=int)
-        self.P_Matrix_probs = np.loadtxt(P_path + "_probs.txt", delimiter=",")
-
-    def pure_predictions(self):
-        return np.argmax(self.P_Matrix_probs, axis=1)
 
     def set_length(self, length):
         if length is None:

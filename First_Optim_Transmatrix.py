@@ -6,6 +6,7 @@
 #       - Update weights
 
 import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
 from DNN_and_Vit import *
 
 
@@ -39,6 +40,14 @@ class First_Optim_Transmatrix():
         self.optimizer = torch.optim.Adam([self.trans], lr=self.learning_rate)
 
         self.training()
+
+    class TrainSleepDataset(Dataset):
+        def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given'):
+            self.dataset = dataset
+            self.checkpoints = checkpoints
+            len = self.len(data)
+
+
 
 
 
