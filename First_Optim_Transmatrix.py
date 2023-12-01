@@ -123,7 +123,8 @@ class FirstOptimTransMatrix:
 
     def trainable(self):
         trans = torch.from_numpy(load_Transition_Matrix(self.trans_matrix)).to(device=self.device, dtype=torch.float64)
-        trans.requires_grad_()
+        if self.train_transition:
+            trans.requires_grad_()
 
         if self.train_alpha:
             if self.alpha is None:
@@ -233,8 +234,8 @@ def main():
      #   FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005, print_results=False,
       #                        train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False )
     for fold in range(1, 11):
-        FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.001, print_results=True,
-                              train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False)
+        FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.1, print_results=True,
+                              train_alpha=True, train_transition=False, alpha=0.9, fold=fold, save=True, save_unsuccesful=False)
 
 
 if __name__ == "__main__":
