@@ -202,8 +202,9 @@ class FirstOptimTransMatrix:
 
 
 def main():
-    optimized_trans_matrix = FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=90, learning_rate=0.00005,
-                                                   train_alpha=False, alpha=0.5, fold=1, save=True)
+    for fold in range(1, 21):
+        FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005,
+                              train_alpha=False, alpha=0.5, fold=fold, save=True)
 
 
 if __name__ == "__main__":

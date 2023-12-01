@@ -56,10 +56,12 @@ print(A)
 print(type(B.shape[0]))
 print(len(B))"""
 
-A = torch.tensor([[2, 2, 2],[4,4,4]], dtype=torch.float64)
+"""A = torch.tensor([[2, 2, 2],[4,4,4]], dtype=torch.float64)
 B = torch.tensor([[3, 3, 3], [5, 5, 5]])
 print(A)
 print(B)
 C = [A]
 C.append(B)
-print(C)
+print(C)"""
+for i in range(2,21):
+    print(i)

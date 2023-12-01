@@ -11,13 +11,14 @@ def set_alphas(start_alpha, end_alpha, step):
 class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
-                 used_set='train', print_all_results=False, checkpoints='given'):
+                 used_set='train', print_all_results=False, checkpoints='given', optimized = False):
 
         self.best_correct = 0
         self.length = 1
         self.used_set = used_set
         self.print_all_results = print_all_results
         self.checkpoints = checkpoints
+        self.optimized = optimized
 
         self.start_alpha, self.end_alpha, self.step = set_alphas(start_alpha, end_alpha, step)
         self.step = step
@@ -37,8 +38,9 @@ class OptimizeAlpha:
                 for nr in range(1, self.end_nr + 1):
                     if (fold, nr) in self.leave_out:
                         continue
+                    trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=fold)
                     dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=fold, nr=nr, used_set=self.used_set,
-                                                    trans_matr=self.trans_matrix, alpha=alpha, print_info=False,
+                                                    trans_matr=trans_matrix, alpha=alpha, print_info=False,
                                                     checkpoints=self.checkpoints)
                     sum_correct += dnn_vit.korrekt_hybrid
                     sum_length += dnn_vit.length
