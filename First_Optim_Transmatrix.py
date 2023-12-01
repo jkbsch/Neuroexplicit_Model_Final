@@ -15,9 +15,9 @@ from Viterbi.Viterbi_Algorithm import *
 
 # here : f = 2 * x
 
-class FirstOptimTransmatrix:
+class FirstOptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1, num_epochs=2,
-                 learning_rate=0.0000001):
+                 learning_rate=0.0000001, alpha=None, train_transition=True, train_alpha=False):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -29,6 +29,9 @@ class FirstOptimTransmatrix:
         self.trans_matrix = self.TrainDataset.trans_matrix
         self.fold = self.TrainDataset.fold
         self.checkpoints = self.TrainDataset.checkpoints
+        self.train_alpha = train_alpha
+        self.alpha = alpha
+        self.train_transition = train_transition
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
                                                  self.fold)
@@ -44,9 +47,14 @@ class FirstOptimTransmatrix:
         # callable function
         self.loss = nn.CrossEntropyLoss()
 
-        self.optimizer = torch.optim.Adam([self.trans], lr=self.learning_rate)
+        train_params = []
+        if train_transition:
+            train_params.append(self.trans)
+        if train_alpha:
+            train_params.append(self.alpha)
+        self.optimizer = torch.optim.Adam(train_params, lr=self.learning_rate)
 
-        self.train()
+        self.training()
 
     class TrainSleepDataset(Dataset):
         def __init__(self, device, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1):
@@ -79,8 +87,13 @@ class FirstOptimTransmatrix:
             self.used_set = 'test'
             self.fold = fold
             self.device = device
-            self.dataset, self.trans_matrix, self.end_fold, self.end_nr, _ = set_dataset('test',
-                                                                                         dataset, trans_matrix)
+            self.dataset, self.trans_matrix, self.end_fold, self.end_nr, self.leave_out = set_dataset('test',
+                                                                                                      dataset,
+                                                                                                      trans_matrix)
+
+            while (self.fold, self.end_nr) in self.leave_out:
+                self.end_nr -= 1
+
             self.test_data_probs = []
             self.test_data_labels = []
             for nr in range(self.end_nr):
@@ -98,50 +111,75 @@ class FirstOptimTransmatrix:
         def __len__(self):
             return self.end_nr
 
-    """def load_data(self):
-        # 0) Training samples
-        P_Matrix_labels, P_Matrix_probs = load_P_Matrix()
-        labels = torch.from_numpy(P_Matrix_labels).to(device=self.device, dtype=torch.int64)
-        sleepy = torch.from_numpy(P_Matrix_probs).to(device=self.device, dtype=torch.float64)
-        return sleepy, labels"""
-
     def trainable(self):
-        # 1) Design Model: Weights to optimize and forward function
-        """w = torch.tensor(0.0, dtype=torch.float32, requires_grad=True)
-        return w"""
         trans = torch.from_numpy(load_Transition_Matrix(self.trans_matrix)).to(device=self.device, dtype=torch.float64)
         trans.requires_grad_()
+
+        if self.train_alpha:
+            if self.alpha is None:
+                self.alpha = 0.5
+            self.alpha = torch.tensor([self.alpha], requires_grad=True, dtype=torch.float64)
+
         return trans
 
     def forward(self, data):
-        res = Viterbi(self.trans, data, logscale=True, return_log=True, print_info=False)
-        res_probs = torch.div(res.T1, torch.sum(res.T1, dim=0))
-        return res.x, res.T1, res_probs
+        res = Viterbi(self.trans, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
+        # res_probs = torch.div(res.T1, torch.sum(res.T1, dim=0))
+        return res.x, res.T1
 
     def train(self):
-        for epoch in range(self.num_epochs):
-            for i, (inputs, targets) in enumerate(self.train_loader):
+        for i, (inputs, targets) in enumerate(self.train_loader):
+            inputs = torch.squeeze(inputs, dim=0)
+            targets = torch.squeeze(targets, dim=0)
+            labels_predicted, y_predicted_unnormalized = self.forward(inputs)
+
+            loss = self.loss(torch.transpose(y_predicted_unnormalized, 0, 1), targets)
+
+            # calculate gradients = backward pass
+            loss.backward()
+
+            # update weights
+            self.optimizer.step()
+
+            # zero the gradients after updating
+            self.optimizer.zero_grad()
+
+            if i == self.TrainDataset.end_nr - 1:
+                # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
+                acc = (labels_predicted == targets).sum().item() / len(labels_predicted)
+                print(f"i = {i + 1} \nTrain Accuracy: {(100 * acc):>0.5f}% Training loss: {loss.item():>7f}\n")
+
+    def test(self, epoch):
+        test_loss, correct = 0, 0
+        with torch.no_grad():
+            for i, (inputs, targets) in enumerate(self.test_loader):
                 inputs = torch.squeeze(inputs, dim=0)
                 targets = torch.squeeze(targets, dim=0)
-                _, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
+                labels_predicted, y_predicted_unnormalized = self.forward(inputs)
 
-                loss = self.loss(torch.transpose(y_predicted_unnormalized, 0, 1), targets)
+                test_loss += self.loss(torch.transpose(y_predicted_unnormalized, 0, 1), targets).item()
+                correct += (labels_predicted == targets).sum().item()/len(labels_predicted)
 
-                # calculate gradients = backward pass
-                loss.backward()
+            test_loss /= self.TestDataset.end_nr
+            correct /= self.TestDataset.end_nr
+            if torch.is_tensor(self.alpha):
+                alpha = self.alpha.item()
+            else:
+                alpha = self.alpha
 
-                # update weights
-                self.optimizer.step()
+            print(
+                f"Epoch: {epoch}, Alpha = {alpha:>0.5f} \n Test Error: \n Accuracy: {(100 * correct):>0.5f}%, "
+                f"Avg loss: {test_loss:>15f} \n")
 
-                # zero the gradients after updating
-                self.optimizer.zero_grad()
-
-                if i % 10 == 0:
-                    print('i ', i + 1, ': new Trans Matrix = ', self.trans, ' loss = ', loss)
+    def training(self):
+        for epoch in range(self.num_epochs):
+            self.train()
+            self.test(epoch)
 
 
 def main():
-    optimized_trans_matrix = FirstOptimTransmatrix(dataset='Sleep-EDF-2018')
+    optimized_trans_matrix = FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=20, learning_rate=0.000000005,
+                                                   train_alpha=False, alpha=0.5, fold=4, save=False)
     """out_name = "./Transition_Matrix/"
     np.savetxt(out_name + "first_optimized_trans_matrix.txt", optimized_trans_matrix.trans.detach().numpy(),
                fmt="%.15f", delimiter=",")"""
