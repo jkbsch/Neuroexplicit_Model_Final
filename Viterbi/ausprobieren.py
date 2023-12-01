@@ -63,5 +63,5 @@ print(B)
 C = [A]
 C.append(B)
 print(C)"""
-for i in range(2,21):
+for i in range(1):
     print(i)

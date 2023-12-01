@@ -71,6 +71,7 @@ class FirstOptimTransMatrix:
             self.device = device
             self.dataset, self.trans_matrix, self.end_fold, self.end_nr, _ = set_dataset('train',
                                                                                          dataset, trans_matrix)
+            self.end_nr +=1
             self.train_data_probs = []
             self.train_data_labels = []
             for nr in range(self.end_nr):
@@ -100,7 +101,7 @@ class FirstOptimTransMatrix:
 
             while (self.fold, self.end_nr) in self.leave_out:
                 self.end_nr -= 1
-
+            self.end_nr +=1
             self.test_data_probs = []
             self.test_data_labels = []
             for nr in range(self.end_nr):
@@ -211,9 +212,9 @@ class FirstOptimTransMatrix:
 
 
 def main():
-    for fold in range(1, 21):
+    for fold in range(14, 21):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005,
-                              train_alpha=False, alpha=0.5, fold=fold, save=False)
+                              train_alpha=False, alpha=0.5, fold=fold, save=True)
 
 
 if __name__ == "__main__":
