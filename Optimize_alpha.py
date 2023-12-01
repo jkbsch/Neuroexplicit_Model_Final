@@ -63,8 +63,8 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=0.5, print_all_results=False,
-                  trans_matrix='EDF_2013')
+    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1, step=0.5, print_all_results=False,
+                  trans_matrix='EDF_2013', optimized=True)
 
 
 if __name__ == "__main__":

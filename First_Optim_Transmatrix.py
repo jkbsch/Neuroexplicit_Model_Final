@@ -18,7 +18,7 @@ from Viterbi.Viterbi_Algorithm import *
 class FirstOptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1, num_epochs=2,
                  learning_rate=0.0000001, alpha=None, train_transition=True, train_alpha=False, save=False,
-                 print_info=True, save_unsuccesful = False):
+                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -34,7 +34,10 @@ class FirstOptimTransMatrix:
         self.alpha = alpha
         self.train_transition = train_transition
         self.print_info = print_info
+        self.print_results = print_results
         self.no_nan = True
+        self.save_unsuccesful = save_unsuccesful
+        self.use_normalized = use_normalized
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
                                                  self.fold)
@@ -58,7 +61,6 @@ class FirstOptimTransMatrix:
         self.optimizer = torch.optim.Adam(train_params, lr=self.learning_rate)
 
         self.successful = self.training()
-        self.save_unsuccesful = save_unsuccesful
 
         if save:
             self.save(save_unsuccesful)
@@ -71,7 +73,7 @@ class FirstOptimTransMatrix:
             self.device = device
             self.dataset, self.trans_matrix, self.end_fold, self.end_nr, _ = set_dataset('train',
                                                                                          dataset, trans_matrix)
-            self.end_nr +=1
+            self.end_nr += 1
             self.train_data_probs = []
             self.train_data_labels = []
             for nr in range(self.end_nr):
@@ -101,7 +103,7 @@ class FirstOptimTransMatrix:
 
             while (self.fold, self.end_nr) in self.leave_out:
                 self.end_nr -= 1
-            self.end_nr +=1
+            self.end_nr += 1
             self.test_data_probs = []
             self.test_data_labels = []
             for nr in range(self.end_nr):
@@ -132,19 +134,27 @@ class FirstOptimTransMatrix:
 
     def forward(self, data):
         res = Viterbi(self.trans, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
-        # res_probs = torch.div(res.T1, torch.sum(res.T1, dim=0))
-        return res.x, res.T1
+        if self.use_normalized:
+            res_probs = torch.div(res.T1, torch.sum(res.T1, dim=0))
+        else:
+            res_probs = None
+        return res.x, res.T1, res_probs
 
     def train(self, epoch):
         for i, (inputs, targets) in enumerate(self.train_loader):
             inputs = torch.squeeze(inputs, dim=0)
             targets = torch.squeeze(targets, dim=0)
-            labels_predicted, y_predicted_unnormalized = self.forward(inputs)
+            labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
-            loss = self.loss(torch.transpose(y_predicted_unnormalized, 0, 1), targets)
+            if self.use_normalized:
+                pred = y_predicted_normalized
+            else:
+                pred = y_predicted_unnormalized
+            loss = self.loss(torch.transpose(pred, 0, 1), targets)
 
             if loss.item() != loss.item():
-                print("[INFO]: loss is NaN, training was stopped. Epoch:" + str(epoch))
+                if self.print_info:
+                    print("[INFO]: loss is NaN, training was stopped. Epoch:" + str(epoch))
                 return False
 
             # calculate gradients = backward pass
@@ -159,7 +169,7 @@ class FirstOptimTransMatrix:
             if i == self.TrainDataset.end_nr - 1:
                 # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
                 acc = (labels_predicted == targets).sum().item() / len(labels_predicted)
-                if self.print_info:
+                if self.print_results:
                     print(f"i = {i + 1} \nTrain Accuracy: {(100 * acc):>0.5f}% Training loss: {loss.item():>7f}\n")
 
             return True
@@ -170,7 +180,7 @@ class FirstOptimTransMatrix:
             for i, (inputs, targets) in enumerate(self.test_loader):
                 inputs = torch.squeeze(inputs, dim=0)
                 targets = torch.squeeze(targets, dim=0)
-                labels_predicted, y_predicted_unnormalized = self.forward(inputs)
+                labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
                 test_loss += self.loss(torch.transpose(y_predicted_unnormalized, 0, 1), targets).item()
                 correct += (labels_predicted == targets).sum().item() / len(labels_predicted)
@@ -182,7 +192,7 @@ class FirstOptimTransMatrix:
             else:
                 alpha = self.alpha
 
-            if self.print_info:
+            if self.print_results:
                 print(f"Epoch: {epoch}, Alpha = {alpha:>0.5f} \n Test Error: \n Accuracy: {(100 * correct):>0.5f}%, "
                       f"Avg loss: {test_loss:>15f} \n")
 
@@ -193,28 +203,38 @@ class FirstOptimTransMatrix:
                 if self.save_unsuccesful:
                     self.no_nan = False
                     continue
-                else: return False
+                else:
+                    return False
             self.test(epoch)
 
         return True
 
     def save(self, save_unsuccessful):
         if self.successful and self.no_nan:
-            out_name = "./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + ".txt"
+            out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
+                        str(self.checkpoints) + ".txt")
             np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
+            if self.print_info:
+                print("[INFO]: Training of fold " + str(self.fold) + " was successful. Data has been saved")
         else:
             if save_unsuccessful:
-                out_name = "./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) +"_unsuccessful.txt"
+                out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) +
+                            "_checkpoints_" + str(self.checkpoints) + "_unsuccessful.txt")
                 np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
-                print("[INFO]: training was not completed. Transition matrix has not passed all epochs.")
+                if self.print_info:
+                    print("[INFO]: training was not completed. Transition matrix has not passed all epochs.")
             else:
-                print("[INFO]: training was not successful. Transition matrix will not be saved.")
+                if self.print_info:
+                    print("[INFO]: training was not successful. Transition matrix will not be saved.")
 
 
 def main():
-    for fold in range(14, 21):
-        FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005,
-                              train_alpha=False, alpha=0.5, fold=fold, save=True)
+    #for fold in range(1, 21):
+     #   FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005, print_results=False,
+      #                        train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False )
+    for fold in range(1, 11):
+        FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.001, print_results=True,
+                              train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False)
 
 
 if __name__ == "__main__":

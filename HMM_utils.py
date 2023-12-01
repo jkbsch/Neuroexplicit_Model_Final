@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True):
+def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True, checkpoints='given'):
 
     if (trans_matr == "edf-2013-and-edf-2018" or trans_matr == 'EDF 2013 and 2018' or trans_matr == '2013 2018' or
             trans_matr == 'Sleep-EDF-2013-And-Sleep-EDF-2018' or trans_matr == 'edf_2013_and_edf_2018'):
@@ -22,9 +22,11 @@ def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, 
         Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
     else:
         if successful:
-            Trans_path = "./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+".txt"
+            Trans_path = ("./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+"_checkpoints_"+checkpoints+
+                          ".txt")
         else:
-            Trans_path = "./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+"_unsuccessful.txt"
+            Trans_path = ("./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+"_checkpoints_"+checkpoints+
+                          "_unsuccessful.txt")
 
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
     return transitionmatrix

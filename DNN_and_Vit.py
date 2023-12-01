@@ -21,7 +21,12 @@ class DnnAndVit:
         self.print_info = print_info
         self.checkpoints = checkpoints
 
-        self.Transition_Matrix = load_Transition_Matrix(trans_matr)
+        if type(trans_matr) == str:
+            self.Transition_Matrix = load_Transition_Matrix(trans_matr)
+        else:
+            self.Transition_Matrix = trans_matr
+
+
         self.P_Matrix_labels, self.P_Matrix_probs = load_P_Matrix(checkpoints, dataset, used_set, fold, nr, print_info)
         self.pure_predictions = pure_predictions(self.P_Matrix_probs)
 
