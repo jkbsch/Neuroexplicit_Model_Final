@@ -136,10 +136,10 @@ class FirstOptimTransMatrix:
     def forward(self, data):
         res = Viterbi(self.trans, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
         if self.use_normalized:
-            res_probs = torch.div(res.T1, torch.sum(res.T1, dim=0))
+            res_normalized = torch.div(res.T1, torch.sum(res.T1, dim=0))
         else:
-            res_probs = None
-        return res.x, res.T1, res_probs
+            res_normalized = None
+        return res.x, res.T1, res_normalized
 
     def train(self, epoch):
         for i, (inputs, targets) in enumerate(self.train_loader):
@@ -198,6 +198,8 @@ class FirstOptimTransMatrix:
                       f"Avg loss: {test_loss:>15f} \n")
 
     def training(self):
+        if self.print_info:
+            print("[INFO]: Data has been loaded. Training starts.")
         for epoch in range(self.num_epochs):
             successful = self.train(epoch)
             if not successful:
@@ -216,7 +218,8 @@ class FirstOptimTransMatrix:
                         str(self.checkpoints) + ".txt")
             np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
             if self.print_info:
-                print("[INFO]: Training of fold " + str(self.fold) + " was successful. Data has been saved")
+                print("[INFO]: Training of fold " + str(self.fold) + " of the dataset '" + self.dataset +
+                      "' was successful. Data has been saved")
         else:
             if save_unsuccessful:
                 out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) +
@@ -230,12 +233,13 @@ class FirstOptimTransMatrix:
 
 
 def main():
-    #for fold in range(1, 21):
-     #   FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005, print_results=False,
-      #                        train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False )
+    for fold in range(1, 21):
+        FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00005, print_results=False,
+                              train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False, use_normalized=True)
     for fold in range(1, 11):
-        FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.1, print_results=True,
-                              train_alpha=True, train_transition=False, alpha=0.9, fold=fold, save=True, save_unsuccesful=False)
+        FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.00005, print_results=False,
+                              train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True, use_normalized=True,
+                              save_unsuccesful=False)
 
 
 if __name__ == "__main__":

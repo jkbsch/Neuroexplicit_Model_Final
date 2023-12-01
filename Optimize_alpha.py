@@ -1,4 +1,5 @@
 import DNN_and_Vit
+import utils
 from HMM_utils import *
 
 
@@ -11,7 +12,7 @@ def set_alphas(start_alpha, end_alpha, step):
 class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
-                 used_set='train', print_all_results=False, checkpoints='given', optimized = False):
+                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result = True):
 
         self.best_correct = 0
         self.length = 1
@@ -19,6 +20,7 @@ class OptimizeAlpha:
         self.print_all_results = print_all_results
         self.checkpoints = checkpoints
         self.optimized = optimized
+        self.evaluate_result = evaluate_result
 
         self.start_alpha, self.end_alpha, self.step = set_alphas(start_alpha, end_alpha, step)
         self.step = step
@@ -34,8 +36,17 @@ class OptimizeAlpha:
             sum_length = 0
             alpha = alpha * self.step
 
+            if self.evaluate_result:
+                config = {'dataset': self.dataset,
+                          'alpha': alpha,
+                          'set': self.used_set}
+                pred = []
+                labels = []
+
+
             for fold in range(1, self.end_fold + 1):
-                for nr in range(1, self.end_nr + 1):
+
+                for nr in range(0, self.end_nr + 1):
                     if (fold, nr) in self.leave_out:
                         continue
                     trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=fold)
@@ -48,6 +59,14 @@ class OptimizeAlpha:
                         print("Korrekt SleePy: ", dnn_vit.korrekt_SleePy, " Korrekt Hybrid: ", dnn_vit.korrekt_hybrid)
                         print("Korrekt SleePy: ", dnn_vit.korrekt_SleePy / dnn_vit.length, "Korrekt Hybrid: ",
                               dnn_vit.korrekt_hybrid / dnn_vit.length)
+                    if self.evaluate_result:
+                        pred.extend(dnn_vit.hybrid_predictions)
+                        labels.extend(dnn_vit.P_Matrix_labels)
+
+            if self.evaluate_result:
+                if fold == self.end_fold:
+                    summarize_result(config=config, save=False, fold=fold, y_pred=pred, y_true=labels)
+
 
             if sum_correct > self.best_correct:
                 self.alpha = alpha
@@ -63,8 +82,8 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1, step=0.5, print_all_results=False,
-                  trans_matrix='EDF_2013', optimized=True)
+    OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.0, end_alpha=0.5, step=0.5,
+                  print_all_results=False, trans_matrix='EDF_2018', optimized=False)
 
 
 if __name__ == "__main__":
