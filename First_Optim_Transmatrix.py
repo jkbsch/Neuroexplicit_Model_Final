@@ -18,7 +18,7 @@ from Viterbi.Viterbi_Algorithm import *
 class FirstOptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1, num_epochs=2,
                  learning_rate=0.0000001, alpha=None, train_transition=True, train_alpha=False, save=False,
-                 print_info=True):
+                 print_info=True, save_unsuccesful = False):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -34,6 +34,7 @@ class FirstOptimTransMatrix:
         self.alpha = alpha
         self.train_transition = train_transition
         self.print_info = print_info
+        self.no_nan = True
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
                                                  self.fold)
@@ -57,9 +58,10 @@ class FirstOptimTransMatrix:
         self.optimizer = torch.optim.Adam(train_params, lr=self.learning_rate)
 
         self.successful = self.training()
+        self.save_unsuccesful = save_unsuccesful
 
         if save:
-            self.save()
+            self.save(save_unsuccesful)
 
     class TrainSleepDataset(Dataset):
         def __init__(self, device, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1):
@@ -187,24 +189,31 @@ class FirstOptimTransMatrix:
         for epoch in range(self.num_epochs):
             successful = self.train(epoch)
             if not successful:
-                print(self.trans)
-                return False
+                if self.save_unsuccesful:
+                    self.no_nan = False
+                    continue
+                else: return False
             self.test(epoch)
 
         return True
 
-    def save(self):
-        if self.successful:
+    def save(self, save_unsuccessful):
+        if self.successful and self.no_nan:
             out_name = "./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + ".txt"
             np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
         else:
-            print("[INFO]: training was not successful. Transition matrix will not be saved.")
+            if save_unsuccessful:
+                out_name = "./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) +"_unsuccessful.txt"
+                np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
+                print("[INFO]: training was not completed. Transition matrix has not passed all epochs.")
+            else:
+                print("[INFO]: training was not successful. Transition matrix will not be saved.")
 
 
 def main():
     for fold in range(1, 21):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.000005,
-                              train_alpha=False, alpha=0.5, fold=fold, save=True)
+                              train_alpha=False, alpha=0.5, fold=fold, save=False)
 
 
 if __name__ == "__main__":
