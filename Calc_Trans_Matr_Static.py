@@ -150,7 +150,7 @@ class TransMatrStatic:
 def main():
     trans_matrix = TransMatrStatic(edf_2013=True, edf_2018=True, mass=False, shhs=False, physio_2018=False)
     #out_name = "./Transition_Matrix/"
-    #np.savetxt(out_name + "edf-2013-and-edf-2018.txt",trans_matrix.average_trans_matr, fmt="%.15f", delimiter=",")
+    #np.savetxt(out_name + "Sleep-EDF-2013-And-Sleep-EDF-2018.txt",trans_matrix.average_trans_matr, fmt="%.15f", delimiter=",")
 
     #for i in range(len(trans_matrix.all_trans_matr)):
         #np.savetxt(out_name +trans_matrix.all_trans_matr[i]["dataset"] +".txt", trans_matrix.all_trans_matr[i]["trans_matr"], fmt="%.15f", delimiter=",")

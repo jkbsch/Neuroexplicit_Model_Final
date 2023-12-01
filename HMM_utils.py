@@ -1,8 +1,28 @@
 import numpy as np
 
 
-def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018"):
-    Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
+def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False):
+
+    if (trans_matr == "edf-2013-and-edf-2018" or trans_matr == 'EDF 2013 and 2018' or trans_matr == '2013 2018' or
+            trans_matr == 'Sleep-EDF-2013-And-Sleep-EDF-2018' or trans_matr == 'edf_2013_and_edf_2018'):
+        trans_matr = "Sleep-EDF-2013-And-Sleep-EDF-2018"
+    elif (trans_matr == 'EDF_2013' or trans_matr == 'EDF-2013' or trans_matr == 'Sleep-EDF-2013' or
+          trans_matr == 'Sleep_EDF_2013'):
+        trans_matr = 'Sleep-EDF-2013'
+    elif (trans_matr == 'EDF_2018' or trans_matr == 'EDF-2018' or trans_matr == 'Sleep-EDF-2018' or
+          trans_matr == 'Sleep_EDF_2018'):
+        trans_matr = 'Sleep-EDF-2018'
+    else:
+        return False
+
+    if check:
+        return True
+
+    if not optimized:
+        Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
+    else:
+        Trans_path = "./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+".txt"
+
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
     return transitionmatrix
 
@@ -60,7 +80,7 @@ def set_dataset(used_set, dataset, trans_matrix):
             end_nr = 32
             leave_out = [()]
 
-    if trans_matrix == 'EDF_2013' or trans_matrix == 'EDF_2018' or trans_matrix == 'edf-2013-and-edf-2018' or trans_matrix == 'first_optimized_trans_matrix':
+    if load_Transition_Matrix(trans_matrix, check=True):
         return dataset, trans_matrix, end_fold, end_nr, leave_out
     elif trans_matrix is not None:
         print("[INFO]: transmatrix was not (correctly) defined. It is set to the one according to the dataset")
