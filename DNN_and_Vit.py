@@ -101,7 +101,7 @@ class DnnAndVit:
 
 def main():
     dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='train', logscale=True, alpha=None,
-                     checkpoints='given', dataset='Sleep-EDF-2013', trans_matr='first_optimized_trans_matrix')
+                     checkpoints='given', dataset='Sleep-EDF-2013', trans_matr='EDF-2013')
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
           "\nHybrid Prediction:\t",

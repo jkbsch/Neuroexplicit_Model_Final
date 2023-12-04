@@ -3,9 +3,11 @@ import os
 import sklearn.metrics as skmet
 from terminaltables import SingleTable
 from termcolor import colored
+import matplotlib.pyplot as plt
 
-def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True, checkpoints='given'):
 
+def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True,
+                           checkpoints='given'):
     if (trans_matr == "edf-2013-and-edf-2018" or trans_matr == 'EDF 2013 and 2018' or trans_matr == '2013 2018' or
             trans_matr == 'Sleep-EDF-2013-And-Sleep-EDF-2018' or trans_matr == 'edf_2013_and_edf_2018'):
         trans_matr = "Sleep-EDF-2013-And-Sleep-EDF-2018"
@@ -25,10 +27,12 @@ def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, 
         Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
     else:
         if successful:
-            Trans_path = ("./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+"_checkpoints_"+checkpoints+
+            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(
+                fold) + "_checkpoints_" + checkpoints +
                           ".txt")
         else:
-            Trans_path = ("./Transition_Matrix/optimized_"+trans_matr+"_fold_"+str(fold)+"_checkpoints_"+checkpoints+
+            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(
+                fold) + "_checkpoints_" + checkpoints +
                           "_unsuccessful.txt")
 
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
@@ -52,6 +56,7 @@ def load_P_Matrix(checkpoints='given', dataset='Sleep-EDF-2013', used_set='train
     P_Matrix_probs = np.loadtxt(P_path + "_probs.txt", delimiter=",")
 
     return P_Matrix_labels, P_Matrix_probs
+
 
 def pure_predictions(P_Matrix_probs):
     return np.argmax(P_Matrix_probs, axis=1)
@@ -106,6 +111,8 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     result_dict = skmet.classification_report(y_true, y_pred, digits=3, output_dict=True)
     cm = skmet.confusion_matrix(y_true, y_pred)
 
+    posteriogram(config, fold, y_true, y_pred)
+
     accuracy = round(result_dict['accuracy'] * 100, 1)
     macro_f1 = round(result_dict['macro avg']['f1-score'] * 100, 1)
     kappa = round(skmet.cohen_kappa_score(y_true, y_pred), 3)
@@ -154,7 +161,9 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     print(colored(' A', 'cyan') + ': Actual Class, ' + colored('P', 'green') + ': Predicted Class' + '\n\n')
 
     if save:
-        with open(os.path.join('results', config['dataset'] +'_alpha_' + config['alpha']+':_set_'+ config['set'] + '.txt'), 'w') as f:
+        with open(os.path.join('results',
+                               config['dataset'] + '_alpha_' + config['alpha'] + ':_set_' + config['set'] + '.txt'),
+                  'w') as f:
             f.write(
                 str(fold) + ' ' +
                 str(round(result_dict['accuracy'] * 100, 1)) + ' ' +
@@ -166,3 +175,28 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
                 str(round(result_dict['3.0']['f1-score'] * 100, 1)) + ' ' +
                 str(round(result_dict['4.0']['f1-score'] * 100, 1)) + ' '
             )
+
+
+def posteriogram(config, fold, y_true, y_pred):
+    length = config["sizes"][0]
+    y_true = np.array(y_true[0:length])
+    y_pred = np.array(y_pred[0:length])
+    X = np.arange(length)
+    fig, ax = plt.subplots(2, 1)
+    #plt.figure(figsize=(400, 400))
+    ax[0].set_xlim(450, 500)
+    ax[1].set_xlim(450, 500)
+
+    ax[0].scatter(X, y_true)
+    ax[0].scatter(X, np.where(y_true != y_pred, y_pred, -1), color='red')
+    ax[0].set_ylim(-0.5, 4.5)
+    ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+
+    ax[1].step(X, y_true, color='black')
+    ax[1].scatter(X, np.where(y_true != y_pred, y_pred, -1), color='red', s=4)
+    ax[1].set_ylim(-0.5, 4.5)
+    ax[1].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+
+    plt.show()
+    fig.savefig('results/figure.png')
+    print("Figure should have been shown")

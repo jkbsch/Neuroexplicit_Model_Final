@@ -147,6 +147,9 @@ class FirstOptimTransMatrix:
             targets = torch.squeeze(targets, dim=0)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
+            if i % 10 == 0:
+                print(self.trans)
+
             if self.use_normalized:
                 pred = y_predicted_normalized
             else:
@@ -193,6 +196,7 @@ class FirstOptimTransMatrix:
             else:
                 alpha = self.alpha
 
+
             if self.print_results:
                 print(f"Epoch: {epoch}, Alpha = {alpha:>0.5f} \n Test Error: \n Accuracy: {(100 * correct):>0.5f}%, "
                       f"Avg loss: {test_loss:>15f} \n")
@@ -234,12 +238,12 @@ class FirstOptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00005, print_results=False,
-                              train_alpha=False, alpha=0.5, fold=fold, save=True, save_unsuccesful=False, use_normalized=True)
-    for fold in range(1, 11):
+        FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00001, print_results=True,
+                              train_alpha=False, alpha=1, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
+    """for fold in range(1, 11):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.00005, print_results=False,
                               train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True, use_normalized=True,
-                              save_unsuccesful=False)
+                              save_unsuccesful=False)"""
 
 
 if __name__ == "__main__":

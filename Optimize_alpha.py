@@ -12,7 +12,7 @@ def set_alphas(start_alpha, end_alpha, step):
 class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
-                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result = True):
+                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True):
 
         self.best_correct = 0
         self.length = 1
@@ -37,12 +37,14 @@ class OptimizeAlpha:
             alpha = alpha * self.step
 
             if self.evaluate_result:
-                config = {'dataset': self.dataset,
-                          'alpha': alpha,
-                          'set': self.used_set}
                 pred = []
                 labels = []
+                sizes = []
 
+                config = {'dataset': self.dataset,
+                          'alpha': alpha,
+                          'set': self.used_set,
+                          'sizes': sizes}
 
             for fold in range(1, self.end_fold + 1):
 
@@ -60,13 +62,13 @@ class OptimizeAlpha:
                         print("Korrekt SleePy: ", dnn_vit.korrekt_SleePy / dnn_vit.length, "Korrekt Hybrid: ",
                               dnn_vit.korrekt_hybrid / dnn_vit.length)
                     if self.evaluate_result:
+                        config['sizes'].append(len(dnn_vit.P_Matrix_labels))
                         pred.extend(dnn_vit.hybrid_predictions)
                         labels.extend(dnn_vit.P_Matrix_labels)
 
             if self.evaluate_result:
                 if fold == self.end_fold:
                     summarize_result(config=config, save=False, fold=fold, y_pred=pred, y_true=labels)
-
 
             if sum_correct > self.best_correct:
                 self.alpha = alpha
@@ -82,8 +84,8 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.0, end_alpha=0.5, step=0.5,
-                  print_all_results=False, trans_matrix='EDF_2018', optimized=False)
+    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.5, end_alpha=0.5, step=0.1,
+                  print_all_results=False, trans_matrix='EDF_2013', optimized=False, evaluate_result=True)
 
 
 if __name__ == "__main__":

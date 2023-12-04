@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 
 """a = np.zeros((3,2))
 print(a)
@@ -63,5 +64,14 @@ print(B)
 C = [A]
 C.append(B)
 print(C)"""
-for i in range(1):
-    print(i)
+"""for i in range(1):
+    print(i)"""
+y_true = [0, 0, 0, 1, 2, 3]
+y_pred = [0, 0, 1, 1, 2, 2]
+length = len(y_pred)
+X = np.arange(length)
+fig, ax = plt.subplots()
+
+ax.step(X, y_true)
+ax.step(X, y_pred)
+plt.show()
