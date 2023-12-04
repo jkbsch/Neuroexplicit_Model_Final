@@ -12,7 +12,7 @@ def set_alphas(start_alpha, end_alpha, step):
 class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
-                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True):
+                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True, visualize=False, optimize_alpha=True):
 
         self.best_correct = 0
         self.length = 1
@@ -22,13 +22,18 @@ class OptimizeAlpha:
         self.optimized = optimized
         self.evaluate_result = evaluate_result
 
-        self.start_alpha, self.end_alpha, self.step = set_alphas(start_alpha, end_alpha, step)
-        self.step = step
         self.dataset, self.trans_matrix, self.end_fold, self.end_nr, self.leave_out = set_dataset(self.used_set,
                                                                                                   dataset, trans_matrix)
 
-        self.alpha = 0
-        self.optim()
+        if optimize_alpha:
+            self.start_alpha, self.end_alpha, self.step = set_alphas(start_alpha, end_alpha, step)
+            self.step = step
+            self.alpha = 0
+            self.optim()
+
+        if visualize:
+            self.visualize(start_alpha, end_alpha)
+
 
     def optim(self):
         for alpha in range(self.start_alpha, self.end_alpha):
@@ -82,10 +87,30 @@ class OptimizeAlpha:
               self.alpha)
         print("best accuracy:", self.best_correct / self.length)
 
+    def visualize(self, start_alpha, end_alpha):
+        trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=1)
+        dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=1, nr=0, used_set=self.used_set,
+                                        trans_matr=trans_matrix, alpha=(start_alpha+end_alpha)/2, print_info=False,
+                                        checkpoints=self.checkpoints)
+        y_true = dnn_vit.P_Matrix_labels
+        y_pred_sleepy = dnn_vit.pure_predictions
+        probs_sleepy = dnn_vit.P_Matrix_probs
+        y_pred_hybrid = dnn_vit.hybrid_predictions
+        probs_hybrid = dnn_vit.hybrid_probs
+        if dnn_vit.logscale:
+            probs_hybrid = np.exp(probs_hybrid)
+        probs_hybrid = np.divide(probs_hybrid, np.sum(probs_hybrid, axis=0)).T
+        length = dnn_vit.length
+
+        #posteriogram(length, y_true, y_pred_hybrid)
+        visualize_probs(length, y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid)
+
+
+
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.5, end_alpha=0.5, step=0.1,
-                  print_all_results=False, trans_matrix='EDF_2013', optimized=False, evaluate_result=True)
+    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.1,
+                  print_all_results=False, trans_matrix=None, optimized=True, evaluate_result=False, visualize=True, optimize_alpha = False)
 
 
 if __name__ == "__main__":

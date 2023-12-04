@@ -4,6 +4,7 @@ import sklearn.metrics as skmet
 from terminaltables import SingleTable
 from termcolor import colored
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 
 def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True,
@@ -40,9 +41,9 @@ def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, 
 
 
 def load_P_Matrix(checkpoints='given', dataset='Sleep-EDF-2013', used_set='train', fold=1, nr=0, print_info=True):
-    if checkpoints == "given":
+    if checkpoints == "given" or checkpoints == "Given":
         chkpt = ""
-    elif checkpoints == "own":
+    elif checkpoints == "own" or checkpoints == "Own":
         chkpt = "Own-"
     else:
         if print_info:
@@ -111,8 +112,6 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     result_dict = skmet.classification_report(y_true, y_pred, digits=3, output_dict=True)
     cm = skmet.confusion_matrix(y_true, y_pred)
 
-    posteriogram(config, fold, y_true, y_pred)
-
     accuracy = round(result_dict['accuracy'] * 100, 1)
     macro_f1 = round(result_dict['macro avg']['f1-score'] * 100, 1)
     kappa = round(skmet.cohen_kappa_score(y_true, y_pred), 3)
@@ -177,26 +176,70 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
             )
 
 
-def posteriogram(config, fold, y_true, y_pred):
-    length = config["sizes"][0]
-    y_true = np.array(y_true[0:length])
-    y_pred = np.array(y_pred[0:length])
+def posteriogram(length, y_true, y_pred):
     X = np.arange(length)
     fig, ax = plt.subplots(2, 1)
-    #plt.figure(figsize=(400, 400))
-    ax[0].set_xlim(450, 500)
-    ax[1].set_xlim(450, 500)
 
-    ax[0].scatter(X, y_true)
-    ax[0].scatter(X, np.where(y_true != y_pred, y_pred, -1), color='red')
+    #fig.suptitle('Comparison Hybrid and Labels')
+    plt.figure(figsize=(600, 100))
+    ax[0].set_xlim(350, 400)
+    ax[1].set_xlim(0, length)
+
+    ax[0].scatter(X, y_true, color='black', label='Labels')
+    ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
     ax[0].set_ylim(-0.5, 4.5)
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
 
     ax[1].step(X, y_true, color='black')
-    ax[1].scatter(X, np.where(y_true != y_pred, y_pred, -1), color='red', s=4)
+    ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
+    ax[1].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
     ax[1].set_ylim(-0.5, 4.5)
     ax[1].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
 
+    fig.legend(loc='outside right upper')
+
     plt.show()
-    fig.savefig('results/figure.png')
-    print("Figure should have been shown")
+    #fig.savefig('results/figure.png')
+
+def visualize_probs(length, y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid):
+    fig, ax = plt.subplots(2, 1)
+    #fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
+
+    len_min = 405
+    len_max = 435
+    probs_sleepy = probs_sleepy[len_min:len_max]
+    X = np.arange(len_max-len_min)
+    y_true = y_true[len_min:len_max]
+    probs_hybrid = probs_hybrid[len_min:len_max]
+    y_pred_sleepy = y_pred_sleepy[len_min:len_max]
+    y_pred_hybrid = y_pred_hybrid[len_min:len_max]
+
+
+    ax[0].matshow(probs_sleepy.T, label='Probabilities')
+    #ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
+    #ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
+    ax[0].scatter(X, y_true, color='black', label='Labels')
+    ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red', label='Wrong Predictions')
+
+    ax[0].set_title('Pure Predictions')
+    ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+    A = np.arange(0, len_max-len_min, int((len_max-len_min)/6))
+    B = A + np.array(len_min)
+    ax[0].set_xticks(A, B)
+
+
+    ax[1].matshow(probs_hybrid.T, label='Probabilites')
+    #ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
+    #ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
+    ax[1].scatter(X, y_true, color='black')
+    ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
+
+    ax[1].set_title('Hybrid Predictions')
+    ax[1].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+    ax[1].set_xticks(A, B)
+
+    fig.legend()
+
+    plt.colorbar(cm.ScalarMappable(norm=None, cmap=None), orientation='horizontal', pad=0.2, shrink=0.6, label='Predicted Probabilites')
+    plt.show()
+    #fig.savefig('results/probs.png')

@@ -35,7 +35,8 @@ class DnnAndVit:
 
         self.selected_P_Matrix()
 
-        self.hybrid_predictions = self.hybrid_predictions()
+        self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
+
 
         self.korrekt_SleePy = np.sum(self.P_Matrix_labels == self.pure_predictions)
         self.korrekt_hybrid = np.sum(self.P_Matrix_labels == self.hybrid_predictions)
@@ -96,7 +97,7 @@ class DnnAndVit:
         logscale=self.logscale, alpha=self.alpha, print_info=self.print_info) return vit.x.numpy()"""
         vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
                       print_info=self.print_info)
-        return vit.x
+        return vit.x, vit.T1
 
 
 def main():
