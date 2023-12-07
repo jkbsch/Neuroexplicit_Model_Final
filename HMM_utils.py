@@ -176,37 +176,45 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
             )
 
 
-def posteriogram(length, y_true, y_pred):
+def posteriogram(y_true, y_pred, config):
+    length = len(y_true)
     X = np.arange(length)
     fig, ax = plt.subplots(2, 1)
 
     #fig.suptitle('Comparison Hybrid and Labels')
-    plt.figure(figsize=(600, 100))
-    ax[0].set_xlim(350, 400)
+    #plt.figure(figsize=(600, 100))
+    xmin = 400
+    xmax = 450
+    ax[0].set_xlim(xmin, xmax)
     ax[1].set_xlim(0, length)
+    y_true = y_true*-1
+    y_pred = y_pred*-1
 
     ax[0].scatter(X, y_true, color='black', label='Labels')
     ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
-    ax[0].set_ylim(-0.5, 4.5)
-    ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+    ax[0].set_ylim(-4.5, 0.5)
+    ax[0].set_yticks([0, -1, -2,-3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     ax[1].step(X, y_true, color='black')
     ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
     ax[1].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
-    ax[1].set_ylim(-0.5, 4.5)
-    ax[1].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+    ax[1].set_ylim(-4.5, 0.5)
+    ax[1].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     fig.legend(loc='outside right upper')
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {config["alpha"]} Optimized: {config["optimized"]}, checkpoints: {config["checkpoints"]}'
+    plt.figtext(0.1, 0.01, description, fontsize=6)
 
     plt.show()
-    #fig.savefig('results/figure.png')
+    fig.savefig(f'results/figure_{description}{xmin, xmax}.png', dpi=1200)
 
-def visualize_probs(length, y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid):
+
+def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config):
     fig, ax = plt.subplots(2, 1)
     #fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
 
-    len_min = 405
-    len_max = 435
+    len_min = 100
+    len_max = 140
     probs_sleepy = probs_sleepy[len_min:len_max]
     X = np.arange(len_max-len_min)
     y_true = y_true[len_min:len_max]
@@ -223,7 +231,8 @@ def visualize_probs(length, y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y
 
     ax[0].set_title('Pure Predictions')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
-    A = np.arange(0, len_max-len_min, int((len_max-len_min)/6))
+    #A = np.arange(0, len_max-len_min, int((len_max-len_min)/6))
+    A = np.arange(0, len_max - len_min, 5)
     B = A + np.array(len_min)
     ax[0].set_xticks(A, B)
 
@@ -241,5 +250,7 @@ def visualize_probs(length, y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y
     fig.legend()
 
     plt.colorbar(cm.ScalarMappable(norm=None, cmap=None), orientation='horizontal', pad=0.2, shrink=0.6, label='Predicted Probabilites')
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {config["alpha"]} Optimized: {config["optimized"]}, checkpoints: {config["checkpoints"]}'
+    plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
-    #fig.savefig('results/probs.png')
+    fig.savefig(f'results/probs_{description}{len_min, len_max}.png', dpi=1200)

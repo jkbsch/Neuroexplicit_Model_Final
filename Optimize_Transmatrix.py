@@ -15,7 +15,7 @@ from Viterbi.Viterbi_Algorithm import *
 
 # here : f = 2 * x
 
-class FirstOptimTransMatrix:
+class OptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1, num_epochs=2,
                  learning_rate=0.0000001, alpha=None, train_transition=True, train_alpha=False, save=False,
                  print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True):
@@ -238,8 +238,8 @@ class FirstOptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        FirstOptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00001, print_results=True,
-                              train_alpha=False, alpha=1, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00001, print_results=True,
+                         train_alpha=False, alpha=1, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
     """for fold in range(1, 11):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.00005, print_results=False,
                               train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True, use_normalized=True,

@@ -12,7 +12,8 @@ def set_alphas(start_alpha, end_alpha, step):
 class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
-                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True, visualize=False, optimize_alpha=True):
+                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True,
+                 visualize=False, optimize_alpha=True):
 
         self.best_correct = 0
         self.length = 1
@@ -21,6 +22,8 @@ class OptimizeAlpha:
         self.checkpoints = checkpoints
         self.optimized = optimized
         self.evaluate_result = evaluate_result
+        if self.evaluate_result:
+            optimize_alpha = True
 
         self.dataset, self.trans_matrix, self.end_fold, self.end_nr, self.leave_out = set_dataset(self.used_set,
                                                                                                   dataset, trans_matrix)
@@ -33,7 +36,6 @@ class OptimizeAlpha:
 
         if visualize:
             self.visualize(start_alpha, end_alpha)
-
 
     def optim(self):
         for alpha in range(self.start_alpha, self.end_alpha):
@@ -80,18 +82,30 @@ class OptimizeAlpha:
                 self.best_correct = sum_correct
                 self.length = sum_length
 
-            print("alpha:", alpha, "best alpha: ", self.alpha, "correct:", sum_correct, "accuracy",
-                  sum_correct / sum_length)
+            """print("alpha:", alpha, "best alpha: ", self.alpha, "correct:", sum_correct, "accuracy",
+                  sum_correct / sum_length)"""
+            print(f'alpha: {alpha:.2f} best alpha: {self.alpha:.2f} correct: {sum_correct} accuracy: {(sum_correct / sum_length)*100:.4f}%')
 
-        print("best alpha between", self.start_alpha * self.step, "and", (self.end_alpha - 1) * self.step, "is: ",
-              self.alpha)
-        print("best accuracy:", self.best_correct / self.length)
+        """print("best alpha between", self.start_alpha * self.step, "and", (self.end_alpha - 1) * self.step, "is: ",
+              self.alpha)"""
+        print(f'best alpha between {self.start_alpha*self.step:.2f} and {(self.end_alpha - 1)*self.step:.2f} is {self.alpha:.2f}')
+        print(f'best accuracy: {(self.best_correct / self.length)*100:.4f}%')
 
     def visualize(self, start_alpha, end_alpha):
-        trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=1)
-        dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=1, nr=0, used_set=self.used_set,
-                                        trans_matr=trans_matrix, alpha=(start_alpha+end_alpha)/2, print_info=False,
-                                        checkpoints=self.checkpoints)
+        config = {
+            'fold': 1,
+            'nr': 0,
+            'trans_matrix': self.trans_matrix,
+            'optimized': self.optimized,
+            'dataset': self.dataset,
+            'alpha': (start_alpha + end_alpha) / 2,
+            'used_set': self.used_set,
+            'checkpoints': self.checkpoints
+        }
+        trans_matrix = load_Transition_Matrix(config['trans_matrix'], optimized=config['optimized'], fold=config['fold'])
+        dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
+                                        trans_matr=config['trans_matrix'], alpha=config['alpha'], print_info=False,
+                                        checkpoints=config['checkpoints'])
         y_true = dnn_vit.P_Matrix_labels
         y_pred_sleepy = dnn_vit.pure_predictions
         probs_sleepy = dnn_vit.P_Matrix_probs
@@ -100,17 +114,15 @@ class OptimizeAlpha:
         if dnn_vit.logscale:
             probs_hybrid = np.exp(probs_hybrid)
         probs_hybrid = np.divide(probs_hybrid, np.sum(probs_hybrid, axis=0)).T
-        length = dnn_vit.length
 
-        #posteriogram(length, y_true, y_pred_hybrid)
-        visualize_probs(length, y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid)
-
-
+        posteriogram(y_true, y_pred_hybrid, config)
+        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config)
 
 
 def main():
     OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.1,
-                  print_all_results=False, trans_matrix=None, optimized=True, evaluate_result=False, visualize=True, optimize_alpha = False)
+                  print_all_results=False, trans_matrix=None, optimized=False, evaluate_result=False, visualize=True,
+                  optimize_alpha=False)
 
 
 if __name__ == "__main__":
