@@ -32,6 +32,7 @@ class Viterbi:
     def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True):
         if torch.is_tensor(A):
             self.is_torch = True
+            self.device = A.device
         else:
             self.is_torch = False
 
@@ -70,7 +71,7 @@ class Viterbi:
     def alpha(self, alpha):
         if alpha is None:
             if self.is_torch:
-                return torch.tensor([0.5], dtype=torch.float64)
+                return torch.tensor([0.5], dtype=torch.float64, device=self.device)
             else:
                 return 0.5
         elif self.logscale is False:
@@ -84,8 +85,8 @@ class Viterbi:
     def calc_viterbi(self):
 
         if self.is_torch:
-            T1 = torch.empty((self.K, self.T), dtype=torch.float64)
-            T2 = torch.empty((self.K, self.T), dtype=torch.int)
+            T1 = torch.empty((self.K, self.T), dtype=torch.float64, device=self.device)
+            T2 = torch.empty((self.K, self.T), dtype=torch.int, device=self.device)
         else:
             T1 = np.empty((self.K, self.T), 'd')
             T2 = np.empty((self.K, self.T), 'B')

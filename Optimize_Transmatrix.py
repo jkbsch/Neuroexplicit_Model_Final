@@ -247,7 +247,8 @@ class OptimTransMatrix:
 def main():
     for fold in range(1, 21):
         OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=200, learning_rate=0.001, print_results=True,
-                         train_alpha=True, train_transition=False, alpha=0.9, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
+                         train_alpha=True, train_transition=False, alpha=0.5, fold=fold, save=False,
+                         save_unsuccesful=False, use_normalized=True)
     """for fold in range(1, 11):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.00005, print_results=False,
                               train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True, use_normalized=True,
