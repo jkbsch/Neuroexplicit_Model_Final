@@ -147,8 +147,8 @@ class OptimTransMatrix:
             targets = torch.squeeze(targets, dim=0)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
-            if i % 10 == 0:
-                print(self.trans)
+            """if i % 10 == 0:
+                print(self.trans)"""
 
             if self.use_normalized:
                 pred = y_predicted_normalized
@@ -170,13 +170,13 @@ class OptimTransMatrix:
             # zero the gradients after updating
             self.optimizer.zero_grad()
 
-            if i == self.TrainDataset.end_nr - 1:
+            if (i == self.TrainDataset.end_nr - 1) and epoch % 10 == 0:
                 # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
                 acc = (labels_predicted == targets).sum().item() / len(labels_predicted)
                 if self.print_results:
-                    print(f"i = {i + 1} \nTrain Accuracy: {(100 * acc):>0.5f}% Training loss: {loss.item():>7f}\n")
+                    print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {self.alpha:.5f}  \nTrain Accuracy (single night): \t{(100 * acc):0.5f}%\tTrain loss (single): \t{loss.item():7f}")
 
-            return True
+        return True
 
     def test(self, epoch):
         test_loss, correct = 0, 0
@@ -196,10 +196,9 @@ class OptimTransMatrix:
             else:
                 alpha = self.alpha
 
-
-            if self.print_results:
-                print(f"Epoch: {epoch}, Alpha = {alpha:>0.5f} \n Test Error: \n Accuracy: {(100 * correct):>0.5f}%, "
-                      f"Avg loss: {test_loss:>15f} \n")
+            if epoch % 10 == 0:
+                if self.print_results:
+                    print(f"Test Accuracy (Average): \t\t{(100 * correct):0.5f}%\tTest loss (Average): \t{test_loss:.6f}")
 
     def training(self):
         if self.print_info:
@@ -238,8 +237,8 @@ class OptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00001, print_results=True,
-                         train_alpha=False, alpha=1, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=200, learning_rate=0.00001, print_results=True,
+                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
     """for fold in range(1, 11):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.00005, print_results=False,
                               train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True, use_normalized=True,
