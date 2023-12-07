@@ -142,6 +142,7 @@ class OptimTransMatrix:
         return res.x, res.T1, res_normalized
 
     def train(self, epoch):
+        nr, total_loss, total_acc = 0, 0, 0
         for i, (inputs, targets) in enumerate(self.train_loader):
             inputs = torch.squeeze(inputs, dim=0)
             targets = torch.squeeze(targets, dim=0)
@@ -169,12 +170,16 @@ class OptimTransMatrix:
 
             # zero the gradients after updating
             self.optimizer.zero_grad()
-
-            if (i == self.TrainDataset.end_nr - 1) and epoch % 10 == 0:
-                # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
-                acc = (labels_predicted == targets).sum().item() / len(labels_predicted)
-                if self.print_results:
-                    print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {self.alpha:.5f}  \nTrain Accuracy (single night): \t{(100 * acc):0.5f}%\tTrain loss (single): \t{loss.item():7f}")
+            if epoch % 10 == 0 and self.print_results:
+                total_acc += (labels_predicted == targets).sum().item() / len(labels_predicted)
+                total_loss += loss.item()
+                nr += 1
+                if (i == self.TrainDataset.end_nr - 1):
+                    total_acc /= nr
+                    total_loss /= nr
+                    # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
+                    if self.print_results:
+                        print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {self.alpha:.5f}  \nTrain Accuracy (Average): \t{(100 * total_acc):0.5f}%\tTrain loss (Average): \t{total_loss:.7f}")
 
         return True
 
@@ -198,7 +203,7 @@ class OptimTransMatrix:
 
             if epoch % 10 == 0:
                 if self.print_results:
-                    print(f"Test Accuracy (Average): \t\t{(100 * correct):0.5f}%\tTest loss (Average): \t{test_loss:.6f}")
+                    print(f"Test Accuracy (Average): \t{(100 * correct):0.5f}%\tTest loss (Average): \t{test_loss:.6f}")
 
     def training(self):
         if self.print_info:
