@@ -129,7 +129,7 @@ class OptimTransMatrix:
         if self.train_alpha:
             if self.alpha is None:
                 self.alpha = 0.5
-            self.alpha = torch.tensor([self.alpha], requires_grad=True, dtype=torch.float64)
+            self.alpha = torch.tensor([self.alpha], requires_grad=True, dtype=torch.float64, device=self.device)
 
         return trans
 
@@ -179,7 +179,11 @@ class OptimTransMatrix:
                     total_loss /= nr
                     # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
                     if self.print_results:
-                        print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {self.alpha:.5f}  \nTrain Accuracy (Average): \t{(100 * total_acc):0.5f}%\tTrain loss (Average): \t{total_loss:.7f}")
+                        if torch.is_tensor(self.alpha):
+                            alpha = self.alpha.item()
+                        else:
+                            alpha = self.alpha
+                        print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {alpha:.5f}  \nTrain Accuracy (Average): \t{(100 * total_acc):0.5f}%\tTrain loss (Average): \t{total_loss:.7f}")
 
         return True
 
@@ -242,8 +246,8 @@ class OptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=200, learning_rate=0.00001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=200, learning_rate=0.001, print_results=True,
+                         train_alpha=True, train_transition=False, alpha=0.9, fold=fold, save=False, save_unsuccesful=False, use_normalized=True)
     """for fold in range(1, 11):
         FirstOptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.00005, print_results=False,
                               train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True, use_normalized=True,
