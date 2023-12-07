@@ -233,12 +233,12 @@ class OptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00001, print_results=True,
                          train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=False,
                          save_unsuccesful=False, use_normalized=True)
     for fold in range(1, 11):
         OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60,
-                        learning_rate=0.0001, print_results=True, train_alpha=False, train_transition=True, alpha=0.3, fold=fold,
+                        learning_rate=0.00001, print_results=True, train_alpha=False, train_transition=True, alpha=0.3, fold=fold,
                         save=True, use_normalized=True, save_unsuccesful=False)
 
 
