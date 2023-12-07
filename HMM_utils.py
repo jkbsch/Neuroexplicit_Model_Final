@@ -8,7 +8,7 @@ import matplotlib.cm as cm
 
 
 def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True,
-                           checkpoints='given'):
+                           checkpoints='given', lr=0.0001, alpha=0.3, epochs=60):
     if (trans_matr == "edf-2013-and-edf-2018" or trans_matr == 'EDF 2013 and 2018' or trans_matr == '2013 2018' or
             trans_matr == 'Sleep-EDF-2013-And-Sleep-EDF-2018' or trans_matr == 'edf_2013_and_edf_2018'):
         trans_matr = "Sleep-EDF-2013-And-Sleep-EDF-2018"
@@ -28,12 +28,11 @@ def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, 
         Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
     else:
         if successful:
-            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(
-                fold) + "_checkpoints_" + checkpoints +
-                          ".txt")
+            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(fold) + "_checkpoints_" +
+                          checkpoints + "_lr_" + str(lr) + "_alpha_"+str(alpha) + "_epochs_" + str(epochs)+ ".txt")
         else:
-            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(
-                fold) + "_checkpoints_" + checkpoints +
+            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(fold) + "_checkpoints_" +
+                          checkpoints + "_lr_" + str(lr) + "_alpha_" + str(alpha) + "_epochs_" + str(epochs) +
                           "_unsuccessful.txt")
 
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
@@ -165,14 +164,14 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
                   'w') as f:
             f.write(
                 str(fold) + ' ' +
-                str(round(result_dict['accuracy'] * 100, 1)) + ' ' +
-                str(round(result_dict['macro avg']['f1-score'] * 100, 1)) + ' ' +
+                str(round(result_dict["accuracy"] * 100, 1)) + ' ' +
+                str(round(result_dict["macro avg"]["f1-score"] * 100, 1)) + ' ' +
                 str(round(kappa, 3)) + ' ' +
-                str(round(result_dict['0.0']['f1-score'] * 100, 1)) + ' ' +
-                str(round(result_dict['1.0']['f1-score'] * 100, 1)) + ' ' +
-                str(round(result_dict['2.0']['f1-score'] * 100, 1)) + ' ' +
-                str(round(result_dict['3.0']['f1-score'] * 100, 1)) + ' ' +
-                str(round(result_dict['4.0']['f1-score'] * 100, 1)) + ' '
+                str(round(result_dict["0.0"]["f1-score"] * 100, 1)) + ' ' +
+                str(round(result_dict["1.0"]["f1-score"] * 100, 1)) + ' ' +
+                str(round(result_dict["2.0"]["f1-score"] * 100, 1)) + ' ' +
+                str(round(result_dict["3.0"]["f1-score"] * 100, 1)) + ' ' +
+                str(round(result_dict["4.0"]["f1-score"] * 100, 1)) + ' '
             )
 
 

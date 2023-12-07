@@ -4,7 +4,6 @@ import numpy as np
 import torch
 
 
-
 class Viterbi:
     """
             Return the MAP estimate of state trajectory of Hidden Markov Model.
@@ -41,8 +40,10 @@ class Viterbi:
         self.logscale = logscale
         self.print_info = print_info
 
-        if return_log is None: self.return_log = self.logscale
-        else: self.return_log = return_log
+        if return_log is None:
+            self.return_log = self.logscale
+        else:
+            self.return_log = return_log
 
         # Cardinality of the state space
         self.K = A.shape[0]
@@ -107,10 +108,12 @@ class Viterbi:
         for i in range(1, self.T):
             if self.logscale:
                 if self.is_torch:
-                    T1[:, i] = torch.max(T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
+                    T1[:, i] = torch.max(
+                        T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
                     T2[:, i] = torch.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
                 else:
-                    T1[:, i] = np.max(T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T,1)
+                    T1[:, i] = np.max(
+                        T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T, 1)
                     # Add the probability
                     # (logscale) of the last state's occurrence to the transition probability and to the probability for
                     # the current state from the DNN. Find the state from the previous period that maximizes this
@@ -122,7 +125,8 @@ class Viterbi:
                     T1[:, i] = torch.max(T1[:, i - 1] * self.A.T * (self.P[None, i]).T, 1).values
                     T2[:, i] = torch.argmax(T1[:, i - 1] * self.A.T, 1)
                 else:
-                    T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, i]).T,1)  # Multiply the probability of the last state's occurrence
+                    T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, i]).T, 1)
+                    # Multiply the probability of the last state's occurrence
                     # with the transition probability and with the probability for the current state from the DNN.
                     # Find the state from the previous period that maximizes this probability.
 
@@ -131,7 +135,7 @@ class Viterbi:
 
         # Build the output, optimal model trajectory
         if self.is_torch:
-            x = torch.empty(self.T, dtype=torch.int)
+            x = torch.empty(self.T, dtype=torch.int, device=self.device)
             x[-1] = torch.argmax(T1[:, self.T - 1])
         else:
             x = np.empty(self.T, 'B')
@@ -179,7 +183,7 @@ def main():
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
     x_2, T1_2, T2_2 = Viterbi_2.x.numpy(), Viterbi_2.T1.numpy(), Viterbi_2.T2.numpy()
 
-    print(x_1 == x_2, np.round(T1_1, 4) == np.round((T1_2), 4), T2_1 == T2_2)
+    print(x_1 == x_2, np.round(T1_1, 4) == np.round(T1_2, 4), T2_1 == T2_2)
 
 
 if __name__ == "__main__":
