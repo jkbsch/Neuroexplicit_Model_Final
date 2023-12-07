@@ -36,6 +36,7 @@ class Viterbi:
             self.is_torch = False
 
         self.A = A
+        #self.A[A<0] = 0
         self.P = P
         self.logscale = logscale
         self.print_info = print_info
@@ -49,7 +50,7 @@ class Viterbi:
         self.K = A.shape[0]
         # Initialize the priors with default (uniform dist) if not given by caller
         if self.is_torch:
-            self.Pi = Pi if Pi is not None else torch.full(size=(self.K,), fill_value=1 / self.K)
+            self.Pi = Pi if Pi is not None else torch.full(size=(self.K,), fill_value=1 / self.K, device=self.device)
         else:
             self.Pi = Pi if Pi is not None else np.full(self.K, 1 / self.K)
 

@@ -13,9 +13,12 @@ class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
                  used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True,
-                 visualize=False, optimize_alpha=True):
+                 visualize=False, optimize_alpha=True, lr=0.001, epochs=60, successful=True):
 
         self.best_correct = 0
+        self.lr = lr
+        self.epochs = epochs
+        self.successful = successful
         self.length = 1
         self.used_set = used_set
         self.print_all_results = print_all_results
@@ -58,7 +61,8 @@ class OptimizeAlpha:
                 for nr in range(0, self.end_nr + 1):
                     if (fold, nr) in self.leave_out:
                         continue
-                    trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=fold)
+                    trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=fold,
+                                                          alpha=alpha, lr=self.lr, successful=self.successful)
                     dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=fold, nr=nr, used_set=self.used_set,
                                                     trans_matr=trans_matrix, alpha=alpha, print_info=False,
                                                     checkpoints=self.checkpoints)
@@ -122,7 +126,7 @@ class OptimizeAlpha:
 def main():
     OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.1,
                   print_all_results=False, trans_matrix=None, optimized=False, evaluate_result=False, visualize=True,
-                  optimize_alpha=False)
+                  optimize_alpha=False, lr=0.001, successful=False)
 
 
 if __name__ == "__main__":

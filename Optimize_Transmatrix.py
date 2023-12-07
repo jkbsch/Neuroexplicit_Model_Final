@@ -110,6 +110,7 @@ class OptimTransMatrix:
 
     def trainable(self):
         trans = torch.from_numpy(load_Transition_Matrix(self.trans_matrix)).to(device=self.device, dtype=torch.float64)
+        #trans = torch.clamp(trans, min=float(1e-10))
         if self.train_transition:
             trans.requires_grad_()
 
@@ -121,7 +122,10 @@ class OptimTransMatrix:
         return trans
 
     def forward(self, data):
-        res = Viterbi(self.trans, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
+        trans = torch.clamp(self.trans, min=float(1e-10))
+        row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
+        normalized_trans_matr = torch.div(trans, row_sums)
+        res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
         if self.use_normalized:
             res_normalized = torch.div(res.T1, torch.sum(res.T1, dim=0))
         else:
@@ -212,20 +216,34 @@ class OptimTransMatrix:
         return True
 
     def save(self, save_unsuccessful):
+
+        trans = torch.clamp(self.trans, min=float(1e-10))
+        row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
+        trans = torch.div(trans, row_sums)
+        trans = trans.detach().numpy()
+
         if self.successful and self.no_nan and not save_unsuccessful:
             out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
-                        str(self.checkpoints) +"_lr_"+str(self.learning_rate) + "_alpha_"+str(self.save_alpha)+"_epochs_"+str(self.num_epochs) + ".txt")
-            np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
+                        str(self.checkpoints) + "_lr_" + str(self.learning_rate) + "_alpha_" + str(
+                        self.save_alpha) + "_epochs_" + str(self.num_epochs) + ".txt")
+            np.savetxt(out_name, trans, fmt="%.15f", delimiter=",")
             if self.print_info:
                 print("[INFO]: Training of fold " + str(self.fold) + " of the dataset '" + self.dataset +
                       "' was successful. Data has been saved")
         else:
             if save_unsuccessful:
                 out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) +
-                            "_checkpoints_" + str(self.checkpoints)+"_lr_"+str(self.learning_rate) + "_alpha_"+str(self.save_alpha)+"_epochs_"+str(self.num_epochs) + "_unsuccessful.txt")
-                np.savetxt(out_name, self.trans.detach().numpy(), fmt="%.15f", delimiter=",")
+                            "_checkpoints_" + str(self.checkpoints) + "_lr_" + str(
+                            self.learning_rate) + "_alpha_" + str(self.save_alpha) + "_epochs_" + str(
+                            self.num_epochs) + "_unsuccessful.txt")
+                np.savetxt(out_name, trans, fmt="%.15f", delimiter=",")
                 if self.print_info:
-                    print("[INFO]: training was not completed. Transition matrix has not passed all epochs.")
+                    if self.successful and self.no_nan:
+                        print("[INFO]: Training of fold " + str(self.fold) + " of the dataset '" + self.dataset +
+                              "' was successful. Data has been saved (However, file name ends with '_unsuccessful')")
+                    else:
+                        print("[INFO]: training of fold " + str(self.fold) + " was not completed due to NaN. However, "
+                                                                             "Transitionmatrix has been saved")
             else:
                 if self.print_info:
                     print("[INFO]: training was not successful. Transition matrix will not be saved.")
@@ -233,13 +251,13 @@ class OptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.00001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=False,
-                         save_unsuccesful=False, use_normalized=True)
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.001, print_results=True,
+                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
+                         save_unsuccesful=True, use_normalized=True)
     for fold in range(1, 11):
-        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60,
-                        learning_rate=0.00001, print_results=True, train_alpha=False, train_transition=True, alpha=0.3, fold=fold,
-                        save=True, use_normalized=True, save_unsuccesful=False)
+        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.001, print_results=True,
+                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True, use_normalized=True,
+                         save_unsuccesful=True)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,7 @@ def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, 
                           "_unsuccessful.txt")
 
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
+    transitionmatrix[transitionmatrix <= 0] = float(1e-10) # negative or 0 Werte werden sehr klein gesetzt
     return transitionmatrix
 
 
