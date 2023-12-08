@@ -8,8 +8,7 @@ import matplotlib.cm as cm
 
 
 def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", oalpha=False, otrans=False, fold=1, check=False,
-                           successful=True,
-                           checkpoints='given', lr=0.00001, alpha=0.3, epochs=60):
+                           successful=True, checkpoints='given', lr=0.00001, alpha=0.3, epochs=60):
     if (trans_matr == "edf-2013-and-edf-2018" or trans_matr == 'EDF 2013 and 2018' or trans_matr == '2013 2018' or
             trans_matr == 'Sleep-EDF-2013-And-Sleep-EDF-2018' or trans_matr == 'edf_2013_and_edf_2018'):
         trans_matr = "Sleep-EDF-2013-And-Sleep-EDF-2018"

@@ -123,7 +123,8 @@ class OptimTransMatrix:
 
     def forward(self, data):
         trans = torch.clamp(self.trans, min=float(1e-10))
-        row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
+        row_sums = torch.sum(trans, dim=1) # normalize transition matrix
+        row_sums = row_sums[:,None]
         normalized_trans_matr = torch.div(trans, row_sums)
         res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
         if self.use_normalized:
@@ -179,6 +180,15 @@ class OptimTransMatrix:
                             alpha = self.alpha
                         print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {alpha:.5f}  \nTrain Accuracy (Average): "
                               f"\t{(100 * total_acc):0.5f}%\tTrain loss (Average): \t{total_loss:.7f}")
+                        """print("Transition Matrix:\n", self.trans)
+                        trans = torch.clamp(self.trans, min=float(1e-10))
+                        print("clamped:", trans)
+                        row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
+                        #row_sums = torch.transpose(row_sums[None, :], 0, 1)
+                        row_sums = row_sums[:,None]
+                        print("row_sums: ", row_sums)
+                        trans = torch.div(trans, row_sums)
+                        print("normalized:", trans)"""
 
         return True
 
@@ -221,12 +231,19 @@ class OptimTransMatrix:
         return True
 
     def save(self, save_unsuccessful):
+        print("pure:", self.trans)
 
         trans = torch.clamp(self.trans, min=float(1e-10))
+        print("clamped:", trans)
         row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
+        row_sums = row_sums[:,None]
+        print("row_sums: ",row_sums)
         trans = torch.div(trans, row_sums)
+        print("normalized:", trans)
         trans = trans.detach().numpy()
+        print("numpy:", trans)
         trans = np.append(np.ones((1,5))*self.alpha, trans, axis=0)
+        print("appended alpha:", trans)
 
         out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
                     str(self.checkpoints) + "_lr_" + str(self.learning_rate) + "_otrans_" + str(self.train_transition) + "_oalpha_" + str(
@@ -257,11 +274,11 @@ class OptimTransMatrix:
 
 def main():
     for fold in range(1, 21):
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.01, print_results=True,
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
                          train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
                          save_unsuccesful=True, use_normalized=False)
     for fold in range(1, 11):
-        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.01, print_results=True,
+        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0001, print_results=True,
                          train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
                          save_unsuccesful=True, use_normalized=False)
 

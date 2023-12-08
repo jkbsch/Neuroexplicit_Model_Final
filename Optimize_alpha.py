@@ -110,15 +110,18 @@ class OptimizeAlpha:
             'trans_matrix': self.trans_matrix,
             'oalpha': self.oalpha,
             'otrans': self.otrans,
+            'lr': self.lr,
+            'successful': self.successful,
+            'epochs': self.epochs,
             'all_alphas': self.all_alphas,
             'dataset': self.dataset,
             'alpha': (start_alpha + end_alpha) / 2, ### !!! GGF. ist das hier falsch, wenn mit optimiertem Alpha gearbeitet wird - das ist noch zu sehen
             'used_set': self.used_set,
             'checkpoints': self.checkpoints
         }
-        trans_matrix = load_Transition_Matrix(config['trans_matrix'], optimized=config['optimized'], fold=config['fold'])[1]
+        config['alpha'], trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'])
         dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
-                                        trans_matr=config['trans_matrix'], alpha=config['alpha'], print_info=False,
+                                        trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
                                         checkpoints=config['checkpoints'])
         y_true = dnn_vit.P_Matrix_labels
         y_pred_sleepy = dnn_vit.pure_predictions
