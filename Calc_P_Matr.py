@@ -76,7 +76,8 @@ def main():
     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-    # Source set gpu_devides: ChatGPT - evaluate IDs for GPU
+    # Source for setting gpu_devices: ChatGPT -
+    # evaluate IDs for GPU
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 

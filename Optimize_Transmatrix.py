@@ -180,15 +180,6 @@ class OptimTransMatrix:
                             alpha = self.alpha
                         print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {alpha:.5f}  \nTrain Accuracy (Average): "
                               f"\t{(100 * total_acc):0.5f}%\tTrain loss (Average): \t{total_loss:.7f}")
-                        """print("Transition Matrix:\n", self.trans)
-                        trans = torch.clamp(self.trans, min=float(1e-10))
-                        print("clamped:", trans)
-                        row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
-                        #row_sums = torch.transpose(row_sums[None, :], 0, 1)
-                        row_sums = row_sums[:,None]
-                        print("row_sums: ", row_sums)
-                        trans = torch.div(trans, row_sums)
-                        print("normalized:", trans)"""
 
         return True
 

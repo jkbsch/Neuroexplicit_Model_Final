@@ -130,7 +130,9 @@ class OptimizeAlpha:
             'used_set': self.used_set,
             'checkpoints': self.checkpoints
         }
-        config['alpha'], trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'])
+        alpha, trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'])
+        if alpha is not None:
+            config["alpha"] = alpha
         dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
                                         trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
                                         checkpoints=config['checkpoints'])
@@ -148,8 +150,8 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.0, end_alpha=1.0, step=0.1,
-                  print_all_results=False, trans_matrix=None, otrans=False, oalpha=False, evaluate_result=True, visualize=False,
+    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1.0, step=0.1,
+                  print_all_results=False, trans_matrix=None, otrans=True, oalpha=False, evaluate_result=True, visualize=False,
                   optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
 
 
