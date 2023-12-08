@@ -165,7 +165,7 @@ class OptimTransMatrix:
 
             # zero the gradients after updating
             self.optimizer.zero_grad()
-            if epoch % 10 == 0 and self.print_results:
+            if (epoch % 10 == 0 or epoch == self.num_epochs-1) and self.print_results:
                 total_acc += (labels_predicted == targets).sum().item() / len(labels_predicted)
                 total_loss += loss.item()
                 nr += 1
@@ -184,7 +184,7 @@ class OptimTransMatrix:
         return True
 
     def test(self, epoch):
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 or epoch == self.num_epochs-1:
             test_loss, correct, nr = 0, 0, 0
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(self.test_loader):
