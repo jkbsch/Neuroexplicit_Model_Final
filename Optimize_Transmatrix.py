@@ -264,15 +264,46 @@ class OptimTransMatrix:
 
 
 def main():
+    for alpha in [0.3, 0.5]:
+        for fold in range(1, 21):
+            print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
+            OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
+                             train_alpha=True, train_transition=True, alpha=alpha, fold=fold, save=True,
+                             save_unsuccesful=True, use_normalized=False)
+        for fold in range(1, 11):
+            print(
+                f'Sleep-EDF-2018, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
+            OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0001, print_results=True,
+                             train_alpha=True, train_transition=True, alpha=alpha, fold=fold, save=True,
+                             save_unsuccesful=True, use_normalized=False)
+
+        for train_alpha in [False, True]:
+            for fold in range(1, 21):
+                print(
+                    f'Sleep-EDF-2013, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
+                OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0005, print_results=True,
+                                 train_alpha=train_alpha, train_transition=True, alpha=alpha, fold=fold, save=True,
+                                 save_unsuccesful=True, use_normalized=False)
+                print(
+                    f'Sleep-EDF-2018, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
+            for fold in range(1, 11):
+                OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0005, print_results=True,
+                                 train_alpha=train_alpha, train_transition=True, alpha=alpha, fold=fold, save=True,
+                                 save_unsuccesful=True, use_normalized=False)
+
     for fold in range(1, 21):
+        print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = False, train_transition = True, alpha = 0.5, fold={fold}')
         OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
+                         train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True,
                          save_unsuccesful=True, use_normalized=False)
     for fold in range(1, 11):
+        print(
+            f'Sleep-EDF-2018, 60 epochs, lr = 0.0001, train_alpha = False, train_transition = True, alpha = 0.5, fold={fold}')
         OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
+                         train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True,
                          save_unsuccesful=True, use_normalized=False)
 
+    print("!!!\n!!!\n!!!\nDON'T FORGET TO PRINT CONSOLE OUTPUT\n!!!\n!!!\n!!!")
 
 if __name__ == "__main__":
     main()

@@ -150,8 +150,8 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.0, end_alpha=1.0, step=0.1,
-                  print_all_results=False, trans_matrix=None, otrans=True, oalpha=False, evaluate_result=True, visualize=False,
+    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.1,
+                  print_all_results=False, trans_matrix=None, otrans=False, oalpha=False, evaluate_result=True, visualize=False,
                   optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
 
 
