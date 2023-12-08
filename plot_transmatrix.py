@@ -53,4 +53,4 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
         dpi=1200)
 
 
-plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=1, lr=0.0001, alpha=0.3, epochs=60, checkpoints='given')
+plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=4, lr=0.0001, alpha=0.3, epochs=60, checkpoints='given')
