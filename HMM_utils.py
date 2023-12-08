@@ -93,7 +93,7 @@ def set_dataset(used_set, dataset, trans_matrix):
         if used_set == 'test':
             end_fold = 20
             end_nr = 1
-            leave_out = [()]
+            leave_out = [(14,1)]
         else:
             end_fold = 20
             end_nr = 32
@@ -159,14 +159,18 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     perclass_dt = SingleTable(perclass_data, colored('PER-CLASS RESULT', 'red'))
 
     print('\n[INFO] Evaluation result from fold 1 to {}'.format(fold))
-    print(f'\nDataset: "{config["dataset"]}", Set: "{config["set"]}", Alpha: {config["alpha"]}')
+    if config["oalpha"]:
+        alpha = config["all_alphas"]
+    else:
+        alpha = config["alpha"]
+    print(f'\nDataset: "{config["dataset"]}" Transition Matrix: {config["transmatrix"]}, Set: "{config["set"]}", trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}')
     print('\n' + overall_dt.table)
     print('\n' + perclass_dt.table)
     print(colored(' A', 'cyan') + ': Actual Class, ' + colored('P', 'green') + ': Predicted Class' + '\n\n')
 
     if save:
         with open(os.path.join('results',
-                               config['dataset'] + '_alpha_' + config['alpha'] + ':_set_' + config['set'] + '.txt'),
+                               config['dataset'] + '_transmatrix_' + config['transmatrix'] + '_alpha_' + config['alpha'] + '_set_' + config['set'] + '_oalpha_' + config["oalpha"] + '_otrans_' + config["otrans"] + '_epochs_'+ config["epochs"] + '_lr_' + config["lr"] + '_set_' + config["set"] + '_checkpoints_' + config["checkpoints"] + '.txt'),
                   'w') as f:
             f.write(
                 str(fold) + ' ' +

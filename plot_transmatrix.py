@@ -44,13 +44,13 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
     fig.tight_layout()
 
     plt.figtext(0.01, 0.01,
-                f'Transition Matrices for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and final alpha = {res_alpha2} on {epochs} Epochs.', size=8)
+                f'Transition Matrices for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and final alpha = {res_alpha2:.3f} on {epochs} Epochs. Alpha trained: {oalpha}, Trans trained: {otrans}', size=6)
 
     plt.show()
 
     fig.savefig(
-        f'results/comparint_transmatrix_transmatr_{trans_matr}_fold_{fold}_lr_{lr}_alpha_{res_alpha2}_epochs_{epochs}.png',
+        f'results/transmatr_{trans_matr}_fold_{fold}_lr_{lr}_alpha_{res_alpha2}_epochs_{epochs}_oalpha_{oalpha}_otrans_{otrans}.png',
         dpi=1200)
 
 
-plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3, epochs=1, checkpoints='given')
+plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=1, lr=0.0001, alpha=0.3, epochs=60, checkpoints='given')
