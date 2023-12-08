@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 import HMM_utils
 
 
-def plot_transmatrix(trans_matr="EDF_2013", fold=1, lr=0.001, alpha=0.3, epochs=60):
+def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3, epochs=1, checkpoints='given'):
     fig, ax = plt.subplots(2, 1)
-    transmatrix1 = HMM_utils.load_Transition_Matrix(trans_matr="EDF_2013", optimized=False, fold=1, check=False,
-                                                    successful=True,
-                                                    checkpoints='given', lr=0.001, alpha=0.3, epochs=60)
+    res_alpha1, transmatrix1 = HMM_utils.load_Transition_Matrix(trans_matr=trans_matr, oalpha=False, otrans=False, fold=fold, check=False,
+                                                    successful=successful,
+                                                    checkpoints=checkpoints, lr=lr, alpha=alpha, epochs=epochs)
 
-    transmatrix2 = HMM_utils.load_Transition_Matrix(trans_matr="EDF_2013", optimized=True, fold=1, check=False,
-                                                    successful=False,
-                                                    checkpoints='given', lr=0.001, alpha=0.3, epochs=60)
+    res_alpha2, transmatrix2 = HMM_utils.load_Transition_Matrix(trans_matr=trans_matr, oalpha=oalpha, otrans=otrans, fold=fold, check=False,
+                                                    successful=successful,
+                                                    checkpoints=checkpoints, lr=lr, alpha=alpha, epochs=epochs)
 
     ax[0].matshow(transmatrix1, cmap='magma')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
@@ -44,13 +44,13 @@ def plot_transmatrix(trans_matr="EDF_2013", fold=1, lr=0.001, alpha=0.3, epochs=
     fig.tight_layout()
 
     plt.figtext(0.01, 0.01,
-                f'Transition Matrices for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and alpha = {alpha} on {epochs} Epochs.', size=8)
+                f'Transition Matrices for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and final alpha = {res_alpha2} on {epochs} Epochs.', size=8)
 
     plt.show()
 
     fig.savefig(
-        f'results/comparint_transmatrix_transmatr_{trans_matr}_fold_{fold}_lr_{lr}_alpha_{alpha}_epochs_{epochs}.png',
+        f'results/comparint_transmatrix_transmatr_{trans_matr}_fold_{fold}_lr_{lr}_alpha_{res_alpha2}_epochs_{epochs}.png',
         dpi=1200)
 
 
-plot_transmatrix(trans_matr="EDF_2013", fold=1, lr=0.001, alpha=0.3, epochs=60)
+plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3, epochs=1, checkpoints='given')

@@ -22,7 +22,7 @@ class DnnAndVit:
         self.checkpoints = checkpoints
 
         if type(trans_matr) == str:
-            self.Transition_Matrix = load_Transition_Matrix(trans_matr)
+            self.Transition_Matrix = load_Transition_Matrix(trans_matr)[1]
         else:
             self.Transition_Matrix = trans_matr
 

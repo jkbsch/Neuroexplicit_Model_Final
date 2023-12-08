@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
-def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, fold=1, check=False, successful=True,
+def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", oalpha=False, otrans=False, fold=1, check=False,
+                           successful=True,
                            checkpoints='given', lr=0.00001, alpha=0.3, epochs=60):
     if (trans_matr == "edf-2013-and-edf-2018" or trans_matr == 'EDF 2013 and 2018' or trans_matr == '2013 2018' or
             trans_matr == 'Sleep-EDF-2013-And-Sleep-EDF-2018' or trans_matr == 'edf_2013_and_edf_2018'):
@@ -24,20 +25,25 @@ def load_Transition_Matrix(trans_matr="edf-2013-and-edf-2018", optimized=False, 
     if check:
         return True
 
-    if not optimized:
+    if not oalpha and not otrans:
         Trans_path = "./Transition_Matrix/" + trans_matr + ".txt"
     else:
+        Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(fold) + "_checkpoints_" +
+                      checkpoints + "_lr_" + str(lr) + "_otrans_" + str(otrans) + "_oalpha_" + str(oalpha) +
+                      "_epochs_" + str(epochs))
         if successful:
-            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(fold) + "_checkpoints_" +
-                          checkpoints + "_lr_" + str(lr) + "_alpha_"+str(alpha) + "_epochs_" + str(epochs)+ ".txt")
+            Trans_path += ".txt"
         else:
-            Trans_path = ("./Transition_Matrix/optimized_" + trans_matr + "_fold_" + str(fold) + "_checkpoints_" +
-                          checkpoints + "_lr_" + str(lr) + "_alpha_" + str(alpha) + "_epochs_" + str(epochs) +
-                          "_unsuccessful.txt")
+            Trans_path += "_unsuccessful.txt"
 
     transitionmatrix = np.loadtxt(Trans_path, delimiter=",")
-    transitionmatrix[transitionmatrix <= 0] = float(1e-10) # negative or 0 Werte werden sehr klein gesetzt
-    return transitionmatrix
+
+    if np.shape(transitionmatrix) == (6, 5):
+        alpha = transitionmatrix[0, 0]
+        transitionmatrix = transitionmatrix[1:, :]
+
+    transitionmatrix[transitionmatrix <= 0] = float(1e-10)  # negative or 0 Werte werden sehr klein gesetzt
+    return alpha, transitionmatrix
 
 
 def load_P_Matrix(checkpoints='given', dataset='Sleep-EDF-2013', used_set='train', fold=1, nr=0, print_info=True):
@@ -181,19 +187,19 @@ def posteriogram(y_true, y_pred, config):
     X = np.arange(length)
     fig, ax = plt.subplots(2, 1)
 
-    #fig.suptitle('Comparison Hybrid and Labels')
-    #plt.figure(figsize=(600, 100))
+    # fig.suptitle('Comparison Hybrid and Labels')
+    # plt.figure(figsize=(600, 100))
     xmin = 400
     xmax = 450
     ax[0].set_xlim(xmin, xmax)
     ax[1].set_xlim(0, length)
-    y_true = y_true*-1
-    y_pred = y_pred*-1
+    y_true = y_true * -1
+    y_pred = y_pred * -1
 
     ax[0].scatter(X, y_true, color='black', label='Labels')
     ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
     ax[0].set_ylim(-4.5, 0.5)
-    ax[0].set_yticks([0, -1, -2,-3, -4], ["W", "N1", "N2", "N3", "REM"])
+    ax[0].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     ax[1].step(X, y_true, color='black')
     ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
@@ -202,7 +208,7 @@ def posteriogram(y_true, y_pred, config):
     ax[1].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     fig.legend(loc='outside right upper')
-    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {config["alpha"]} Optimized: {config["optimized"]}, checkpoints: {config["checkpoints"]}'
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {config["all_alphas"][config["fold"]]} Optimized: {config["optimized"]}, checkpoints: {config["checkpoints"]}'
     plt.figtext(0.1, 0.01, description, fontsize=6)
 
     plt.show()
@@ -211,35 +217,33 @@ def posteriogram(y_true, y_pred, config):
 
 def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config):
     fig, ax = plt.subplots(2, 1)
-    #fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
+    # fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
 
     len_min = 100
     len_max = 140
     probs_sleepy = probs_sleepy[len_min:len_max]
-    X = np.arange(len_max-len_min)
+    X = np.arange(len_max - len_min)
     y_true = y_true[len_min:len_max]
     probs_hybrid = probs_hybrid[len_min:len_max]
     y_pred_sleepy = y_pred_sleepy[len_min:len_max]
     y_pred_hybrid = y_pred_hybrid[len_min:len_max]
 
-
     ax[0].matshow(probs_sleepy.T, label='Probabilities')
-    #ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
-    #ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
+    # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
+    # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
     ax[0].scatter(X, y_true, color='black', label='Labels')
     ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red', label='Wrong Predictions')
 
     ax[0].set_title('Pure Predictions')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
-    #A = np.arange(0, len_max-len_min, int((len_max-len_min)/6))
+    # A = np.arange(0, len_max-len_min, int((len_max-len_min)/6))
     A = np.arange(0, len_max - len_min, 5)
     B = A + np.array(len_min)
     ax[0].set_xticks(A, B)
 
-
     ax[1].matshow(probs_hybrid.T, label='Probabilites')
-    #ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
-    #ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
+    # ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
+    # ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
     ax[1].scatter(X, y_true, color='black')
     ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
 
@@ -249,8 +253,15 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
 
     fig.legend()
 
-    plt.colorbar(cm.ScalarMappable(norm=None, cmap=None), orientation='horizontal', pad=0.2, shrink=0.6, label='Predicted Probabilites')
-    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {config["alpha"]} Optimized: {config["optimized"]}, checkpoints: {config["checkpoints"]}'
+    plt.colorbar(cm.ScalarMappable(norm=None, cmap=None), orientation='horizontal', pad=0.2, shrink=0.6,
+                 label='Predicted Probabilites')
+
+    if not config["oalpha"]:
+        alpha = config["alpha"]
+    else:
+        alpha = config["all_alphas"][config["fold"] - 1]
+
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}'
     plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
     fig.savefig(f'results/probs_{description}{len_min, len_max}.png', dpi=1200)

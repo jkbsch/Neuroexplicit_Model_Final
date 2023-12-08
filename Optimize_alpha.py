@@ -12,7 +12,7 @@ def set_alphas(start_alpha, end_alpha, step):
 class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
-                 used_set='train', print_all_results=False, checkpoints='given', optimized=False, evaluate_result=True,
+                 used_set='train', print_all_results=False, checkpoints='given', oalpha=False, otrans=False, evaluate_result=True,
                  visualize=False, optimize_alpha=True, lr=0.001, epochs=60, successful=True):
 
         self.best_correct = 0
@@ -23,13 +23,19 @@ class OptimizeAlpha:
         self.used_set = used_set
         self.print_all_results = print_all_results
         self.checkpoints = checkpoints
-        self.optimized = optimized
+
+        self.oalpha = oalpha
+        self.all_alphas = []
+        self.otrans = otrans
         self.evaluate_result = evaluate_result
         if self.evaluate_result:
             optimize_alpha = True
 
         self.dataset, self.trans_matrix, self.end_fold, self.end_nr, self.leave_out = set_dataset(self.used_set,
                                                                                                   dataset, trans_matrix)
+        if self.oalpha and start_alpha != end_alpha:
+            print("[INFO]: optimized alpha calculated from training algorithm is used. Alpha will not be optimized")
+            start_alpha = end_alpha
 
         if optimize_alpha:
             self.start_alpha, self.end_alpha, self.step = set_alphas(start_alpha, end_alpha, step)
@@ -53,16 +59,18 @@ class OptimizeAlpha:
 
                 config = {'dataset': self.dataset,
                           'alpha': alpha,
+                          'all_alphas': self.all_alphas,
                           'set': self.used_set,
                           'sizes': sizes}
 
-            for fold in range(1, self.end_fold + 1):
+            for fold in range(20, self.end_fold + 1):
 
                 for nr in range(0, self.end_nr + 1):
                     if (fold, nr) in self.leave_out:
                         continue
-                    trans_matrix = load_Transition_Matrix(self.trans_matrix, optimized=self.optimized, fold=fold,
-                                                          alpha=alpha, lr=self.lr, successful=self.successful)
+                    new_alpha, trans_matrix = load_Transition_Matrix(self.trans_matrix, oalpha=self.oalpha, otrans=self.otrans, fold=fold,
+                                                          alpha=alpha, lr=self.lr, successful=self.successful, epochs=self.epochs)
+                    self.all_alphas.append(new_alpha)
                     dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=fold, nr=nr, used_set=self.used_set,
                                                     trans_matr=trans_matrix, alpha=alpha, print_info=False,
                                                     checkpoints=self.checkpoints)
@@ -100,13 +108,15 @@ class OptimizeAlpha:
             'fold': 1,
             'nr': 0,
             'trans_matrix': self.trans_matrix,
-            'optimized': self.optimized,
+            'oalpha': self.oalpha,
+            'otrans': self.otrans,
+            'all_alphas': self.all_alphas,
             'dataset': self.dataset,
-            'alpha': (start_alpha + end_alpha) / 2,
+            'alpha': (start_alpha + end_alpha) / 2, ### !!! GGF. ist das hier falsch, wenn mit optimiertem Alpha gearbeitet wird - das ist noch zu sehen
             'used_set': self.used_set,
             'checkpoints': self.checkpoints
         }
-        trans_matrix = load_Transition_Matrix(config['trans_matrix'], optimized=config['optimized'], fold=config['fold'])
+        trans_matrix = load_Transition_Matrix(config['trans_matrix'], optimized=config['optimized'], fold=config['fold'])[1]
         dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
                                         trans_matr=config['trans_matrix'], alpha=config['alpha'], print_info=False,
                                         checkpoints=config['checkpoints'])
@@ -124,9 +134,9 @@ class OptimizeAlpha:
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.1,
-                  print_all_results=False, trans_matrix=None, optimized=False, evaluate_result=False, visualize=True,
-                  optimize_alpha=False, lr=0.001, successful=False)
+    OptimizeAlpha(used_set='test', dataset='EDF_2013', start_alpha=0.1, end_alpha=0.5, step=0.1,
+                  print_all_results=False, trans_matrix=None, otrans=True, oalpha=False, evaluate_result=True, visualize=False,
+                  optimize_alpha=False, lr=0.01, successful=False, epochs=1)
 
 
 if __name__ == "__main__":
