@@ -26,7 +26,7 @@ class TransMatrStatic:
         self.all_trans_matr = self.build_trans_matr()  # separate transition matrix for every dataset
 
         self.average_trans_matr = self.build_average_trans_matr()  # average over all transition matrices selected
-        print("Hey!")
+
 
     def build_dataset_configs(self):
         """"
