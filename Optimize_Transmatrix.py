@@ -125,7 +125,7 @@ class OptimTransMatrix:
         trans = torch.clamp(self.trans, min=float(1e-10))
         row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
         normalized_trans_matr = torch.div(trans, row_sums)
-        res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=False, print_info=False)
+        res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
         if self.use_normalized:
             res_normalized = torch.div(res.T1, torch.sum(res.T1, dim=0))  #  außerdem habe ich return_log auf False gesetzt?
 
@@ -181,23 +181,25 @@ class OptimTransMatrix:
         return True
 
     def test(self, epoch):
-        test_loss, correct = 0, 0
-        with torch.no_grad():
-            for i, (inputs, targets) in enumerate(self.test_loader):
-                inputs = torch.squeeze(inputs, dim=0)
-                targets = torch.squeeze(targets, dim=0)
-                labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
+        if epoch % 10 == 0:
+            test_loss, correct, nr = 0, 0, 0
+            with torch.no_grad():
+                for i, (inputs, targets) in enumerate(self.test_loader):
+                    inputs = torch.squeeze(inputs, dim=0)
+                    targets = torch.squeeze(targets, dim=0)
+                    labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
-                if self.use_normalized:
-                    test_loss += self.loss(torch.transpose(y_predicted_normalized, 0, 1), targets).item()
-                else:
-                    test_loss += self.loss(torch.transpose(y_predicted_unnormalized, 0, 1), targets).item()
-                correct += (labels_predicted == targets).sum().item() / len(labels_predicted)
+                    if self.use_normalized:
+                        pred = y_predicted_normalized
+                    else:
+                        pred = y_predicted_unnormalized
+                    test_loss += self.loss(torch.transpose(pred, 0, 1), targets).item()
+                    correct += (labels_predicted == targets).sum().item() / len(labels_predicted)
+                    nr += 1
 
-            test_loss /= self.TestDataset.end_nr
-            correct /= self.TestDataset.end_nr
+                test_loss /= nr
+                correct /= nr
 
-            if epoch % 10 == 0:
                 if self.print_results:
                     print(f"Test Accuracy (Average): \t{(100 * correct):0.5f}%\tTest loss (Average): \t{test_loss:.6f}")
 
@@ -251,13 +253,13 @@ class OptimTransMatrix:
 
 
 def main():
-    for fold in range(19, 21):
+    for fold in range(20, 21):
         OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.01, print_results=True,
                          train_alpha=True, train_transition=False, alpha=0.9, fold=fold, save=False,
-                         save_unsuccesful=True, use_normalized=True)
+                         save_unsuccesful=True, use_normalized=False)
     """for fold in range(1, 11):
         OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True, use_normalized=True,
+                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True, use_normalized=False,
                          save_unsuccesful=True)"""
 
 
