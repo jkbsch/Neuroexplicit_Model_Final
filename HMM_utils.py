@@ -208,7 +208,13 @@ def posteriogram(y_true, y_pred, config):
     ax[1].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     fig.legend(loc='outside right upper')
-    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {config["all_alphas"][config["fold"]]} Optimized: {config["optimized"]}, checkpoints: {config["checkpoints"]}'
+
+    if not config["oalpha"]:
+        alpha = config["alpha"]
+    else:
+        alpha = config["all_alphas"][config["fold"] - 1]
+
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha} trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]} checkpoints: {config["checkpoints"]}'
     plt.figtext(0.1, 0.01, description, fontsize=6)
 
     plt.show()

@@ -256,14 +256,14 @@ class OptimTransMatrix:
 
 
 def main():
-    for fold in range(20, 21):
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=1, learning_rate=0.01, print_results=True,
+    for fold in range(1, 21):
+        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.01, print_results=True,
                          train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
                          save_unsuccesful=True, use_normalized=False)
-    for fold in range(11, 11):
+    for fold in range(1, 11):
         OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.01, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True, use_normalized=False,
-                         save_unsuccesful=True)
+                         train_alpha=False, train_transition=True, alpha=0.3, fold=fold, save=True,
+                         save_unsuccesful=True, use_normalized=False)
 
 
 if __name__ == "__main__":
