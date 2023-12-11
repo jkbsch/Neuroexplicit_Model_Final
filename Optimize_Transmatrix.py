@@ -222,19 +222,21 @@ class OptimTransMatrix:
         return True
 
     def save(self, save_unsuccessful):
-        print("pure:", self.trans)
+        # print("pure:", self.trans)
 
         trans = torch.clamp(self.trans, min=float(1e-10))
-        print("clamped:", trans)
+        # print("clamped:", trans)
         row_sums = torch.sum(trans, dim=1)  # normalize transition matrix
         row_sums = row_sums[:,None]
-        print("row_sums: ",row_sums)
+        # print("row_sums: ",row_sums)
         trans = torch.div(trans, row_sums)
-        print("normalized:", trans)
-        trans = trans.detach().numpy()
-        print("numpy:", trans)
+        # print("normalized:", trans)
+        trans = trans.detach().cpu().numpy()
+        # print("numpy:", trans)
+        if torch.is_tensor(self.alpha):
+            self.alpha = self.alpha.detach().cpu().numpy()
         trans = np.append(np.ones((1,5))*self.alpha, trans, axis=0)
-        print("appended alpha:", trans)
+        # print("appended alpha:", trans)
 
         out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
                     str(self.checkpoints) + "_lr_" + str(self.learning_rate) + "_otrans_" + str(self.train_transition) + "_oalpha_" + str(

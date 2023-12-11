@@ -76,5 +76,12 @@ ax.step(X, y_true)
 ax.step(X, y_pred)
 plt.show()"""
 
-for a in [True, False]:
-    print(a)
+"""for a in [True, False]:
+    print(a)"""
+C = []
+A = [1.0, 2.0]
+A.append(3.0)
+B = [4.0, 5.0, 6.0]
+C.append(A)
+C.append(B)
+print(C)

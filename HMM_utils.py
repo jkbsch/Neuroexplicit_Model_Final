@@ -187,7 +187,7 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
             )
 
 
-def posteriogram(y_true, y_pred, config):
+def posteriogram(y_true, y_pred,sleepy_pred, config):
     length = len(y_true)
     X = np.arange(length)
     fig, ax = plt.subplots(2, 1)
@@ -203,16 +203,18 @@ def posteriogram(y_true, y_pred, config):
 
     ax[0].scatter(X, y_true, color='black', label='Labels')
     ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
+    ax[0].scatter(X, np.where(y_true != sleepy_pred, sleepy_pred, None), color='blue', label='Sleepy Predictions where SleePy != Hybrid')
     ax[0].set_ylim(-4.5, 0.5)
     ax[0].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     ax[1].step(X, y_true, color='black')
     ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
     ax[1].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
+    ax[1].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', s=6)
     ax[1].set_ylim(-4.5, 0.5)
     ax[1].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
-    fig.legend(loc='outside right upper')
+    fig.legend(loc='outside right upper', prop={'size': 6})
 
     if not config["oalpha"]:
         alpha = config["alpha"]
@@ -228,10 +230,10 @@ def posteriogram(y_true, y_pred, config):
 
 def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config):
     fig, ax = plt.subplots(2, 1)
-    # fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
+    #fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
 
-    len_min = 100
-    len_max = 140
+    len_min = 400
+    len_max = 440
     probs_sleepy = probs_sleepy[len_min:len_max]
     X = np.arange(len_max - len_min)
     y_true = y_true[len_min:len_max]
@@ -276,3 +278,26 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
     fig.savefig(f'results/probs_{description}{len_min, len_max}.png', dpi=1200)
+
+def visualize_alphas():
+    alphas = np.loadtxt('results/alphas_notrain.txt', delimiter=',')
+    accuracies = np.loadtxt('results/accuracies_notrain.txt', delimiter=',')
+
+    fig, ax = plt.subplots(2,2)
+    length = len(alphas[0])
+
+    fig.suptitle('Alphas and respective Accuracies without trained Transition Matrix')
+
+    for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
+        for j, used_set in enumerate(['train', 'test']):
+            ax[i][j].plot(alphas[i][:-4], accuracies[j][:-4])
+            ax[i][j].set_title(f'Dataset: {dataset}, set: {used_set}')
+
+    plt.xlabel('alpha')
+    plt.ylabel('Accuracy in %')
+
+    plt.show()
+
+    fig.tight_layout()
+    fig.savefig(f'results/Comparing alphas_untrained.png', dpi=1200)
+

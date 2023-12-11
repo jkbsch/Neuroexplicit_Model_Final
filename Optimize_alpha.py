@@ -23,6 +23,9 @@ class OptimizeAlpha:
         self.used_set = used_set
         self.print_all_results = print_all_results
         self.checkpoints = checkpoints
+        self.visualize = visualize
+        self.alphas = []
+        self.accuracies = []
 
         self.oalpha = oalpha
         self.all_alphas = []
@@ -43,14 +46,16 @@ class OptimizeAlpha:
             self.alpha = 0
             self.optim()
 
-        if visualize:
-            self.visualize(start_alpha, end_alpha)
+        if self.visualize:
+            self.plot(start_alpha, end_alpha)
 
     def optim(self):
         for alpha in range(self.start_alpha, self.end_alpha):
             sum_correct = 0
             sum_length = 0
             alpha = alpha * self.step
+
+
 
             if self.evaluate_result:
                 pred = []
@@ -107,6 +112,8 @@ class OptimizeAlpha:
 
             """print("alpha:", alpha, "best alpha: ", self.alpha, "correct:", sum_correct, "accuracy",
                   sum_correct / sum_length)"""
+            self.alphas.append(alpha)
+            self.accuracies.append((sum_correct/sum_length)*100)
             print(f'alpha: {alpha:.2f} best alpha: {self.alpha:.2f} correct: {sum_correct} accuracy: {(sum_correct / sum_length)*100:.4f}%')
 
         """print("best alpha between", self.start_alpha * self.step, "and", (self.end_alpha - 1) * self.step, "is: ",
@@ -114,7 +121,7 @@ class OptimizeAlpha:
         print(f'best alpha between {self.start_alpha*self.step:.2f} and {(self.end_alpha - 1)*self.step:.2f} is {self.alpha:.2f}')
         print(f'best accuracy: {(self.best_correct / self.length)*100:.4f}%')
 
-    def visualize(self, start_alpha, end_alpha):
+    def plot(self, start_alpha, end_alpha):
         config = {
             'fold': 1,
             'nr': 0,
@@ -145,14 +152,30 @@ class OptimizeAlpha:
             probs_hybrid = np.exp(probs_hybrid)
         probs_hybrid = np.divide(probs_hybrid, np.sum(probs_hybrid, axis=0)).T
 
-        posteriogram(y_true, y_pred_hybrid, config)
+        posteriogram(y_true, y_pred_hybrid,y_pred_sleepy, config)
         visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config)
 
 
 def main():
-    OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.1,
-                  print_all_results=False, trans_matrix=None, otrans=False, oalpha=False, evaluate_result=True, visualize=False,
-                  optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
+    visualize_alphas()
+    """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.3, end_alpha=0.3, step=0.05,
+                                   print_all_results=False, trans_matrix=None, otrans=True, oalpha=False,
+                                   evaluate_result=True, visualize=False,
+                                   optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')"""
+    """alphas = []
+    accuracies = []
+    for dataset in ['Sleep-EDF-2013', 'Sleep-EDF-2018']:
+        for used_set in ['train', 'test']:
+            print(f'Dataset: {dataset}, used_set: {used_set}')
+            optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=1.0, step=0.05,
+                          print_all_results=False, trans_matrix=None, otrans=False, oalpha=False, evaluate_result=False, visualize=False,
+                          optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
+            alphas.append(optimize_alpha.alphas)
+            accuracies.append(optimize_alpha.accuracies)
+    alphas = np.array(alphas)
+    accuracies = np.array(accuracies)
+    np.savetxt("results/alphas_notrain.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/accuracies_notrain.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
 
 if __name__ == "__main__":
