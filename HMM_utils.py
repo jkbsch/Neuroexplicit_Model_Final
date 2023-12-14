@@ -200,10 +200,11 @@ def posteriogram(y_true, y_pred,sleepy_pred, config):
     ax[1].set_xlim(0, length)
     y_true = y_true * -1
     y_pred = y_pred * -1
+    sleepy_pred = sleepy_pred * -1
 
     ax[0].scatter(X, y_true, color='black', label='Labels')
     ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
-    ax[0].scatter(X, np.where(y_true != sleepy_pred, sleepy_pred, None), color='blue', label='Sleepy Predictions where SleePy != Hybrid')
+    ax[0].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', label='Sleepy Predictions where SleePy != Hybrid')
     ax[0].set_ylim(-4.5, 0.5)
     ax[0].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
@@ -300,4 +301,69 @@ def visualize_alphas():
 
     fig.tight_layout()
     fig.savefig(f'results/Comparing alphas_untrained.png', dpi=1200)
+
+def analyze_errors(y_true, hybrid_pred,sleepy_pred):
+    length = len(y_true)
+    nr_same_epochs = 7
+
+    y_true = np.array(y_true)
+    hybrid_pred = np.array(hybrid_pred)
+    sleepy_pred = np.array(sleepy_pred)
+    errors_long_hybrid = np.zeros(5, dtype=int) #zählt folgenden Fehler: wenn in einer langen Phase immer gleiche Schlafphasen sind, wie oft liegt dann das jeweilige Modell falsch?
+    errors_long_sleepy = np.zeros(5, dtype=int)
+    nr_long = 0
+
+    errors_single_hybrid = np.zeros(5, dtype=int) # zählt folgenden Fehler: wenn in einer langen Phase eine einzige Epoche anders ist, erkennt es das jeweilige System?
+    errors_single_sleepy = np.zeros(5, dtype=int)
+    nr_single = 0
+
+
+
+    for i in range(length-nr_same_epochs):
+        arr = y_true[i:i+nr_same_epochs]
+        if np.all(arr == arr[0]):
+            nr_long += 1
+            if hybrid_pred[i+int(nr_same_epochs/2)] != arr[0]:
+                errors_long_hybrid[arr[0]] += 1
+            if sleepy_pred[i+int(nr_same_epochs/2)] != arr[0]:
+                errors_long_sleepy[arr[0]] += 1
+        half = int(nr_same_epochs/2)
+        arr1 = y_true[i:i+half]
+        arr2 = y_true[i+half+1:i+nr_same_epochs]
+        middle = y_true[i+half]
+
+        if np.all(arr1 == arr1[0]) and np.all(arr2 == arr2[0]) and arr1[0] == arr2[0] and middle != arr1[0]:
+            nr_single += 1
+            if hybrid_pred[i+half] != middle:
+                errors_single_hybrid[middle] += 1
+            if sleepy_pred[i+half] != middle:
+                errors_single_sleepy[middle] += 1
+
+    errors_fast_changing_hybrid = np.zeros(5, dtype=int)
+    errors_fast_changing_sleepy = np.zeros(5, dtype=int)
+    nr_fast = 0
+
+    nr_changing = 20
+    threshold = 4
+
+    for i in range(length-nr_changing):
+        debug_true= y_true[i:i+nr_changing]
+        debug_hybrid = hybrid_pred[i:i+nr_changing]
+        debug_sleepy = sleepy_pred[i:i+nr_changing]
+        count_changes = 0
+        for j in range(nr_changing-1):
+            if(y_true[i+j] != y_true[i+j+1]):
+                count_changes += 1
+        if count_changes >= threshold:
+            nr_fast += 1
+            if hybrid_pred[i+int(nr_changing/2)] != y_true[i+int(nr_changing/2)]:
+                errors_fast_changing_hybrid[y_true[i+int(nr_changing/2)]] += 1
+            if sleepy_pred[i+int(nr_changing/2)] != y_true[i+int(nr_changing/2)]:
+                errors_fast_changing_sleepy[y_true[i+int(nr_changing/2)]] += 1
+
+
+
+    return errors_long_hybrid, errors_long_sleepy, errors_single_hybrid, errors_single_sleepy, nr_long, nr_single, errors_fast_changing_hybrid, errors_fast_changing_sleepy, nr_fast
+
+
 

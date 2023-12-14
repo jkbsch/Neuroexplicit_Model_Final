@@ -61,6 +61,15 @@ class OptimizeAlpha:
                 pred = []
                 labels = []
                 sizes = []
+                errors_long_hybrid = np.zeros(5, dtype=int)
+                errors_long_sleepy = np.zeros(5, dtype=int)
+                errors_single_hybrid = np.zeros(5, dtype=int)
+                errors_single_sleepy = np.zeros(5, dtype=int)
+                errors_fast_changing_hybrid = np.zeros(5, dtype=int)
+                errors_fast_changing_sleepy = np.zeros(5, dtype=int)
+                nr_long = 0
+                nr_single = 0
+                nr_fast = 0
 
                 config = {'dataset': self.dataset,
                           'transmatrix': self.trans_matrix,
@@ -75,6 +84,7 @@ class OptimizeAlpha:
                           'checkpoints': self.checkpoints,
                           'sizes': sizes}
 
+            self.end_fold = 1
             for fold in range(1, self.end_fold + 1):
 
                 for nr in range(0, self.end_nr + 1):
@@ -100,10 +110,27 @@ class OptimizeAlpha:
                         config['sizes'].append(len(dnn_vit.P_Matrix_labels))
                         pred.extend(dnn_vit.hybrid_predictions)
                         labels.extend(dnn_vit.P_Matrix_labels)
+                        elh, els, esh, ess, nrl, nrs, efch, efcs, nrf = analyze_errors(y_true=dnn_vit.P_Matrix_labels, sleepy_pred=dnn_vit.pure_predictions, hybrid_pred=dnn_vit.hybrid_predictions)
+                        errors_long_hybrid += elh
+                        errors_long_sleepy += els
+                        errors_single_hybrid += esh
+                        errors_single_sleepy += ess
+                        nr_long +=nrl
+                        nr_single += nrs
+                        errors_fast_changing_hybrid += efch
+                        errors_fast_changing_sleepy += efcs
+                        nr_fast += nrf
 
             if self.evaluate_result:
-                if fold == self.end_fold:
-                    summarize_result(config=config, save=False, fold=fold, y_pred=pred, y_true=labels)
+                summarize_result(config=config, save=False, fold=fold, y_pred=pred, y_true=labels)
+
+                print(f'Long sleep phases according to labels with a wrong prediction: \n "Pure":\t'
+                      f'{errors_long_sleepy}\n "Hybrid":\t{errors_long_hybrid} \n\nLong sleep phases according to '
+                      f'label, with the middle sleep phase being different \n(this occured {nr_single} times) with a '
+                      f'wrong prediction in the middle: \n "Pure":\t'
+                      f'{errors_single_sleepy}\n "Hybrid":\t{errors_single_hybrid}\n\nWrong predictions in a phase '
+                      f'of 20 sleep stages where the sleep stages \nchange at least 4 times according to labels (this occurd {nr_fast} times): \n '
+                      f'"Pure:"\t{errors_fast_changing_sleepy}\n "Hybrid:"\t{errors_fast_changing_hybrid}')
 
             if sum_correct > self.best_correct:
                 self.alpha = alpha
@@ -157,11 +184,11 @@ class OptimizeAlpha:
 
 
 def main():
-    visualize_alphas()
-    """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2013', start_alpha=0.3, end_alpha=0.3, step=0.05,
-                                   print_all_results=False, trans_matrix=None, otrans=True, oalpha=False,
+    # visualize_alphas()
+    optimize_alpha = OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.05,
+                                   print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
                                    evaluate_result=True, visualize=False,
-                                   optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')"""
+                                   optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given')
     """alphas = []
     accuracies = []
     for dataset in ['Sleep-EDF-2013', 'Sleep-EDF-2018']:

@@ -78,10 +78,22 @@ plt.show()"""
 
 """for a in [True, False]:
     print(a)"""
-C = []
+"""C = []
 A = [1.0, 2.0]
 A.append(3.0)
 B = [4.0, 5.0, 6.0]
 C.append(A)
 C.append(B)
-print(C)
+print(C)"""
+
+nr_same_epochs = 7
+A = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+# B = np.array([8, 9, 10, 11, 12, 13, 14, 15])
+i = 0
+
+half = int(nr_same_epochs/2)
+arr1 = A[i:half]
+arr2 = A[i+half+1:i+nr_same_epochs]
+element = A[half]
+
+print(arr1, arr2)
