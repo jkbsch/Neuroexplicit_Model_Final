@@ -84,7 +84,7 @@ class OptimizeAlpha:
                           'checkpoints': self.checkpoints,
                           'sizes': sizes}
 
-            self.end_fold = 1
+            # self.end_fold = 1
             for fold in range(1, self.end_fold + 1):
 
                 for nr in range(0, self.end_nr + 1):
