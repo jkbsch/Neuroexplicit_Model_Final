@@ -25,7 +25,7 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
             else:
                 ax[0].text(i, j, str(f'{c:.2f}'), va='center', ha='center', color='white')
 
-    ax[0].set_title("Not-optimized Transition Matrix of Dataset Sleep-EDF-2013:", fontsize=12)
+    ax[0].set_title(f"Not-optimized Transition Matrix of {trans_matr}:", fontsize=12)
 
     ax[1].matshow(transmatrix2, cmap='magma')
     ax[1].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
@@ -39,7 +39,7 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
             else:
                 ax[1].text(i, j, str(f'{c:.2f}'), va='center', ha='center', color='white')
 
-    ax[1].set_title("Optimized Transition Matrix of Dataset Sleep-EDF-2013:", fontsize=12)
+    ax[1].set_title(f"Optimized Transition Matrix of Dataset {trans_matr}:", fontsize=12)
 
     fig.tight_layout()
 
@@ -53,4 +53,4 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
         dpi=1200)
 
 
-plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=4, lr=0.0001, alpha=0.3, epochs=60, checkpoints='given')
+plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=True, fold=1, lr=0.01, alpha=1.0, epochs=60, checkpoints='given')

@@ -333,6 +333,9 @@ def analyze_errors(y_true, hybrid_pred,sleepy_pred):
         middle = y_true[i+half]
 
         if np.all(arr1 == arr1[0]) and np.all(arr2 == arr2[0]) and arr1[0] == arr2[0] and middle != arr1[0]:
+            debug_true = y_true[i:i + nr_same_epochs]
+            debug_hybrid = hybrid_pred[i:i + nr_same_epochs]
+            debug_sleepy = sleepy_pred[i:i + nr_same_epochs]
             nr_single += 1
             if hybrid_pred[i+half] != middle:
                 errors_single_hybrid[middle] += 1
@@ -347,9 +350,9 @@ def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     threshold = 4
 
     for i in range(length-nr_changing):
-        debug_true= y_true[i:i+nr_changing]
+        """debug_true= y_true[i:i+nr_changing]
         debug_hybrid = hybrid_pred[i:i+nr_changing]
-        debug_sleepy = sleepy_pred[i:i+nr_changing]
+        debug_sleepy = sleepy_pred[i:i+nr_changing]"""
         count_changes = 0
         for j in range(nr_changing-1):
             if(y_true[i+j] != y_true[i+j+1]):
