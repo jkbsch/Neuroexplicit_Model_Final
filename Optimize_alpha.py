@@ -129,7 +129,7 @@ class OptimizeAlpha:
                       f'label, with the middle sleep phase being different \n(this occured {nr_single} times) with a '
                       f'wrong prediction in the middle: \n "Pure":\t'
                       f'{errors_single_sleepy}\n "Hybrid":\t{errors_single_hybrid}\n\nWrong predictions in a phase '
-                      f'of 20 sleep stages where the sleep stages \nchange at least 4 times according to labels (this occurd {nr_fast} times): \n '
+                      f'of 20 sleep stages where the sleep stages \nchange at least 4 times according to labels (this occured {nr_fast} times): \n '
                       f'"Pure:"\t{errors_fast_changing_sleepy}\n "Hybrid:"\t{errors_fast_changing_hybrid}')
 
             if sum_correct > self.best_correct:
@@ -185,8 +185,8 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    optimize_alpha = OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.05,
-                                   print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
+    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.05,
+                                   print_all_results=False, trans_matrix=None, otrans=True, oalpha=False,
                                    evaluate_result=True, visualize=False,
                                    optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given')
     """alphas = []

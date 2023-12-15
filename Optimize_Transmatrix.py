@@ -128,9 +128,15 @@ class OptimTransMatrix:
         normalized_trans_matr = torch.div(trans, row_sums)
         res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
         if self.use_normalized:
-            res_normalized = torch.div(res.T1, torch.sum(res.T1, dim=0))  #  außerdem habe ich return_log auf False gesetzt?
+            res_normalized = torch.exp(res.T1)
+            row_sums = torch.sum(res_normalized, dim=0)  # normalize transition matrix
+            row_sums = row_sums[None:,]
+            res_normalized = torch.div(res_normalized, row_sums)
+            res_normalized = torch.clamp(res_normalized, min=float(1e-10))
+            # res_normalized = torch.div(res_normalized, torch.sum(res_normalized, dim=1))  #  außerdem habe ich return_log auf False gesetzt?
+            res_normalized = torch.log(res_normalized)
             if self.print_info:
-                print("[INFO]: Normalization is not correctly implemented. Optimization will not work.")
+                print("[INFO]: Normalization is not correctly implemented. Optimization will not work or will be computationally heavy.")
 
         else:
             res_normalized = None
@@ -139,7 +145,7 @@ class OptimTransMatrix:
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
         for i, (inputs, targets) in enumerate(self.train_loader):
-            inputs = torch.squeeze(inputs, dim=0)
+            inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
@@ -151,6 +157,9 @@ class OptimTransMatrix:
             else:
                 pred = y_predicted_unnormalized
             loss = self.loss(torch.transpose(pred, 0, 1), targets)
+            ### Loss jetzt mal mit Labels - funktioniert noch nicht aber vlt. könnte man das implementieren
+            # loss = self.loss(torch.transpose(nn.functional.one_hot(labels_predicted), 0, 1), targets)
+            # loss = self.loss(torch.clamp(nn.functional.one_hot(labels_predicted), min=float(1e-12)), targets)
 
             if torch.isnan(loss):
                 if self.print_info:
@@ -165,7 +174,7 @@ class OptimTransMatrix:
 
             # zero the gradients after updating
             self.optimizer.zero_grad()
-            if (epoch % 10 == 0 or epoch == self.num_epochs-1) and self.print_results:
+            if (epoch % 1 == 0 or epoch == self.num_epochs-1) and self.print_results:
                 total_acc += (labels_predicted == targets).sum().item() / len(labels_predicted)
                 total_loss += loss.item()
                 nr += 1
@@ -184,7 +193,7 @@ class OptimTransMatrix:
         return True
 
     def test(self, epoch):
-        if epoch % 10 == 0 or epoch == self.num_epochs-1:
+        if epoch % 1 == 0 or epoch == self.num_epochs-1:
             test_loss, correct, nr = 0, 0, 0
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(self.test_loader):
@@ -266,7 +275,10 @@ class OptimTransMatrix:
 
 
 def main():
-    for alpha in [0.3, 0.5]:
+    OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.01, print_results=True,
+                     train_alpha=False, train_transition=True, alpha=1, fold=1, save=True,
+                     save_unsuccesful=False, use_normalized=False)
+    """for alpha in [0.3, 0.5]:
         for fold in range(1, 21):
             print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
             OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
@@ -305,7 +317,7 @@ def main():
                          train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True,
                          save_unsuccesful=True, use_normalized=False)
 
-    print("!!!\n!!!\n!!!\nDON'T FORGET TO PRINT CONSOLE OUTPUT\n!!!\n!!!\n!!!")
+    print("!!!\n!!!\n!!!\nDON'T FORGET TO PRINT CONSOLE OUTPUT\n!!!\n!!!\n!!!")"""
 
 if __name__ == "__main__":
     main()
