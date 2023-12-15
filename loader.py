@@ -116,6 +116,6 @@ class EEGDataLoader(Dataset):
                 seq_len = int(self.seq_len * 1.5)
             for i in range(len(npz_file['y']) - seq_len + 1):
                 epochs.append([file_idx, i, seq_len])
-            file_idx += 1
+            file_idx += 1  #if there are 100 epochs in the 0th observation, file_idx will be 0,i will go from 0 to 99 and seq_len
         
         return inputs, labels, epochs

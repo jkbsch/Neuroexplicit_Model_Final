@@ -21,7 +21,7 @@ class OneFoldTrainer:
         self.cfg = config
         self.tp_cfg = config['training_params']
         self.es_cfg = self.tp_cfg['early_stopping']
-        
+
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print('[INFO] Config name: {}'.format(config['name']))
         
@@ -32,7 +32,7 @@ class OneFoldTrainer:
         self.criterion = SupConLoss(temperature=self.tp_cfg['temperature'])
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.tp_cfg['lr'], weight_decay=self.tp_cfg['weight_decay'])
         
-        self.ckpt_path = os.path.join('checkpoints', config['name'])
+        self.ckpt_path = os.path.join('checkpoints_created', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
         self.early_stopping = EarlyStopping(patience=self.es_cfg['patience'], verbose=True, ckpt_path=self.ckpt_path, ckpt_name=self.ckpt_name, mode=self.es_cfg['mode'])
 
@@ -125,8 +125,18 @@ def main():
     parser.add_argument('--config', type=str, help='config file path')
     args = parser.parse_args()
 
+    # Source set gpu_devides: ChatGPT
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
+    # Get the allocated GPU device IDs from the SLURM environment
+    gpu_devices = os.environ.get('SLURM_JOB_GPUS', '0')
+
+    # Set CUDA_VISIBLE_DEVICES to the allocated GPU devices
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
+    print(gpu_devices)
+
+    # Now, you can run your GPU-accelerated program
 
     # For reproducibility
     set_random_seed(args.seed, use_cuda=True)

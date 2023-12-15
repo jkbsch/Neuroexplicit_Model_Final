@@ -10,8 +10,9 @@ from terminaltables import SingleTable
 from termcolor import colored
 
 
-_, term_width = os.popen('stty size', 'r').read().split()
-term_width = int(term_width)
+#_, term_width = os.popen('stty size', 'r').read().split()
+#term_width = int(term_width)
+term_width = 80
 
 TOTAL_BAR_LENGTH = 25.
 last_time = time.time()
@@ -101,7 +102,7 @@ def get_lr(optimizer):
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
-    def __init__(self, patience=7, verbose=False, delta=0, ckpt_path='./checkpoints', ckpt_name='checkpoint.pth', mode='min'):
+    def __init__(self, patience=7, verbose=False, delta=0, ckpt_path='./checkpoints_created', ckpt_name='checkpoint.pth', mode='min'):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
@@ -248,3 +249,4 @@ def set_random_seed(seed_value, use_cuda=True):
         torch.cuda.manual_seed_all(seed_value) # gpu vars
         torch.backends.cudnn.deterministic = True  #needed
         torch.backends.cudnn.benchmark = False
+

@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 datasets/
-checkpoints/
+checkpoints_copied/
 *.pt
 *.pth
 *.npz

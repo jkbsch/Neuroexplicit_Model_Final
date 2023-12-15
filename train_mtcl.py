@@ -1,9 +1,7 @@
-import os
 import json
 import argparse
 import warnings
 
-import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -35,7 +33,7 @@ class OneFoldTrainer:
         self.activate_train_mode()
         self.optimizer = optim.Adam([p for p in self.model.parameters() if p.requires_grad], lr=self.tp_cfg['lr'], weight_decay=self.tp_cfg['weight_decay'])
         
-        self.ckpt_path = os.path.join('checkpoints', config['name'])
+        self.ckpt_path = os.path.join('checkpoints_created', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
         self.early_stopping = EarlyStopping(patience=self.es_cfg['patience'], verbose=True, ckpt_path=self.ckpt_path, ckpt_name=self.ckpt_name, mode=self.es_cfg['mode'])
         
@@ -49,7 +47,7 @@ class OneFoldTrainer:
             load_name = self.cfg['name'].replace('SL-{:02d}'.format(self.ds_cfg['seq_len']), 'SL-01')
             load_name = load_name.replace('numScales-{}'.format(self.fp_cfg['num_scales']), 'numScales-1')
             load_name = load_name.replace(self.tp_cfg['mode'], 'pretrain')
-            load_path = os.path.join('checkpoints', load_name, 'ckpt_fold-{0:02d}.pth'.format(self.fold))
+            load_path = os.path.join('checkpoints_created', load_name, 'ckpt_fold-{0:02d}.pth'.format(self.fold))
             model.load_state_dict(torch.load(load_path), strict=False)
         model.to(self.device)
         print('[INFO] Model prepared, Device used: {} GPU:{}'.format(self.device, self.args.gpu))
@@ -132,7 +130,9 @@ class OneFoldTrainer:
         y_true = np.zeros(0)
         y_pred = np.zeros((0, self.cfg['classifier']['num_classes']))
 
-        for i, (inputs, labels) in enumerate(self.loader_dict[mode]):
+        for i, (inputs, labels) in enumerate(self.loader_dict[mode]):  # hier ist es seltsam: wenn man die indizes exakt verfolgt (i * batch_size), dann sind die verwendeten Labels nicht exakt
+            # entsprechend der passenden Position in den Labels aus den Input-Data (Bsp.: i=12, 12*64 = 768; labels im Tensor sind z.B. (ausgedacht): 1, 1, 2, 3, 0, 0; an stelle 768 in original-Labels z.B. 0, 0, 0, 1, 1, 2, 3, 0, 0
+            # print("i: ", i, "\n labels.size(): ", labels.size())
             loss = 0
             total += labels.size(0)
             inputs = inputs.to(self.device)
@@ -161,7 +161,40 @@ class OneFoldTrainer:
             return y_true, y_pred
         else:
             raise NotImplementedError
-    
+
+    @torch.no_grad()  # evaluation, so no gradient needs to be calculated
+    def Evalute_P_Matr(self):
+        self.model.eval()  # set model in evaluation mode
+        correct, total, eval_loss = 0, 0, 0  # init counters
+        y_true = np.zeros(0)  # init arrays
+        y_pred = np.zeros((0, self.cfg['classifier']['num_classes']))
+        y_probs = np.zeros((0, self.cfg['classifier']['num_classes']))
+
+        for i, (inputs, labels) in enumerate(self.loader_dict['P']):  # enumerate the dataloader
+            loss = 0
+            total += labels.size(0)
+            inputs = inputs.to(self.device)
+            labels = labels.view(-1).to(self.device)
+
+            outputs = self.model(inputs)  # push data to cpu/gpu and run the model
+            outputs_sum = torch.zeros_like(outputs[0])  # init empty tensor
+
+            for j in range(len(outputs)):  # sum over outputs
+                loss += self.criterion(outputs[j], labels)
+                outputs_sum += outputs[j]
+
+            eval_loss += loss.item()
+            softmax_output = torch.softmax(outputs_sum, dim=1)  # calculate softmax
+            predicted = torch.argmax(outputs_sum,1)  # use argmax to calculate model prediction
+            correct += predicted.eq(labels).sum().item()  # evaluate predicted ?= label
+
+            y_true = np.concatenate([y_true, labels.cpu().numpy()])  # convert tensors to numpy arrays
+            y_pred = np.concatenate([y_pred, outputs_sum.cpu().numpy()])
+            y_probs = np.concatenate([y_probs, softmax_output.cpu().numpy()])
+
+        return y_true, y_pred, y_probs  # return results
+
+
     def run(self):
         for epoch in range(self.tp_cfg['max_epochs']):
             print('\n[INFO] Fold: {}, Epoch: {}'.format(self.fold, epoch))
@@ -185,8 +218,22 @@ def main():
     parser.add_argument('--config', type=str, help='config file path')
     args = parser.parse_args()
 
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    # Source: ChatGPT
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
+    # Get the allocated GPU device IDs from the SLURM environment
+    gpu_devices = os.environ.get('SLURM_JOB_GPUS', '0')
+
+    # Set CUDA_VISIBLE_DEVICES to the allocated GPU devices
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
+    print(gpu_devices)
+
+    # Now, you can run your GPU-accelerated program
+
+
+    #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     # For reproducibility
     set_random_seed(args.seed, use_cuda=True)
