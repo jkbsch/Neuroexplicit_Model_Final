@@ -112,6 +112,7 @@ class Viterbi:
                     T1[:, i] = torch.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
                     T2[:, i] = torch.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                    # T2[:, i] = torch.nn.Softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
                 else:
                     T1[:, i] = np.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T, 1)
@@ -136,8 +137,10 @@ class Viterbi:
 
         # Build the output, optimal model trajectory
         if self.is_torch:
-            x = torch.empty(self.T, dtype=torch.int, device=self.device)
+            x = torch.empty(self.T, dtype=torch.int64, device=self.device)
+            # x = torch.empty(self.T, dtype=torch.float64, device=self.device)
             x[-1] = torch.argmax(T1[:, self.T - 1])
+            # x[-1] = torch.nn.Softmax(T1[:, self.T - 1])
         else:
             x = np.empty(self.T, 'B')
             x[-1] = np.argmax(T1[:, self.T - 1])

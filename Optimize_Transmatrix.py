@@ -148,7 +148,8 @@ class OptimTransMatrix:
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
-
+            labels_predicted = labels_predicted.to(dtype=torch.int64)
+            one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
             """if i % 10 == 0:
                 print(self.trans)"""
 
@@ -157,9 +158,10 @@ class OptimTransMatrix:
             else:
                 pred = y_predicted_unnormalized
             loss = self.loss(torch.transpose(pred, 0, 1), targets)
-            ### Loss jetzt mal mit Labels - funktioniert noch nicht aber vlt. könnte man das implementieren
+            ### Loss jetzt mal mit Predicted Labels - funktioniert noch nicht aber vlt. könnte man das implementieren
             # loss = self.loss(torch.transpose(nn.functional.one_hot(labels_predicted), 0, 1), targets)
             # loss = self.loss(torch.clamp(nn.functional.one_hot(labels_predicted), min=float(1e-12)), targets)
+            # loss = self.loss(one_hot, targets)
 
             if torch.isnan(loss):
                 if self.print_info:
@@ -174,7 +176,7 @@ class OptimTransMatrix:
 
             # zero the gradients after updating
             self.optimizer.zero_grad()
-            if (epoch % 1 == 0 or epoch == self.num_epochs-1) and self.print_results:
+            if (epoch % 10 == 0 or epoch == self.num_epochs-1) and self.print_results:
                 total_acc += (labels_predicted == targets).sum().item() / len(labels_predicted)
                 total_loss += loss.item()
                 nr += 1
@@ -193,7 +195,7 @@ class OptimTransMatrix:
         return True
 
     def test(self, epoch):
-        if epoch % 1 == 0 or epoch == self.num_epochs-1:
+        if epoch % 10 == 0 or epoch == self.num_epochs-1:
             test_loss, correct, nr = 0, 0, 0
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(self.test_loader):
@@ -201,11 +203,15 @@ class OptimTransMatrix:
                     targets = torch.squeeze(targets, dim=0)
                     labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
 
+                    labels_predicted = labels_predicted.to(dtype=torch.int64)
+                    one_hot = nn.functional.one_hot(labels_predicted, 5).to(dtype=torch.float64)
+
                     if self.use_normalized:
                         pred = y_predicted_normalized
                     else:
                         pred = y_predicted_unnormalized
                     test_loss += self.loss(torch.transpose(pred, 0, 1), targets).item()
+                    #test_loss += self.loss(one_hot, targets)
                     correct += (labels_predicted == targets).sum().item() / len(labels_predicted)
                     nr += 1
 
@@ -276,7 +282,7 @@ class OptimTransMatrix:
 
 def main():
     OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.01, print_results=True,
-                     train_alpha=False, train_transition=True, alpha=1, fold=1, save=True,
+                     train_alpha=False, train_transition=True, alpha=0.3, fold=1, save=False,
                      save_unsuccesful=False, use_normalized=False)
     """for alpha in [0.3, 0.5]:
         for fold in range(1, 21):
