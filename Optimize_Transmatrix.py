@@ -144,7 +144,8 @@ class OptimTransMatrix:
 
         else:
             res_normalized = None
-        # print(f"Percentage where x == y: {np.sum(res.x.detach().cpu().numpy() == np.round((res.y.detach().cpu().numpy())))/len(res.x)} ")
+        if self.softmax:
+            print(f"Percentage where x == y: {np.sum(res.x.detach().cpu().numpy() == np.round((res.y.detach().cpu().numpy())))/len(res.x)} ")
         return res.x, res.T1, res_normalized, res.y
 
     def train(self, epoch):
