@@ -6,8 +6,8 @@ from Viterbi.Viterbi_Algorithm import *
 
 class OptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1, num_epochs=2,
-                 learning_rate=0.0000001, alpha=None, train_transition=True, train_alpha=False, save=False,
-                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True):
+                 learning_rate=0.0001, alpha=None, train_transition=True, train_alpha=False, save=False,
+                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -27,6 +27,7 @@ class OptimTransMatrix:
         self.no_nan = True
         self.save_unsuccesful = save_unsuccesful
         self.use_normalized = use_normalized
+        self.softmax = softmax
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
                                                  self.fold)
@@ -37,8 +38,11 @@ class OptimTransMatrix:
 
         self.learning_rate = learning_rate
         self.num_epochs = num_epochs
-
-        self.loss = nn.CrossEntropyLoss()
+        if self.softmax:
+            # self.loss = nn.KLDivLoss(reduction='batchmean')
+            self.loss = nn.MSELoss()
+        else:
+            self.loss = nn.CrossEntropyLoss()
 
         train_params = []
         if train_transition:
@@ -140,14 +144,17 @@ class OptimTransMatrix:
 
         else:
             res_normalized = None
-        return res.x, res.T1, res_normalized
+        # print(f"Percentage where x == y: {np.sum(res.x.detach().cpu().numpy() == np.round((res.y.detach().cpu().numpy())))/len(res.x)} ")
+        return res.x, res.T1, res_normalized, res.y
 
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
         for i, (inputs, targets) in enumerate(self.train_loader):
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
-            labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
+            if self.softmax:
+                targets = targets.to(dtype=torch.float64)
+            labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
             labels_predicted = labels_predicted.to(dtype=torch.int64)
             one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
             """if i % 10 == 0:
@@ -157,7 +164,11 @@ class OptimTransMatrix:
                 pred = y_predicted_normalized
             else:
                 pred = y_predicted_unnormalized
-            loss = self.loss(torch.transpose(pred, 0, 1), targets)
+            if self.softmax:
+                loss = self.loss(torch.log(res_softmax), targets)
+            else:
+                loss = self.loss(torch.transpose(pred, 0, 1), targets)
+
             ### Loss jetzt mal mit Predicted Labels - funktioniert noch nicht aber vlt. könnte man das implementieren
             # loss = self.loss(torch.transpose(nn.functional.one_hot(labels_predicted), 0, 1), targets)
             # loss = self.loss(torch.clamp(nn.functional.one_hot(labels_predicted), min=float(1e-12)), targets)
@@ -176,7 +187,7 @@ class OptimTransMatrix:
 
             # zero the gradients after updating
             self.optimizer.zero_grad()
-            if (epoch % 10 == 0 or epoch == self.num_epochs-1) and self.print_results:
+            if (epoch % 1 == 0 or epoch == self.num_epochs-1) and self.print_results:
                 total_acc += (labels_predicted == targets).sum().item() / len(labels_predicted)
                 total_loss += loss.item()
                 nr += 1
@@ -195,22 +206,26 @@ class OptimTransMatrix:
         return True
 
     def test(self, epoch):
-        if epoch % 10 == 0 or epoch == self.num_epochs-1:
+        if epoch % 1 == 0 or epoch == self.num_epochs-1:
             test_loss, correct, nr = 0, 0, 0
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(self.test_loader):
                     inputs = torch.squeeze(inputs, dim=0)
                     targets = torch.squeeze(targets, dim=0)
-                    labels_predicted, y_predicted_unnormalized, y_predicted_normalized = self.forward(inputs)
+                    labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
 
                     labels_predicted = labels_predicted.to(dtype=torch.int64)
-                    one_hot = nn.functional.one_hot(labels_predicted, 5).to(dtype=torch.float64)
+                    # one_hot = nn.functional.one_hot(labels_predicted, 5).to(dtype=torch.float64)
 
                     if self.use_normalized:
                         pred = y_predicted_normalized
                     else:
                         pred = y_predicted_unnormalized
-                    test_loss += self.loss(torch.transpose(pred, 0, 1), targets).item()
+                    if self.softmax:
+                        loss = self.loss(torch.log(res_softmax), targets)
+                    else:
+                        loss = self.loss(torch.transpose(pred, 0, 1), targets)
+                    test_loss += loss.item()
                     #test_loss += self.loss(one_hot, targets)
                     correct += (labels_predicted == targets).sum().item() / len(labels_predicted)
                     nr += 1
@@ -281,9 +296,9 @@ class OptimTransMatrix:
 
 
 def main():
-    OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.01, print_results=True,
-                     train_alpha=False, train_transition=True, alpha=0.3, fold=1, save=False,
-                     save_unsuccesful=False, use_normalized=False)
+    OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.001, print_results=True,
+                     train_alpha=True, train_transition=False, alpha=0.5, fold=1, save=False,
+                     save_unsuccesful=False, use_normalized=False, softmax=True)
     """for alpha in [0.3, 0.5]:
         for fold in range(1, 21):
             print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')

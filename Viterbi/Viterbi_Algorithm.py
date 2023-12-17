@@ -28,19 +28,23 @@ class Viterbi:
             c.f. T2 to find the most likely path to get there) the x_j-1 of the most likely path so far
     """
 
+
     def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True):
+        # check if the input is a torch tensor or a numpy array
         if torch.is_tensor(A):
             self.is_torch = True
             self.device = A.device
         else:
             self.is_torch = False
 
+        # Initialize the model given the parameters
         self.A = A
         #self.A[A<0] = 0
         self.P = P
         self.logscale = logscale
         self.print_info = print_info
 
+        # Initialize the return_log variable
         if return_log is None:
             self.return_log = self.logscale
         else:
@@ -54,10 +58,11 @@ class Viterbi:
         else:
             self.Pi = Pi if Pi is not None else np.full(self.K, 1 / self.K)
 
+
         self.alpha = self.alpha(alpha)
 
         self.T = len(P)
-
+        # convert to logscale if needed
         if self.logscale:  # convert to logscale
             if self.is_torch:
                 self.A = torch.log(self.A)
@@ -68,8 +73,12 @@ class Viterbi:
                 self.P = np.log(self.P)
                 self.Pi = np.log(self.Pi)
 
-        (self.x, self.T1, self.T2) = self.calc_viterbi()
+        if self.is_torch:
+            self.x, self.T1, self.T2, self.T3, self.y = self.calc_viterbi()
+        else:
+            (self.x, self.T1, self.T2) = self.calc_viterbi()
 
+    # check if alpha is None and set it to 0.5 if it is
     def alpha(self, alpha):
         if alpha is None:
             if self.is_torch:
@@ -84,11 +93,14 @@ class Viterbi:
         else:
             return alpha
 
+    # Calculate the most likely state trajectory using the Viterbi algorithm
     def calc_viterbi(self):
 
+        # Initialize the tracking tables
         if self.is_torch:
             T1 = torch.empty((self.K, self.T), dtype=torch.float64, device=self.device)
             T2 = torch.empty((self.K, self.T), dtype=torch.int, device=self.device)
+            T3 = torch.zeros((self.K, self.T), dtype=torch.float64, device=self.device)
         else:
             T1 = np.empty((self.K, self.T), 'd')
             T2 = np.empty((self.K, self.T), 'B')
@@ -112,7 +124,9 @@ class Viterbi:
                     T1[:, i] = torch.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
                     T2[:, i] = torch.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
-                    # T2[:, i] = torch.nn.Softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                    temp = torch.nn.functional.softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                    T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None]).squeeze(1)
+
                 else:
                     T1[:, i] = np.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T, 1)
@@ -138,15 +152,19 @@ class Viterbi:
         # Build the output, optimal model trajectory
         if self.is_torch:
             x = torch.empty(self.T, dtype=torch.int64, device=self.device)
+            y = torch.empty(self.T, dtype=torch.float64, device=self.device)
             # x = torch.empty(self.T, dtype=torch.float64, device=self.device)
             x[-1] = torch.argmax(T1[:, self.T - 1])
-            # x[-1] = torch.nn.Softmax(T1[:, self.T - 1])
+            temp = torch.nn.functional.softmax(T1[:, self.T - 1], dim=0)
+            y[-1] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None])
         else:
             x = np.empty(self.T, 'B')
             x[-1] = np.argmax(T1[:, self.T - 1])
 
         for i in reversed(range(1, self.T)):
             x[i - 1] = T2[x[i], i]
+            if self.is_torch:
+                y[i - 1] = T3[x[i], i]
 
         if self.logscale != self.return_log:
             if self.return_log:
@@ -160,7 +178,10 @@ class Viterbi:
                 else:
                     T1 = np.exp(T1)
 
-        return x, T1, T2
+        if self.is_torch:
+            return x, T1, T2, T3, y
+        else:
+            return x, T1, T2
 
     """#observations: normal = 0, cold = 1, dizzy = 2 #states: Healthy = 0, Fever = 1 #y = np.array([0, 1, 
     2]) #observation state sequence; expl.: observations are normal(0) then cold (1) then dizzy (2) A = np.array([[
@@ -175,14 +196,14 @@ class Viterbi:
 def main():
     A = np.array([[0.7, 0.3], [0.9, 0.1]])
     Pi = np.array([0.8, 0.2])
-    P = np.array([[.3, .3], [0.8, 0.3], [0.4, 0.6]])
+    P = np.array([[0.1, .9], [0.9, 0.1], [0.01, 0.99]])
 
     A1 = torch.from_numpy(A).to(dtype=torch.float64)
     Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64)
     P1 = torch.from_numpy(P).to(dtype=torch.float64)
 
     Viterbi_1 = Viterbi(A, P, Pi, logscale=True, return_log=True)
-    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=False, return_log=True)
+    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=True, return_log=True)
 
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
     x_2, T1_2, T2_2 = Viterbi_2.x.numpy(), Viterbi_2.T1.numpy(), Viterbi_2.T2.numpy()

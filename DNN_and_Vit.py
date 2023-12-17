@@ -35,11 +35,17 @@ class DnnAndVit:
 
         self.selected_P_Matrix()
 
-        self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
+        if torch.is_tensor(self.Transition_Matrix):
+            self.hybrid_predictions, self.hybrid_probs, self.hybrid_softmax = self.hybrid_predictions()
+        else:
+            self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
 
 
         self.korrekt_SleePy = np.sum(self.P_Matrix_labels == self.pure_predictions)
         self.korrekt_hybrid = np.sum(self.P_Matrix_labels == self.hybrid_predictions)
+
+        if torch.is_tensor(self.Transition_Matrix):
+            self.compare_softmax_argmax = np.sum(self.hybrid_predictions == np.round((self.hybrid_softmax.detach().cpu().numpy())))
 
 
 
@@ -97,7 +103,10 @@ class DnnAndVit:
         logscale=self.logscale, alpha=self.alpha, print_info=self.print_info) return vit.x.numpy()"""
         vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
                       print_info=self.print_info)
-        return vit.x, vit.T1
+        if torch.is_tensor(self.Transition_Matrix):
+            return vit.x, vit.T1, vit.y
+        else:
+            return vit.x, vit.T1
 
 
 def main():

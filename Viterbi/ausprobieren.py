@@ -86,6 +86,7 @@ C.append(A)
 C.append(B)
 print(C)"""
 
+
 nr_same_epochs = 7
 A = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 # B = np.array([8, 9, 10, 11, 12, 13, 14, 15])
@@ -97,3 +98,5 @@ arr2 = A[i+half+1:i+nr_same_epochs]
 element = A[half]
 
 print(arr1, arr2)
+
+
