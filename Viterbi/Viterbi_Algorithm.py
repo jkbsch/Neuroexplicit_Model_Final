@@ -29,7 +29,7 @@ class Viterbi:
     """
 
 
-    def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True):
+    def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True, softmax=False):
         # check if the input is a torch tensor or a numpy array
         if torch.is_tensor(A):
             self.is_torch = True
@@ -43,6 +43,7 @@ class Viterbi:
         self.P = P
         self.logscale = logscale
         self.print_info = print_info
+        self.softmax = softmax
 
         # Initialize the return_log variable
         if return_log is None:
@@ -100,7 +101,8 @@ class Viterbi:
         if self.is_torch:
             T1 = torch.empty((self.K, self.T), dtype=torch.float64, device=self.device)
             T2 = torch.empty((self.K, self.T), dtype=torch.int, device=self.device)
-            T3 = torch.zeros((self.K, self.T), dtype=torch.float64, device=self.device)
+            if self.softmax:
+                T3 = torch.zeros((self.K, self.T), dtype=torch.float64, device=self.device)
         else:
             T1 = np.empty((self.K, self.T), 'd')
             T2 = np.empty((self.K, self.T), 'B')
@@ -124,8 +126,9 @@ class Viterbi:
                     T1[:, i] = torch.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
                     T2[:, i] = torch.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
-                    temp = torch.nn.functional.softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
-                    T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None]).squeeze(1)
+                    if self.softmax:
+                        temp = torch.nn.functional.softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                        T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None]).squeeze(1)
 
                 else:
                     T1[:, i] = np.max(
@@ -155,15 +158,16 @@ class Viterbi:
             y = torch.empty(self.T, dtype=torch.float64, device=self.device)
             # x = torch.empty(self.T, dtype=torch.float64, device=self.device)
             x[-1] = torch.argmax(T1[:, self.T - 1])
-            temp = torch.nn.functional.softmax(T1[:, self.T - 1], dim=0)
-            y[-1] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None])
+            if self.softmax:
+                temp = torch.nn.functional.softmax(T1[:, self.T - 1], dim=0)
+                y[-1] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None])
         else:
             x = np.empty(self.T, 'B')
             x[-1] = np.argmax(T1[:, self.T - 1])
 
         for i in reversed(range(1, self.T)):
             x[i - 1] = T2[x[i], i]
-            if self.is_torch:
+            if self.is_torch and self.softmax:
                 y[i - 1] = T3[x[i], i]
 
         if self.logscale != self.return_log:
@@ -179,6 +183,8 @@ class Viterbi:
                     T1 = np.exp(T1)
 
         if self.is_torch:
+            if not self.softmax:
+                T3, y = None, None
             return x, T1, T2, T3, y
         else:
             return x, T1, T2

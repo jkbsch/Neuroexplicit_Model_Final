@@ -5,7 +5,7 @@ from HMM_utils import *
 class DnnAndVit:
 
     def __init__(self, dataset="Sleep-EDF-2013", fold=1, nr=0, used_set="train", trans_matr="edf-2013-and-edf-2018",
-                 length=None, start=None, logscale=True, alpha=None, print_info=True, checkpoints='given'):
+                 length=None, start=None, logscale=True, alpha=None, print_info=True, checkpoints='given', softmax=False):
         self.P_Matrix_labels = None
         self.P_Matrix_probs = None
         self.start = None
@@ -20,6 +20,7 @@ class DnnAndVit:
         self.alpha = alpha
         self.print_info = print_info
         self.checkpoints = checkpoints
+        self.softmax = softmax
 
         if type(trans_matr) == str:
             self.Transition_Matrix = load_Transition_Matrix(trans_matr)[1]
@@ -102,7 +103,7 @@ class DnnAndVit:
         """vit = Viterbi(A=torch.from_numpy(self.Transition_Matrix), P=torch.from_numpy(self.P_Matrix_probs),
         logscale=self.logscale, alpha=self.alpha, print_info=self.print_info) return vit.x.numpy()"""
         vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
-                      print_info=self.print_info)
+                      print_info=self.print_info, softmax=self.softmax)
         if torch.is_tensor(self.Transition_Matrix):
             return vit.x, vit.T1, vit.y
         else:

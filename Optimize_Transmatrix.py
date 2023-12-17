@@ -130,7 +130,7 @@ class OptimTransMatrix:
         row_sums = torch.sum(trans, dim=1) # normalize transition matrix
         row_sums = row_sums[:,None]
         normalized_trans_matr = torch.div(trans, row_sums)
-        res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False)
+        res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False, softmax=self.softmax)
         if self.use_normalized:
             res_normalized = torch.exp(res.T1)
             row_sums = torch.sum(res_normalized, dim=0)  # normalize transition matrix
