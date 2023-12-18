@@ -232,7 +232,7 @@ def main():
     print(T2_1)
     print(T2_2)
 
-    # ohne das 2* unterscheidet sich T2, je nachdem ob in logscale oder nicht gerechnet wird?
+    # ohne das 2* unterscheidet sich T2, je nachdem ob in logscale oder nicht gerechnet wird? Oder falsch implementiert?
 
 
 if __name__ == "__main__":
