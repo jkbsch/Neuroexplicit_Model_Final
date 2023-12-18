@@ -123,28 +123,42 @@ class Viterbi:
         for i in range(1, self.T):
             if self.logscale:
                 if self.is_torch:
-                    T1[:, i] = torch.max(
+                    """T1[:, i] = torch.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[None, i]).T, 1).values
                     T2[:, i] = torch.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
                     if self.softmax:
                         temp = torch.nn.functional.softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
-                        T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None]).squeeze(1)
+                        T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None]).squeeze(1)"""
+                    T1[:, i] = torch.max(
+                        T1[:, i - 1] + self.alpha * self.A.T, 1).values + (1-self.alpha) * self.P[i]
+                    T2[:, i] = torch.argmax(T1[:, i - 1] + self.alpha * self.A.T, 1)
+                    if self.softmax:
+                        temp = torch.nn.functional.softmax(T1[:, i - 1] + self.alpha * self.A.T, 1)
+                        T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:, None]).squeeze(1)
 
                 else:
-                    T1[:, i] = np.max(
+                    """T1[:, i] = np.max(
                         T1[:, i - 1] + 2 * self.alpha * self.A.T + 2 * (1 - self.alpha) * (self.P[np.newaxis, i]).T, 1)
+                    # np.max(T1[:, i - 1] + self.alpha * self.A.T + (1 - self.alpha) * (self.P[np.newaxis, i]).T, 1)
                     # Add the probability
                     # (logscale) of the last state's occurrence to the transition probability and to the probability for
                     # the current state from the DNN. Find the state from the previous period that maximizes this
                     # probability.
-                    T2[:, i] = np.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
+                    T2[:, i] = np.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)"""
+                    T1[:, i] = np.max(
+                        T1[:, i - 1] + self.alpha * self.A.T, 1) + (1-self.alpha) * self.P[i]
+                    # Add the probability
+                    # (logscale) of the last state's occurrence to the transition probability and to the probability for
+                    # the current state from the DNN. Find the state from the previous period that maximizes this
+                    # probability.
+                    T2[:, i] = np.argmax(T1[:, i - 1] + self.alpha * self.A.T, 1)
 
             else:
                 if self.is_torch:
-                    T1[:, i] = torch.max(T1[:, i - 1] * self.A.T * (self.P[None, i]).T, 1).values
+                    T1[:, i] = torch.max(T1[:, i - 1] * self.A.T, 1).values * self.P[i]
                     T2[:, i] = torch.argmax(T1[:, i - 1] * self.A.T, 1)
                 else:
-                    T1[:, i] = np.max(T1[:, i - 1] * self.A.T * (self.P[np.newaxis, i]).T, 1)
+                    T1[:, i] = np.max(T1[:, i - 1] * self.A.T, 1) * self.P[i]
                     # Multiply the probability of the last state's occurrence
                     # with the transition probability and with the probability for the current state from the DNN.
                     # Find the state from the previous period that maximizes this probability.
@@ -209,12 +223,16 @@ def main():
     P1 = torch.from_numpy(P).to(dtype=torch.float64)
 
     Viterbi_1 = Viterbi(A, P, Pi, logscale=True, return_log=True)
-    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=True, return_log=True)
+    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=False, return_log=True)
 
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
     x_2, T1_2, T2_2 = Viterbi_2.x.numpy(), Viterbi_2.T1.numpy(), Viterbi_2.T2.numpy()
 
     print(x_1 == x_2, np.round(T1_1, 4) == np.round(T1_2, 4), T2_1 == T2_2)
+    print(T2_1)
+    print(T2_2)
+
+    # ohne das 2* unterscheidet sich T2, je nachdem ob in logscale oder nicht gerechnet wird?
 
 
 if __name__ == "__main__":
