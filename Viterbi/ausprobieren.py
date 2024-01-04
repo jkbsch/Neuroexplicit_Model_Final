@@ -1,6 +1,6 @@
 import numpy as np
-import torch
-import matplotlib.pyplot as plt
+#import torch
+#import matplotlib.pyplot as plt
 
 """a = np.zeros((3,2))
 print(a)
