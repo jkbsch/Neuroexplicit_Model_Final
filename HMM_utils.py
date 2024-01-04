@@ -76,19 +76,29 @@ def set_dataset(used_set, dataset, trans_matrix):
             end_fold = 20
             end_nr = 1
             leave_out = [(14, 1)]
-        else:
+        elif used_set == 'train':
             end_fold = 20
             end_nr = 32
             leave_out = [()]
+        elif used_set == 'val':
+            end_fold = 20
+            end_nr = 2
+            leave_out = [()]
+            print("[INFO]: val set must be checked")
     elif dataset == 'Sleep-EDF-2018':
         if used_set == 'test':
             end_fold = 10
             end_nr = 15
             leave_out = [(2, 15), (5, 15), (7, 15), (9, 14), (9, 15), (10, 14), (10, 15)]
-        else:
+        elif used_set == 'train':
             end_fold = 10
             end_nr = 122
             leave_out = [()]
+        elif used_set == 'val':
+            end_fold = 10
+            end_nr = 7
+            leave_out = [()]
+            print("[INFO]: val set must be checked")
     else:
         print("[INFO]: Dataset is not or incorrectly defined. Dataset is set to Sleep-EDF-2013")
         dataset = 'Sleep-EDF-2013'
@@ -96,10 +106,15 @@ def set_dataset(used_set, dataset, trans_matrix):
             end_fold = 20
             end_nr = 1
             leave_out = [(14,1)]
-        else:
+        elif used_set == 'train':
             end_fold = 20
             end_nr = 32
             leave_out = [()]
+        elif used_set == 'val':
+            end_fold = 20
+            end_nr = 2
+            leave_out = [()]
+            print("[INFO]: val set must be checked")
 
     if load_Transition_Matrix(trans_matrix, check=True):
         return dataset, trans_matrix, end_fold, end_nr, leave_out
@@ -115,9 +130,16 @@ def set_dataset(used_set, dataset, trans_matrix):
 
 # adapted from SleePyCo
 def summarize_result(config, fold, y_true, y_pred, save=True):
+
+    if config["oalpha"]:
+        alpha = config["all_alphas"]
+    else:
+        alpha = config["alpha"]
+
     os.makedirs('results', exist_ok=True)
     result_dict = skmet.classification_report(y_true, y_pred, digits=3, output_dict=True)
     cm = skmet.confusion_matrix(y_true, y_pred)
+    print(cm)
 
     accuracy = round(result_dict['accuracy'] * 100, 1)
     macro_f1 = round(result_dict['macro avg']['f1-score'] * 100, 1)
@@ -157,14 +179,33 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
         ['R', cm[4][0], cm[4][1], cm[4][2], cm[4][3], cm[4][4], rpr, rre, rf1],
     ]
 
+    confusion_matrix = np.divide(cm, (np.sum(cm, 1)).reshape(5, 1))
+    fig, ax = plt.subplots()
+    ax.matshow(confusion_matrix, cmap='magma')
+    ax.set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+    ax.set_xticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
+
+    for i in range(5):
+        for j in range(5):
+            c = confusion_matrix[j, i] * 100
+            if c >= 60:
+                ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='black')
+            else:
+                ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='white')
+    plt.xlabel('Predicted Class')
+    plt.ylabel('Actual Class')
+    ax.set_title('Confusion Matrix')
+    plt.figtext(0.01, 0.01,f'Confusion Matrix for : \nDataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, \ncheckpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}', fontsize=6)
+
+    plt.show()
+
+    fig.savefig(
+        f'results/ConfusionMatrix_Dataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}.png', dpi=1200)
+
     overall_dt = SingleTable(overall_data, colored('OVERALL RESULT', 'red'))
     perclass_dt = SingleTable(perclass_data, colored('PER-CLASS RESULT', 'red'))
 
     print('\n[INFO] Evaluation result from fold 1 to {}'.format(fold))
-    if config["oalpha"]:
-        alpha = config["all_alphas"]
-    else:
-        alpha = config["alpha"]
     print(f'\nDataset: "{config["dataset"]}" Transition Matrix: {config["transmatrix"]}, Set: "{config["set"]}", trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}')
     print('\n' + overall_dt.table)
     print('\n' + perclass_dt.table)
