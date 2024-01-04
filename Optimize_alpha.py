@@ -11,7 +11,7 @@ def set_alphas(start_alpha, end_alpha, step):
 
 class OptimizeAlpha:
 
-    def __init__(self, start_alpha=0.0, end_alpha=1.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
+    def __init__(self, start_alpha=0.0, end_alpha=10.0, step=0.1, dataset='Sleep-EDF-2013', trans_matrix=None,
                  used_set='train', print_all_results=False, checkpoints='given', oalpha=False, otrans=False, evaluate_result=True,
                  visualize=False, optimize_alpha=True, lr=0.001, epochs=60, successful=True):
 

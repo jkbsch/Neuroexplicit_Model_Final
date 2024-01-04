@@ -83,9 +83,9 @@ class Viterbi:
     def alpha(self, alpha):
         if alpha is None:
             if self.is_torch:
-                return torch.tensor([0.5], dtype=torch.float64, device=self.device)
+                return torch.tensor([1.0], dtype=torch.float64, device=self.device)
             else:
-                return 0.5
+                return 1.0
         elif self.logscale is False:
             if self.print_info:
                 print("[INFO]: Specifying alpha with logscale = False is not implemented. Logscale is set to True.")
@@ -129,8 +129,7 @@ class Viterbi:
                     if self.softmax:
                         temp = torch.nn.functional.softmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)
                         T3[:, i] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None]).squeeze(1)"""
-                    T1[:, i] = torch.max(
-                        T1[:, i - 1] + self.alpha * self.A.T, 1).values + (1-self.alpha) * self.P[i]
+                    T1[:, i] = torch.max(T1[:, i - 1] + self.alpha * self.A.T, 1).values + self.P[i]
                     T2[:, i] = torch.argmax(T1[:, i - 1] + self.alpha * self.A.T, 1)
                     if self.softmax:
                         temp = torch.nn.functional.softmax(T1[:, i - 1] + self.alpha * self.A.T, 1)
@@ -145,8 +144,7 @@ class Viterbi:
                     # the current state from the DNN. Find the state from the previous period that maximizes this
                     # probability.
                     T2[:, i] = np.argmax(T1[:, i - 1] + 2 * self.alpha * self.A.T, 1)"""
-                    T1[:, i] = np.max(
-                        T1[:, i - 1] + self.alpha * self.A.T, 1) + (1-self.alpha) * self.P[i]
+                    T1[:, i] = np.max(T1[:, i - 1] + self.alpha * self.A.T, 1) + self.P[i]
                     # Add the probability
                     # (logscale) of the last state's occurrence to the transition probability and to the probability for
                     # the current state from the DNN. Find the state from the previous period that maximizes this
@@ -222,7 +220,7 @@ def main():
     Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64)
     P1 = torch.from_numpy(P).to(dtype=torch.float64)
 
-    Viterbi_1 = Viterbi(A, P, Pi, logscale=True, return_log=True)
+    Viterbi_1 = Viterbi(A, P, Pi, logscale=True, return_log=True, alpha=1)
     Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=False, return_log=True)
 
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
@@ -232,7 +230,7 @@ def main():
     print(T2_1)
     print(T2_2)
 
-    # ohne das 2* unterscheidet sich T2, je nachdem ob in logscale oder nicht gerechnet wird? Oder falsch implementiert?
+    # ohne das 2* unterscheiden sich T1 und T2, je nachdem ob in logscale oder nicht gerechnet wird? Oder falsch implementiert?
 
 
 if __name__ == "__main__":
