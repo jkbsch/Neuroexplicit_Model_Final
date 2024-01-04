@@ -81,7 +81,7 @@ class EEGDataLoader(Dataset):
         data_fname_list = [os.path.basename(x) for x in sorted(glob.glob(os.path.join(data_root, '*.npz')))]
         data_fname_dict = {'train': [], 'test': [], 'val': []}
         split_idx_list = np.load(os.path.join('./split_idx', 'idx_{}.npy'.format(self.dset_name)), allow_pickle=True)
-
+        # split_idx_list: Liste von num_splits dictionaries; jedes beinhaltet Nummern der Datensätze, welche für train, test und val verwendet werden sollen
         assert len(split_idx_list) == self.num_splits
     
         if self.dset_name == 'Sleep-EDF-2013':

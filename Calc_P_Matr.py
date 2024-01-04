@@ -20,7 +20,7 @@ class OneFoldEvaluator(OneFoldTrainer):
         self.ds_cfg = config['dataset']
         self.tp_cfg = config['training_params']
         self.lengths = []
-        self.set = 'train'
+        self.set = 'val'
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print('[INFO] Config name: {}'.format(config['name']))
