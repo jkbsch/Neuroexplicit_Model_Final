@@ -5,7 +5,7 @@ from Viterbi.Viterbi_Algorithm import *
 
 
 class OptimTransMatrix:
-    def __init__(self, dataset='Sleep-EDF-2013', checkpoints='given', trans_matrix='EDF_2013', fold=1, num_epochs=2,
+    def __init__(self, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, num_epochs=2,
                  learning_rate=0.0001, alpha=None, train_transition=True, train_alpha=False, save=False,
                  print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False):
 
@@ -297,9 +297,9 @@ class OptimTransMatrix:
 
 
 def main():
-    OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.001, print_results=True,
-                     train_alpha=True, train_transition=False, alpha=0.5, fold=1, save=False,
-                     save_unsuccesful=False, use_normalized=False, softmax=True)
+    OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=200, learning_rate=0.0001, print_results=True,
+                     train_alpha=True, train_transition=True, alpha=1.0, fold=1, save=False,
+                     save_unsuccesful=True, use_normalized=False, softmax=False)
     """for alpha in [0.3, 0.5]:
         for fold in range(1, 21):
             print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
