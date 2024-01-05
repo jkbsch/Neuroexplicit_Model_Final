@@ -115,6 +115,8 @@ def main():
             np.savetxt(out_name + "_nr_" + str(i) + "_labels.txt", (Y_true[prev:current]), fmt="%d", delimiter=",")
             np.savetxt(out_name + "_nr_" + str(i) + "_pred.txt", (Y_pred[prev:current]), fmt="%.15f", delimiter=",")
             np.savetxt(out_name + "_nr_" + str(i) + "_probs.txt", (Y_probs[prev:current]), fmt="%.15f", delimiter=",")
+
+            print(out_name + "_nr_" + str(i) + "_labels.txt", (Y_true[prev:current]))
             prev = evaluator.lengths[i]
 
 if __name__ == "__main__":
