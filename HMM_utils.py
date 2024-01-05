@@ -332,7 +332,7 @@ def visualize_alphas():
 
     for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
         for j, used_set in enumerate(['train', 'test']):
-            ax[i][j].plot(alphas[i][:-4], accuracies[j][:-4])
+            ax[i][j].scatter(alphas[i][:-4], accuracies[j][:-4])
             ax[i][j].set_title(f'Dataset: {dataset}, set: {used_set}')
 
     plt.xlabel('alpha')
