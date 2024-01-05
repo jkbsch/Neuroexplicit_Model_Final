@@ -185,24 +185,24 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.05,
+    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.2,
                                    print_all_results=False, trans_matrix=None, otrans=True, oalpha=False,
-                                   evaluate_result=True, visualize=False,
+                                   evaluate_result=False, visualize=True,
                                    optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given')
     """alphas = []
     accuracies = []
     for dataset in ['Sleep-EDF-2013', 'Sleep-EDF-2018']:
         for used_set in ['train', 'test']:
             print(f'Dataset: {dataset}, used_set: {used_set}')
-            optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=1.0, step=0.05,
+            optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=10.0, step=0.2,
                           print_all_results=False, trans_matrix=None, otrans=False, oalpha=False, evaluate_result=False, visualize=False,
                           optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
             alphas.append(optimize_alpha.alphas)
             accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
-    np.savetxt("results/alphas_notrain.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/accuracies_notrain.txt", accuracies, fmt="%.15f", delimiter=",")"""
+    np.savetxt("results/new_alphas_notrain.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
 
 if __name__ == "__main__":

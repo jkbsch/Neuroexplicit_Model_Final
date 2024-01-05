@@ -191,7 +191,7 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
             if c >= 60:
                 ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='black')
             else:
-                ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='white')
+                ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='cornsilkcornsilk')
     plt.xlabel('Predicted Class')
     plt.ylabel('Actual Class')
     ax.set_title('Confusion Matrix')
@@ -286,8 +286,8 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     ax[0].matshow(probs_sleepy.T, label='Probabilities')
     # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
     # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
-    ax[0].scatter(X, y_true, color='black', label='Labels')
-    ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red', label='Wrong Predictions')
+    ax[0].scatter(X, y_true, color='black', label='Labels', edgecolors='cornsilk')
+    ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red', label='Wrong Predictions', edgecolors='cornsilk')
 
     ax[0].set_title('Pure Predictions')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
@@ -299,8 +299,8 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     ax[1].matshow(probs_hybrid.T, label='Probabilites')
     # ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
     # ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
-    ax[1].scatter(X, y_true, color='black')
-    ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
+    ax[1].scatter(X, y_true, color='black', edgecolors='cornsilk')
+    ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red', edgecolors='cornsilk')
 
     ax[1].set_title('Hybrid Predictions')
     ax[1].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
@@ -322,8 +322,8 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     fig.savefig(f'results/probs_{description}{len_min, len_max}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('results/alphas_notrain.txt', delimiter=',')
-    accuracies = np.loadtxt('results/accuracies_notrain.txt', delimiter=',')
+    alphas = np.loadtxt('results/new_alphas_notrain.txt', delimiter=',')
+    accuracies = np.loadtxt('results/new_accuracies_notrain.txt', delimiter=',')
 
     fig, ax = plt.subplots(2,2)
     length = len(alphas[0])
@@ -341,7 +341,7 @@ def visualize_alphas():
     plt.show()
 
     fig.tight_layout()
-    fig.savefig(f'results/Comparing alphas_untrained.png', dpi=1200)
+    fig.savefig(f'results/new_Comparing alphas_untrained.png', dpi=1200)
 
 def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     length = len(y_true)
@@ -411,3 +411,4 @@ def analyze_errors(y_true, hybrid_pred,sleepy_pred):
 
 
 
+visualize_alphas()
