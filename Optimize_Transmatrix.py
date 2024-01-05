@@ -12,6 +12,7 @@ class OptimTransMatrix:
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(self.device)
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold)
         self.dataset = self.TrainDataset.dataset
