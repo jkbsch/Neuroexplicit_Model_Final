@@ -73,6 +73,7 @@ def main():
     parser.add_argument('--config', type=str, help='config file path')
     args = parser.parse_args()
 
+
     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
@@ -86,6 +87,7 @@ def main():
 
     # Set CUDA_VISIBLE_DEVICES to the allocated GPU devices
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
+    args.gpu = gpu_devices
     print(gpu_devices)
 
     with open(args.config) as config_file:  # load config data
