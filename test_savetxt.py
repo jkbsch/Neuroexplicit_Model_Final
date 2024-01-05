@@ -1,4 +1,4 @@
 import numpy as np
 
-out_name = ("./")
-np.savetxt('test_data', X=[0, 1, 2, 3], fmt="%d", delimiter=",")
+out_name = ("./Probability_Data/")
+np.savetxt('test_data.txt', X=[0, 1, 2, 3], fmt="%d", delimiter=",")
