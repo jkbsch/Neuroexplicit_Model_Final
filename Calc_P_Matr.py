@@ -60,7 +60,6 @@ class OneFoldEvaluator(OneFoldTrainer):
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))  # load checkpoints
         y_true, y_pred, y_probs = self.Evalute_P_Matr()  # open Evaluate_P_Matr function in train_mtcl
         print('')
-        print("y_true: ", y_true, "y_pred: ", y_pred, "y_probs: ", y_probs)
 
         return y_true, y_pred, y_probs
 
@@ -92,7 +91,6 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
     args.gpu = gpu_devices
     print(gpu_devices)
-    args.gpu = '0'
 
     with open(args.config) as config_file:  # load config data
         config = json.load(config_file)
@@ -110,8 +108,6 @@ def main():
         Y_true = np.concatenate([Y_true, y_true])  # concatenate all results
         Y_pred = np.concatenate([Y_pred, y_pred])
         Y_probs = np.concatenate([Y_probs, y_probs])
-        print("Here 1")
-        print(len(evaluator.lengths), evaluator.lengths)
 
         prev = 0
         for i in range(len(evaluator.lengths)):  # save the results separated by the subject
@@ -122,8 +118,6 @@ def main():
             np.savetxt(out_name + "_nr_" + str(i) + "_pred.txt", (Y_pred[prev:current]), fmt="%.15f", delimiter=",")
             np.savetxt(out_name + "_nr_" + str(i) + "_probs.txt", (Y_probs[prev:current]), fmt="%.15f", delimiter=",")
 
-            print(out_name + "_nr_" + str(i) + "_labels.txt", (Y_true[prev:current]))
-            print("Here2")
             prev = evaluator.lengths[i]
 
 if __name__ == "__main__":
