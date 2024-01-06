@@ -89,6 +89,7 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
     args.gpu = gpu_devices
     print(gpu_devices)
+    print("Here 0.5")
 
     with open(args.config) as config_file:  # load config data
         config = json.load(config_file)
