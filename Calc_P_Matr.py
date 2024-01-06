@@ -106,6 +106,7 @@ def main():
         Y_true = np.concatenate([Y_true, y_true])  # concatenate all results
         Y_pred = np.concatenate([Y_pred, y_pred])
         Y_probs = np.concatenate([Y_probs, y_probs])
+        print("Here 1")
 
         prev = 0
         for i in range(len(evaluator.lengths)):  # save the results separated by the subject
@@ -117,6 +118,7 @@ def main():
             np.savetxt(out_name + "_nr_" + str(i) + "_probs.txt", (Y_probs[prev:current]), fmt="%.15f", delimiter=",")
 
             print(out_name + "_nr_" + str(i) + "_labels.txt", (Y_true[prev:current]))
+            print("Here2")
             prev = evaluator.lengths[i]
 
 if __name__ == "__main__":
