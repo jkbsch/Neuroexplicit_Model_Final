@@ -43,9 +43,10 @@ class OneFoldEvaluator(OneFoldTrainer):
 
     def build_dataloader(self):
         P_dataset = EEGDataLoader(self.cfg, self.fold, set=self.set)
+        print("P_dataset:", P_dataset)
         for i in range(len(P_dataset.labels)):
             self.lengths.append(len(P_dataset.labels[i]))  # save how many epochs every night has to separate later
-            print("P_dataset:", P_dataset)
+
 
         P_loader = DataLoader(dataset=P_dataset, batch_size=self.tp_cfg['batch_size'], shuffle=False,
                               num_workers=4 * len(self.args.gpu.split(",")), pin_memory=True)  # create torch dataloader
