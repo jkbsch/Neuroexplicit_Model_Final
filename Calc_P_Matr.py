@@ -58,6 +58,7 @@ class OneFoldEvaluator(OneFoldTrainer):
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))  # load checkpoints
         y_true, y_pred, y_probs = self.Evalute_P_Matr()  # open Evaluate_P_Matr function in train_mtcl
         print('')
+        print("y_true: ", y_true, "y_pred: ", y_pred, "y_probs: ", y_probs)
 
         return y_true, y_pred, y_probs
 
