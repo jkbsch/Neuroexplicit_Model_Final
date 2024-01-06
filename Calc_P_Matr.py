@@ -89,7 +89,6 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
     args.gpu = gpu_devices
     print(gpu_devices)
-    print("Here 0.5")
 
     with open(args.config) as config_file:  # load config data
         config = json.load(config_file)
@@ -108,6 +107,7 @@ def main():
         Y_pred = np.concatenate([Y_pred, y_pred])
         Y_probs = np.concatenate([Y_probs, y_probs])
         print("Here 1")
+        print(len(evaluator.lengths), evaluator.lengths)
 
         prev = 0
         for i in range(len(evaluator.lengths)):  # save the results separated by the subject
