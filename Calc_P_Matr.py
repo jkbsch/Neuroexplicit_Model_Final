@@ -43,7 +43,6 @@ class OneFoldEvaluator(OneFoldTrainer):
 
     def build_dataloader(self):
         P_dataset = EEGDataLoader(self.cfg, self.fold, set=self.set)
-        print("P_dataset labels:", P_dataset.labels)
         for i in range(len(P_dataset.labels)):
             self.lengths.append(len(P_dataset.labels[i]))  # save how many epochs every night has to separate later
 
