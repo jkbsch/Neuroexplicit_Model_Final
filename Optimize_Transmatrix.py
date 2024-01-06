@@ -300,7 +300,7 @@ class OptimTransMatrix:
 def main():
     OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=200, learning_rate=0.0001, print_results=True,
                      train_alpha=True, train_transition=True, alpha=1.0, fold=1, save=False,
-                     save_unsuccesful=True, use_normalized=False, softmax=False, checkpoints='own')
+                     save_unsuccesful=True, use_normalized=False, softmax=False)
     """for alpha in [0.3, 0.5]:
         for fold in range(1, 21):
             print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
