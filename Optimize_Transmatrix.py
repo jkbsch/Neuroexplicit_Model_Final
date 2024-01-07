@@ -80,7 +80,6 @@ class OptimTransMatrix:
                 self.train_data_labels.append(labs)
 
         def __getitem__(self, idx):
-            print("vor Probs in der getitem Funktion")
             probs = torch.squeeze(self.train_data_probs[idx], dim=0)
             labs = torch.squeeze(self.train_data_labels[idx], dim=0)
             return probs, labs
