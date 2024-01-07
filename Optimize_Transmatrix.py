@@ -15,6 +15,7 @@ class OptimTransMatrix:
         print(self.device)
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold)
+        print("Train Dataset:", self.TrainDataset.__getitem__(0))
         self.dataset = self.TrainDataset.dataset
         self.trans_matrix = self.TrainDataset.trans_matrix
         self.fold = self.TrainDataset.fold
@@ -153,14 +154,11 @@ class OptimTransMatrix:
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
         for i, (inputs, targets) in enumerate(self.train_loader):
-            print("Here0")
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
             if self.softmax:
                 targets = targets.to(dtype=torch.float64)
-            print("Here1")
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
-            print("Here2")
             labels_predicted = labels_predicted.to(dtype=torch.int64)
             one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
             """if i % 10 == 0:
@@ -184,7 +182,6 @@ class OptimTransMatrix:
                 if self.print_info:
                     print("[INFO]: loss is NaN, training was stopped. Epoch:" + str(epoch))
                 return False
-            print("Here4")
 
             # calculate gradients = backward pass
             loss.backward()
