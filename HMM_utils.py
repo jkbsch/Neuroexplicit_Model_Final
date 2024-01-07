@@ -84,7 +84,7 @@ def set_dataset(used_set, dataset, trans_matrix):
             end_fold = 20
             end_nr = 2
             leave_out = [()]
-            print("[INFO]: val set must be checked")
+            print("[ATTENTION]: val set must be checked")
     elif dataset == 'Sleep-EDF-2018':
         if used_set == 'test':
             end_fold = 10
@@ -96,9 +96,9 @@ def set_dataset(used_set, dataset, trans_matrix):
             leave_out = [()]
         elif used_set == 'val':
             end_fold = 10
-            end_nr = 7
+            end_nr = 13
             leave_out = [()]
-            print("[INFO]: val set must be checked")
+            print("[ATTENTION]: val set must be checked")
     else:
         print("[INFO]: Dataset is not or incorrectly defined. Dataset is set to Sleep-EDF-2013")
         dataset = 'Sleep-EDF-2013'
@@ -114,7 +114,7 @@ def set_dataset(used_set, dataset, trans_matrix):
             end_fold = 20
             end_nr = 2
             leave_out = [()]
-            print("[INFO]: val set must be checked")
+            print("[ATTENTION]: val set must be checked")
 
     if load_Transition_Matrix(trans_matrix, check=True):
         return dataset, trans_matrix, end_fold, end_nr, leave_out
