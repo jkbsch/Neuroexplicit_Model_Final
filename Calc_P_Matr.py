@@ -110,7 +110,7 @@ def main():
 
         prev = 0
         for i in range(len(evaluator.lengths)):  # save the results separated by the subject
-            out_name = "./Own-Probability_Data/Own-Sleep-EDF-2018-val/" + "_dataset_" + config['dataset'][
+            out_name = "./Own-Probability_Data/Own-Sleep-EDF-2013-val/" + "_dataset_" + config['dataset'][
                 'name'] + "_set_" + evaluator.set + "_fold_" + str(evaluator.fold)
             current = prev + evaluator.lengths[i]
             np.savetxt(out_name + "_nr_" + str(i) + "_labels.txt", (Y_true[prev:current]), fmt="%d", delimiter=",")
