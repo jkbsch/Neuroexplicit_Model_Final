@@ -12,7 +12,6 @@ class OptimTransMatrix:
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.device = 'cpu'
         print(self.device)
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold)
@@ -77,6 +76,7 @@ class OptimTransMatrix:
                 self.train_data_labels.append(labs)
 
         def __getitem__(self, idx):
+            print("vor Probs in der getitem Funktion")
             probs = torch.squeeze(self.train_data_probs[idx], dim=0)
             labs = torch.squeeze(self.train_data_labels[idx], dim=0)
             return probs, labs
