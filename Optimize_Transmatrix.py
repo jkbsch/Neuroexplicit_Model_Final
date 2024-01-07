@@ -15,7 +15,11 @@ class OptimTransMatrix:
         print(self.device)
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold)
-        print("Train Dataset:", self.TrainDataset.__getitem__(0))
+        print("Train Dataset getitem:", self.TrainDataset.__getitem__(0), "length:", self.TrainDataset.__len__())
+        print("Now let's enumerate")
+        for i, (inputs, targets) in enumerate(self.train_loader):
+            print("geht")
+        print("enumerate finished")
         self.dataset = self.TrainDataset.dataset
         self.trans_matrix = self.TrainDataset.trans_matrix
         self.fold = self.TrainDataset.fold
