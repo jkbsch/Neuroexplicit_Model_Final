@@ -104,8 +104,8 @@ class OptimTransMatrix:
             self.test_data_labels = []
             for nr in range(self.end_nr):
                 labs, probs = load_P_Matrix(self.checkpoints, self.dataset, self.used_set, self.fold, nr, False)
-                labs = torch.from_numpy(labs).to(device=self.device, dtype=torch.int64)
-                probs = torch.from_numpy(probs).to(device=self.device, dtype=torch.float64)
+                labs = torch.from_numpy(labs).to(dtype=torch.int64)
+                probs = torch.from_numpy(probs).to(dtype=torch.float64)
                 self.test_data_probs.append(probs)
                 self.test_data_labels.append(labs)
 
@@ -159,7 +159,7 @@ class OptimTransMatrix:
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
             inputs = inputs.to(device=self.device)
-            targets = targets.to(device= self.device)
+            targets = targets.to(device=self.device)
             if self.softmax:
                 targets = targets.to(dtype=torch.float64)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
@@ -218,6 +218,8 @@ class OptimTransMatrix:
             test_loss, correct, nr = 0, 0, 0
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(self.test_loader):
+                    inputs = inputs.to(device=self.device)
+                    targets = targets.to(device=self.device)
                     inputs = torch.squeeze(inputs, dim=0)
                     targets = torch.squeeze(targets, dim=0)
                     labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
