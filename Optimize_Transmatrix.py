@@ -15,7 +15,7 @@ class OptimTransMatrix:
         print(self.device)
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold)
-        print("Train Dataset getitem:", self.TrainDataset.__getitem__(0), "length:", self.TrainDataset.__len__())
+        # print("Train Dataset getitem:", self.TrainDataset.__getitem__(0), "length:", self.TrainDataset.__len__())
         self.dataset = self.TrainDataset.dataset
         self.trans_matrix = self.TrainDataset.trans_matrix
         self.fold = self.TrainDataset.fold
@@ -36,11 +36,6 @@ class OptimTransMatrix:
         self.train_loader = DataLoader(dataset=self.TrainDataset, batch_size=1, shuffle=True, num_workers=2)
         self.test_loader = DataLoader(dataset=self.TestDataset, batch_size=1, shuffle=True, num_workers=2)
         # self.one_hot = nn.functional.one_hot(self.labels)
-
-        print("Now let's enumerate")
-        for i, (inputs, targets) in enumerate(self.train_loader):
-            print("geht")
-        print("enumerate finished")
 
         self.trans = self.trainable()
 
@@ -77,8 +72,10 @@ class OptimTransMatrix:
             self.train_data_labels = []
             for nr in range(self.end_nr):
                 labs, probs = load_P_Matrix(self.checkpoints, self.dataset, self.used_set, self.fold, nr, False)
-                labs = torch.from_numpy(labs).to(device=self.device, dtype=torch.int64)
-                probs = torch.from_numpy(probs).to(device=self.device, dtype=torch.float64)
+                #labs = torch.from_numpy(labs).to(device=self.device, dtype=torch.int64)
+                #probs = torch.from_numpy(probs).to(device=self.device, dtype=torch.float64)
+                labs = torch.from_numpy(labs).to(dtype=torch.int64)
+                probs = torch.from_numpy(probs).to(dtype=torch.float64)
                 self.train_data_probs.append(probs)
                 self.train_data_labels.append(labs)
 
@@ -159,7 +156,7 @@ class OptimTransMatrix:
 
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
-        for i, (inputs, targets) in enumerate(self.train_loader):
+        for i, (inputs, targets) in enumerate(self.train_loader): # enumerating does not work
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
             if self.softmax:
