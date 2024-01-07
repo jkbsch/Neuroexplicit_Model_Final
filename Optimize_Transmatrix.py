@@ -336,7 +336,7 @@ def main():
                     for fold in range(1, 11):
                         print(
                             f'Sleep-EDF-2018, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
-                        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=learning_rate, print_results=True,
+                        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=120, learning_rate=learning_rate, print_results=True,
                                          train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
                                          save_unsuccesful=True, use_normalized=False)
 
