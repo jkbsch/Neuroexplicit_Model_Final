@@ -16,10 +16,6 @@ class OptimTransMatrix:
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold)
         print("Train Dataset getitem:", self.TrainDataset.__getitem__(0), "length:", self.TrainDataset.__len__())
-        print("Now let's enumerate")
-        for i, (inputs, targets) in enumerate(self.train_loader):
-            print("geht")
-        print("enumerate finished")
         self.dataset = self.TrainDataset.dataset
         self.trans_matrix = self.TrainDataset.trans_matrix
         self.fold = self.TrainDataset.fold
@@ -40,6 +36,12 @@ class OptimTransMatrix:
         self.train_loader = DataLoader(dataset=self.TrainDataset, batch_size=1, shuffle=True, num_workers=2)
         self.test_loader = DataLoader(dataset=self.TestDataset, batch_size=1, shuffle=True, num_workers=2)
         # self.one_hot = nn.functional.one_hot(self.labels)
+
+        print("Now let's enumerate")
+        for i, (inputs, targets) in enumerate(self.train_loader):
+            print("geht")
+        print("enumerate finished")
+
         self.trans = self.trainable()
 
         self.learning_rate = learning_rate
