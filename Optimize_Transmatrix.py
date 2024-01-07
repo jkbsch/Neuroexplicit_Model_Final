@@ -331,6 +331,8 @@ def main():
                                  save_unsuccesful=True, use_normalized=False)"""
             for learning_rate in [0.0005, 0.0001]:
                 for train_transition in [False, True]:
+                    if train_transition == False and train_alpha == False:
+                        continue
                     for fold in range(1, 11):
                         print(
                             f'Sleep-EDF-2018, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
