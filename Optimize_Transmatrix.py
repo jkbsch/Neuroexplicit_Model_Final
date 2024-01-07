@@ -159,6 +159,8 @@ class OptimTransMatrix:
         for i, (inputs, targets) in enumerate(self.train_loader): # enumerating does not work
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
+            inputs = inputs.to(device=self.device)
+            targets = targets.to(device= self.device)
             if self.softmax:
                 targets = targets.to(dtype=torch.float64)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
