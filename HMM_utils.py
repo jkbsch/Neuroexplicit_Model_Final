@@ -228,15 +228,13 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
             )
 
 
-def posteriogram(y_true, y_pred,sleepy_pred, config):
+def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
     length = len(y_true)
     X = np.arange(length)
     fig, ax = plt.subplots(2, 1)
 
     # fig.suptitle('Comparison Hybrid and Labels')
     # plt.figure(figsize=(600, 100))
-    xmin = 400
-    xmax = 450
     ax[0].set_xlim(xmin, xmax)
     ax[1].set_xlim(0, length)
     y_true = y_true * -1
@@ -270,18 +268,16 @@ def posteriogram(y_true, y_pred,sleepy_pred, config):
     fig.savefig(f'results/figure_{description}{xmin, xmax}.png', dpi=1200)
 
 
-def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config):
+def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin=400, xmax=440):
     fig, ax = plt.subplots(2, 1)
     #fig.suptitle('Comparison of Labels, Hybrid and Pure Predictions')
 
-    len_min = 400
-    len_max = 440
-    probs_sleepy = probs_sleepy[len_min:len_max]
-    X = np.arange(len_max - len_min)
-    y_true = y_true[len_min:len_max]
-    probs_hybrid = probs_hybrid[len_min:len_max]
-    y_pred_sleepy = y_pred_sleepy[len_min:len_max]
-    y_pred_hybrid = y_pred_hybrid[len_min:len_max]
+    probs_sleepy = probs_sleepy[xmin:xmax]
+    X = np.arange(xmax - xmin)
+    y_true = y_true[xmin:xmax]
+    probs_hybrid = probs_hybrid[xmin:xmax]
+    y_pred_sleepy = y_pred_sleepy[xmin:xmax]
+    y_pred_hybrid = y_pred_hybrid[xmin:xmax]
 
     ax[0].matshow(probs_sleepy.T, label='Probabilities')
     # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
@@ -291,9 +287,9 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
 
     ax[0].set_title('Pure Predictions')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
-    # A = np.arange(0, len_max-len_min, int((len_max-len_min)/6))
-    A = np.arange(0, len_max - len_min, 5)
-    B = A + np.array(len_min)
+    # A = np.arange(0, xmax-xmin, int((xmax-xmin)/6))
+    A = np.arange(0, xmax - xmin, 5)
+    B = A + np.array(xmin)
     ax[0].set_xticks(A, B)
 
     ax[1].matshow(probs_hybrid.T, label='Probabilites')
@@ -319,7 +315,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}'
     plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
-    fig.savefig(f'results/probs_{description}{len_min, len_max}.png', dpi=1200)
+    fig.savefig(f'results/probs_{description}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
     alphas = np.loadtxt('results/new_alphas_notrain.txt', delimiter=',')

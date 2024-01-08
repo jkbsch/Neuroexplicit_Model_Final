@@ -179,9 +179,38 @@ class OptimizeAlpha:
             probs_hybrid = np.exp(probs_hybrid)
         probs_hybrid = np.divide(probs_hybrid, np.sum(probs_hybrid, axis=0)).T
 
-        posteriogram(y_true, y_pred_hybrid,y_pred_sleepy, config)
-        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config)
+        xmin=400
+        xmax = 450
+        posteriogram(y_true, y_pred_hybrid,y_pred_sleepy, config, xmin, xmax)
+        xmax = 440
+        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
+        # now special posteriograms
+        # where SleePy is very good and hybrid is bad and the other way round
+        # find indexes with length 40, where y_pred_hybrid fits best y_true and where y_pred_sleepy fits the data bad
+
+        index_length = 40
+        best_sleepy = 0
+        best_hybrid = 0
+        best_start_index_for_sleepy = 0
+        best_start_index_for_hybrid = 0
+        for i in range(len(y_true)-index_length-1):
+            best_sleepy_new = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_sleepy[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
+            if best_sleepy_new > best_sleepy:
+                best_sleepy = best_sleepy_new
+                best_start_index_for_sleepy = i
+            best_hybrid_new = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_hybrid[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
+            if best_hybrid_new > best_hybrid:
+                best_hybrid = best_hybrid_new
+                best_start_index_for_hybrid = i
+
+        xmin = best_start_index_for_sleepy
+        xmax = best_start_index_for_sleepy + index_length
+        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
+
+        xmin = best_start_index_for_hybrid
+        xmax = best_start_index_for_hybrid + index_length
+        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
 def main():
     # visualize_alphas()
