@@ -195,11 +195,16 @@ class OptimizeAlpha:
         best_start_index_for_sleepy = 0
         best_start_index_for_hybrid = 0
         for i in range(len(y_true)-index_length-1):
-            best_sleepy_new = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_sleepy[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
+            # best_sleepy_new_1 = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_sleepy[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
+            best_sleepy_new = np.sum(((y_true[i:i + index_length] == y_pred_sleepy[i:i + index_length])*(y_pred_sleepy[i:i + index_length] != y_pred_hybrid[i:i + index_length])))
+            # assert(best_sleepy_new_1 == best_sleepy_new)
             if best_sleepy_new > best_sleepy:
                 best_sleepy = best_sleepy_new
                 best_start_index_for_sleepy = i
-            best_hybrid_new = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_hybrid[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
+            # best_hybrid_new_1 = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_hybrid[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
+            best_hybrid_new = np.sum(((y_true[i:i+index_length] == y_pred_hybrid[i:i+index_length]) * (y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length])))
+            # assert(best_hybrid_new_1 == best_hybrid_new)
+
             if best_hybrid_new > best_hybrid:
                 best_hybrid = best_hybrid_new
                 best_start_index_for_hybrid = i
