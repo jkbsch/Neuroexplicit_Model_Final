@@ -28,8 +28,8 @@ class Viterbi:
             c.f. T2 to find the most likely path to get there) the x_j-1 of the most likely path so far
     """
 
-
-    def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True, softmax=False):
+    def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True, softmax=False,
+                 FMMIE=False, labels=None):
         # check if the input is a torch tensor or a numpy array
         if torch.is_tensor(A):
             self.is_torch = True
@@ -39,11 +39,12 @@ class Viterbi:
 
         # Initialize the model given the parameters
         self.A = A
-        #self.A[A<0] = 0
+        # self.A[A<0] = 0
         self.P = P
         self.logscale = logscale
         self.print_info = print_info
         self.softmax = softmax
+        self.labels = labels
 
         # Initialize the return_log variable
         if return_log is None:
@@ -59,7 +60,6 @@ class Viterbi:
         else:
             self.Pi = Pi if Pi is not None else np.full(self.K, 1 / self.K)
 
-
         self.alpha = self.alpha(alpha)
 
         self.T = len(P)
@@ -74,10 +74,12 @@ class Viterbi:
                 self.P = np.log(self.P)
                 self.Pi = np.log(self.Pi)
 
-        if self.is_torch:
+        if FMMIE:
+            self.num, self.den = self.calc_FMMIE()
+        elif self.is_torch:
             self.x, self.T1, self.T2, self.T3, self.y = self.calc_viterbi()
         else:
-            (self.x, self.T1, self.T2) = self.calc_viterbi()
+            self.x, self.T1, self.T2 = self.calc_viterbi()
 
     # check if alpha is None and set it to 0.5 if it is
     def alpha(self, alpha):
@@ -172,7 +174,7 @@ class Viterbi:
             x[-1] = torch.argmax(T1[:, self.T - 1])
             if self.softmax:
                 temp = torch.nn.functional.softmax(T1[:, self.T - 1], dim=0)
-                y[-1] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:,None])
+                y[-1] = torch.matmul(temp, torch.arange(self.K, dtype=torch.float64)[:, None])
         else:
             x = np.empty(self.T, 'B')
             x[-1] = np.argmax(T1[:, self.T - 1])
@@ -210,11 +212,48 @@ class Viterbi:
     .5, .5], [0.2, 0.8], [0.4, 0.6]]) #e.g. DNN has calculated that - given the data - there's a 30% chance # that 
     the first state is Healthy (shape 3,2)"""
 
+    def calc_FMMIE(self):
+        # zuerst alles in Numpy
+        if not self.logscale:
+            raise NotImplementedError
+        if self.logscale and not self.is_torch:
+            # numerator:
+            num = self.Pi[self.labels[0]] + np.sum(self.P[np.arange(len(self.labels)), self.labels])
+            transitions = np.zeros((self.K, self.K))
+            for i in range(len(self.labels) - 1):
+                transitions[self.labels[i], self.labels[i + 1]] += 1
+            num += self.alpha * (transitions * self.A).sum()
+
+            # denumerator:
+            xv, yv = np.meshgrid(np.arange(self.T), np.arange(self.K))
+
+        if self.logscale and self.is_torch:
+            num = self.Pi[self.labels[0]] + torch.sum(self.P[torch.arange(len(self.labels)), self.labels])
+            transitions = torch.zeros((self.K, self.K), device=self.device)
+            for i in range(len(self.labels) - 1):
+                transitions[self.labels[i], self.labels[i + 1]] += 1
+            num = num + self.alpha * (transitions * self.A).sum()
+        den = 0
+        print("Numerator: ", num)
+        return num, den
+
 
 def main():
     A = np.array([[0.7, 0.3], [0.9, 0.1]])
     Pi = np.array([0.8, 0.2])
     P = np.array([[0.1, .9], [0.9, 0.1], [0.01, 0.99]])
+    labels = np.array([1, 0, 1])
+    alpha = 1
+
+    AT = torch.from_numpy(A).to(dtype=torch.float64)
+    AT.requires_grad = True
+    PiT = torch.from_numpy(Pi).to(dtype=torch.float64)
+    PT = torch.from_numpy(P).to(dtype=torch.float64)
+    labelsT = torch.from_numpy(labels).to(dtype=torch.int64)
+    alphaT = torch.tensor([1], dtype=torch.float64, requires_grad=True)
+
+
+    Viterbi3 = Viterbi(A, P, Pi, logscale=True, alpha=alpha, labels=labelsT, FMMIE=True)
 
     A1 = torch.from_numpy(A).to(dtype=torch.float64)
     Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64)
@@ -230,8 +269,7 @@ def main():
     print(T2_1)
     print(T2_2)
 
-    # ohne das 2* unterscheiden sich T1 und T2, je nachdem ob in logscale oder nicht gerechnet wird? Oder falsch implementiert?
-
+    # ohne das 2* unterscheiden sich T1 und T2, je nachdem ob in logscale oder nicht gerechnet wird? Oder falsch implementiert? """
 
 if __name__ == "__main__":
     main()

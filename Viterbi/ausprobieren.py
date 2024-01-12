@@ -99,10 +99,61 @@ element = A[half]
 
 print(arr1, arr2)"""
 
-A = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+"""A = np.array([1, 2, 3, 4, 5, 6, 7, 8])
 B = np.array([1, 2, 3, 4, 5, 6, 7, 8])
 C = np.array([1, 3, 4, 5, 5, 6, 7, 8])
 res = (A==B)*(A==C)
-print(res, np.sum(res))
+print(res, np.sum(res))"""
+
+import numpy as np
+
+
+"""def generate_all_sequences(numbers, length):
+    # Erstelle ein Gitter mit Indizes für jede Dimension
+    grid = np.indices((len(numbers),) * length)
+
+    # Kombiniere die Indizes entlang der letzten Achse, um alle Kombinationen zu erhalten
+    all_combinations = np.column_stack([dimension.flatten() for dimension in grid])
+
+    # Wende die Zahlen als Indizes auf die Ursprungszahlen an
+    sequences = numbers[all_combinations]
+
+    return sequences
+
+
+# Beispiel:
+numbers = np.array([1, 2, 3, 4, 5])
+length = 10
+
+all_sequences = generate_all_sequences(numbers, length)
+
+# Drucke die ersten paar Sequenzen
+for i in range(5):
+    print(all_sequences[i, :])"""
+
+"""A = np.array([[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [-1, -2, -3, -4, -5], [-6, -7, -8, -9, -10]])
+B = np.array([2, 1, 3, 1])
+
+C = A[B[:,np.newaxis]]
+
+
+print(C)"""
+"""def sum_elements_at_indices(arr_2d, indices):
+    result = np.sum(arr_2d[np.arange(len(indices)), indices])
+    return result
+
+# Example usage:
+arr_2d = np.array([[1, 2, 3], [4, 5, 6], [-1, -2, -5]])
+indices = np.array([2, 1, 2])
+
+result = sum_elements_at_indices(arr_2d, indices)
+print("Sum of elements at given indices:", result)"""
+
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+
+print(A, B)
+print(A*B)
+
 
 

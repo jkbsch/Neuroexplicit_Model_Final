@@ -7,7 +7,7 @@ from Viterbi.Viterbi_Algorithm import *
 class OptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, num_epochs=2,
                  learning_rate=0.0001, alpha=None, train_transition=True, train_alpha=False, save=False,
-                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False):
+                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False, FMMIE = False):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -30,6 +30,7 @@ class OptimTransMatrix:
         self.save_unsuccesful = save_unsuccesful
         self.use_normalized = use_normalized
         self.softmax = softmax
+        self.FMMIE = FMMIE
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
                                                  self.fold)
@@ -44,6 +45,8 @@ class OptimTransMatrix:
         if self.softmax:
             # self.loss = nn.KLDivLoss(reduction='batchmean')
             self.loss = nn.MSELoss()
+        elif self.FMMIE:
+            raise NotImplementedError
         else:
             self.loss = nn.CrossEntropyLoss()
 
@@ -155,7 +158,7 @@ class OptimTransMatrix:
 
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
-        for i, (inputs, targets) in enumerate(self.train_loader): # enumerating does not work
+        for i, (inputs, targets) in enumerate(self.train_loader):
             inputs = torch.squeeze(inputs, dim=0) # vlt Fehler wegen log von 0?
             targets = torch.squeeze(targets, dim=0)
             inputs = inputs.to(device=self.device)
@@ -164,7 +167,7 @@ class OptimTransMatrix:
                 targets = targets.to(dtype=torch.float64)
             labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
             labels_predicted = labels_predicted.to(dtype=torch.int64)
-            one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
+            # one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
             """if i % 10 == 0:
                 print(self.trans)"""
 
@@ -174,6 +177,8 @@ class OptimTransMatrix:
                 pred = y_predicted_unnormalized
             if self.softmax:
                 loss = self.loss(torch.log(res_softmax), targets)
+            elif self.FMMIE:
+                raise NotImplementedError
             else:
                 loss = self.loss(torch.transpose(pred, 0, 1), targets)
 
