@@ -286,10 +286,10 @@ class Viterbi:
             if self.Pi is not None:
                 self.Pi = torch.from_numpy(self.Pi)
         else:
-            A_optimizable = self.A
-            alpha_optimizable = self.alpha
-            self.A.requires_grad = False
-            self.alpha.requires_grad = False
+            A_optimizable = torch.clone(self.A)
+            alpha_optimizable = torch.clone(self.alpha)
+            self.A.detach()
+            self.alpha.detach()
         best_paths, _, _, _, _ = self.calc_viterbi_k_best()
 
         if not self.is_torch:

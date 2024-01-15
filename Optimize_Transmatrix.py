@@ -46,8 +46,6 @@ class OptimTransMatrix:
         if self.softmax:
             # self.loss = nn.KLDivLoss(reduction='batchmean')
             self.loss = nn.MSELoss()
-        elif self.FMMIE:
-            raise NotImplementedError
         else:
             self.loss = nn.CrossEntropyLoss()
 
@@ -134,7 +132,7 @@ class OptimTransMatrix:
 
         return trans
 
-    def forward(self, data):
+    def forward(self, data, targets=None):
         trans = torch.clamp(self.trans, min=float(1e-10))
         row_sums = torch.sum(trans, dim=1) # normalize transition matrix
         row_sums = row_sums[:,None]
@@ -158,7 +156,7 @@ class OptimTransMatrix:
                 print(f"Percentage where x == y: {np.sum(res.x.detach().cpu().numpy() == np.round((res.y.detach().cpu().numpy())))/len(res.x)} ")
             return res.x, res.T1, res_normalized, res.y
         else:
-            res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False, softmax=self.softmax, FMMIE=True, k_best=self.k_best)
+            res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False, softmax=self.softmax, FMMIE=True, k_best=self.k_best, labels=targets)
             return res.x, res.res_FMMIE
 
     def train(self, epoch):
@@ -173,7 +171,7 @@ class OptimTransMatrix:
             if not self.FMMIE:
                 labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
             else:
-                labels_predicted, loss = self.forward(inputs)
+                labels_predicted, loss = self.forward(inputs, targets)
             labels_predicted = labels_predicted.to(dtype=torch.int64)
             # one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
             """if i % 10 == 0:
@@ -232,7 +230,7 @@ class OptimTransMatrix:
                     if self.FMMIE:
                         labels_predicted, loss = self.forward(inputs)
                     else:
-                        labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
+                        labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs, targets)
 
                     labels_predicted = labels_predicted.to(dtype=torch.int64)
 
