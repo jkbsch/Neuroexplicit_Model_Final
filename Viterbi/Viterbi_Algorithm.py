@@ -295,6 +295,12 @@ class Viterbi:
         # check whether self.labels is in best_paths - maybe have to use numpy
 
         if not self.is_torch:
+            exclude_path = len(best_paths)
+            for i in range(len(best_paths) - 1):
+                if np.all(self.labels, best_paths[i]):
+                    exclude_path = i
+                    break
+
             # numerator numpy:
             num = self.Pi[self.labels[0]] + np.sum(self.P[np.arange(len(self.labels)), self.labels])
             transitions = np.zeros((self.K, self.K))
@@ -303,11 +309,14 @@ class Viterbi:
             num += self.alpha * (transitions * self.A).sum()
             num = np.exp(num)
 
-            # denumerator:
+            # denumerator numpy:
             den = 0
             transitions = np.zeros((self.K, self.K))
-            for i in range(self.k_best):
-                den_temp = (self.Pi[best_paths[i][0]] + np.sum(self.P[np.arange(len(best_paths[i])), best_paths[i]])).sum()
+
+            for i in range(len(best_paths)):
+                if i == exclude_path:
+                    continue
+                den_temp = self.Pi[best_paths[i][0]] + np.sum(self.P[np.arange(len(best_paths[i])), best_paths[i]])
                 transitions = transitions * 0
                 for j in range(len(best_paths[i]) - 1):
                     transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
@@ -316,6 +325,12 @@ class Viterbi:
 
         else:
             # numerator torch
+            exclude_path = len(best_paths)
+            for i in range(len(best_paths) -1):
+                if torch.equal(self.labels, best_paths[i]):
+                    exclude_path = i
+                    break
+
             num = self.Pi[self.labels[0]] + torch.sum(self.P[torch.arange(len(self.labels)), self.labels])
             transitions = torch.zeros((self.K, self.K))
             for i in range(len(self.labels) - 1):
@@ -324,14 +339,12 @@ class Viterbi:
 
             # denumerator torch
             den = 0
-            """den = (torch.bincount(best_paths[:,0], minlength=self.K)*self.Pi).sum()
-            transition = torch.zeros((self.K, self.K))
-            for i in range(0, len(self.labels)-1):
-                den += ((torch.bincount(best_paths[:,i], minlength=self.K)*self.P[i])).sum()"""
             transitions = torch.zeros((self.K, self.K))
 
-            for i in range(self.k_best):
-                den_temp = (self.Pi[best_paths[i]] + torch.sum(self.P[torch.arange(len(best_paths[i])), best_paths[i]])).sum()
+            for i in range(len(best_paths)):
+                if i == exclude_path:
+                    continue
+                den_temp = self.Pi[best_paths[i][0]] + torch.sum(self.P[torch.arange(len(best_paths[i])), best_paths[i]])
                 transitions = transitions * 0
                 for j in range(len(best_paths[i]) - 1):
                     transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
@@ -340,9 +353,8 @@ class Viterbi:
 
 
             # denumerator torch
-        print("Numerator: ", num)
-        den = 0
-        return num, den,
+
+        return num/den
 
 
 def main():
