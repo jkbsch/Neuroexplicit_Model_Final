@@ -49,15 +49,20 @@ class DnnAndVit:
             if self.alpha is not None:
                 self.alpha = torch.from_numpy(self.alpha)
 
-            self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
+            self.hybrid_predictions, self.hybrid_probs, self.hybrid_softmax = self.hybrid_predictions()
         else:
             self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
 
 
         self.korrekt_SleePy = np.sum(self.P_Matrix_labels == self.pure_predictions)
-        self.korrekt_hybrid = np.sum(self.P_Matrix_labels == self.hybrid_predictions)
+        if self.k_best == 1:
+            self.korrekt_hybrid = np.sum(self.P_Matrix_labels == self.hybrid_predictions)
+        else:
+            self.korrekt_hybrid = []
+            for i in range(self.k_best):
+                self.korrekt_hybrid.append(np.sum(self.P_Matrix_labels == self.hybrid_predictions[i]))
 
-        if torch.is_tensor(self.Transition_Matrix):
+        if torch.is_tensor(self.Transition_Matrix) and self.softmax:
             self.compare_softmax_argmax = np.sum(self.hybrid_predictions == np.round((self.hybrid_softmax.detach().cpu().numpy())))
 
 
@@ -129,9 +134,13 @@ def main():
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
           "\nHybrid Prediction:\t",
           dnn2.hybrid_predictions)
-
-    print("Korrekt SleePy: ", dnn2.korrekt_SleePy, " Korrekt Hybrid: ", dnn2.korrekt_hybrid)
-    print("Korrekt SleePy: ", dnn2.korrekt_SleePy / dnn2.length, "Korrekt Hybrid: ", dnn2.korrekt_hybrid / dnn2.length)
+    if dnn2.k_best == 1:
+        print("Korrekt SleePy: ", dnn2.korrekt_SleePy, " Korrekt Hybrid: ", dnn2.korrekt_hybrid)
+        print("Korrekt SleePy: ", dnn2.korrekt_SleePy / dnn2.length, "Korrekt Hybrid: ", dnn2.korrekt_hybrid / dnn2.length)
+    else:
+        for i in range(dnn2.k_best):
+            print("Korrekt SleePy: ", dnn2.korrekt_SleePy / dnn2.length)
+            print(f'Korrekt Hybrid in {i}-best path:', dnn2.korrekt_hybrid[i] / dnn2.length)
 
 
 if __name__ == '__main__':
