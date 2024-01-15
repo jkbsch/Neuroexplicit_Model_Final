@@ -82,7 +82,7 @@ class Viterbi:
                 self.Pi = np.log(self.Pi)
 
         if FMMIE:
-            self.num, self.den = self.calc_FMMIE()
+            self.res_FMMIE = self.calc_FMMIE()
         elif self.is_torch:
             if k_best > 1:
                 self.x, self.T1, self.T2, self.T3, self.y = self.calc_viterbi_k_best()
@@ -275,26 +275,25 @@ class Viterbi:
 
         return x, T1, T2, None, None
 
-
-
-
-    """#observations: normal = 0, cold = 1, dizzy = 2 #states: Healthy = 0, Fever = 1 #y = np.array([0, 1, 
-    2]) #observation state sequence; expl.: observations are normal(0) then cold (1) then dizzy (2) A = np.array([[
-    0.7, 0.3], [0.9, 0.1]]) #state transition matrix: e.g. prob of 0.7 to transition from Healthy to Healthy, 
-    # prob of 0.3 to transition from healthy to fever #B = np.array([[0.5, 0.4, 0.1],[0.1, 0.3, 0.6]]) #Emission 
-    matrix: e.g. prob of 0.5 to feel normal if you're healthy, # prob of 0.4 to feel cold when healthy Pi = np.array(
-    [0.8, 0.2]) #initial distribution, expl.: prob. of 0.6 to start healthy, prob of 0.4 to start ill P = np.array([[
-    .5, .5], [0.2, 0.8], [0.4, 0.6]]) #e.g. DNN has calculated that - given the data - there's a 30% chance # that 
-    the first state is Healthy (shape 3,2)"""
-
     def calc_FMMIE(self):
         if not self.logscale:
             raise NotImplementedError
         self.k_best += 1 # if the correct path is in one of the k-best paths, then we need to have one left
-        best_paths, _, _, _, _ = self.calc_viterbi_k_best()
-        # check whether self.labels is in best_paths - maybe have to use numpy
 
         if not self.is_torch:
+            self.A = torch.from_numpy(self.A)
+            self.P = torch.from_numpy(self.P)
+            if self.Pi is not None:
+                self.Pi = torch.from_numpy(self.Pi)
+        else:
+            A_optimizable = self.A
+            alpha_optimizable = self.alpha
+            self.A.requires_grad = False
+            self.alpha.requires_grad = False
+        best_paths, _, _, _, _ = self.calc_viterbi_k_best()
+
+        if not self.is_torch:
+            best_paths = best_paths.numpy()
             exclude_path = len(best_paths)
             for i in range(len(best_paths) - 1):
                 if np.all(self.labels, best_paths[i]):
@@ -336,7 +335,7 @@ class Viterbi:
             transitions = torch.zeros((self.K, self.K))
             for i in range(len(self.labels) - 1):
                 transitions[self.labels[i], self.labels[i + 1]] += 1
-            num = num + self.alpha * (transitions * self.A).sum()
+            num = num + alpha_optimizable * (transitions * A_optimizable).sum()
 
             # denumerator torch
             den = 0
@@ -349,8 +348,8 @@ class Viterbi:
                 transitions = transitions * 0
                 for j in range(len(best_paths[i]) - 1):
                     transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
-                den_temp = den_temp + self.alpha * (transitions * self.A).sum()
-                den += den_temp.exp()
+                den_temp = den_temp + alpha_optimizable * (transitions * A_optimizable).sum()
+                den = den + den_temp.exp()
             den = torch.log(den)
 
 
