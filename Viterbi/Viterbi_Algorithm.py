@@ -82,7 +82,7 @@ class Viterbi:
                 self.Pi = np.log(self.Pi)
 
         if FMMIE:
-            self.res_FMMIE = self.calc_FMMIE()
+            self.x, self.res_FMMIE = self.calc_FMMIE()
         elif self.is_torch:
             if k_best > 1:
                 self.x, self.T1, self.T2, self.T3, self.y = self.calc_viterbi_k_best()
@@ -355,7 +355,7 @@ class Viterbi:
 
             # denumerator torch
 
-        return num - den
+        return best_paths[0], num - den
 
 
 def main():
