@@ -322,6 +322,7 @@ class Viterbi:
                     transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
                 den_temp += self.alpha * (transitions * self.A).sum()
                 den += np.exp(den_temp)
+            den = np.log(den)
 
         else:
             # numerator torch
@@ -335,7 +336,7 @@ class Viterbi:
             transitions = torch.zeros((self.K, self.K))
             for i in range(len(self.labels) - 1):
                 transitions[self.labels[i], self.labels[i + 1]] += 1
-            num = (num + self.alpha * (transitions * self.A).sum()).exp()
+            num = num + self.alpha * (transitions * self.A).sum()
 
             # denumerator torch
             den = 0
@@ -350,11 +351,12 @@ class Viterbi:
                     transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
                 den_temp = den_temp + self.alpha * (transitions * self.A).sum()
                 den += den_temp.exp()
+            den = torch.log(den)
 
 
             # denumerator torch
 
-        return num/den
+        return num - den
 
 
 def main():
