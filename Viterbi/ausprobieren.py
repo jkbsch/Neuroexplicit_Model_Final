@@ -1,5 +1,5 @@
 import numpy as np
-# import torch
+import torch
 #import matplotlib.pyplot as plt
 
 """a = np.zeros((3,2))
@@ -149,11 +149,27 @@ indices = np.array([2, 1, 2])
 result = sum_elements_at_indices(arr_2d, indices)
 print("Sum of elements at given indices:", result)"""
 
-A = np.array([[1, 2], [3, 4]])
+"""A = np.array([[1, 2], [3, 4]])
 B = np.array([[5, 6], [7, 8]])
 
 print(A, B)
-print(A*B)
+print(A*B)"""
+
+"""A = torch.tensor([[[1, 0, 0], [1, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
+B = torch.tensor([[2, 3], [4, 5]])
+A[:,:,1] = B.T"""
+"""A = np.arange(12).reshape((4,-1))
+print(A)
+C = np.unravel_index([[10],[2]], A.shape)
+print(C)"""
+B = torch.tensor([[2,1], [0,1]])
+# Ziel: [0][1][0], [0][0][1], [1][0][0], [1][0][1]
+# aktueller State - bester Vorgängerpfad - Vorgängerstate
+D = np.array(np.unravel_index([[2,1], [0,1]], (2,2))).T
+
+
+print(D)
+
 
 
 

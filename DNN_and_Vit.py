@@ -1,11 +1,12 @@
 from Viterbi.Viterbi_Algorithm import *
 from HMM_utils import *
+import torch
 
 
 class DnnAndVit:
 
     def __init__(self, dataset="Sleep-EDF-2013", fold=1, nr=0, used_set="train", trans_matr="edf-2013-and-edf-2018",
-                 length=None, start=None, logscale=True, alpha=None, print_info=True, checkpoints='given', softmax=False):
+                 length=None, start=None, logscale=True, alpha=None, print_info=True, checkpoints='given', softmax=False, k_best=1, is_torch=False):
         self.P_Matrix_labels = None
         self.P_Matrix_probs = None
         self.start = None
@@ -21,6 +22,8 @@ class DnnAndVit:
         self.print_info = print_info
         self.checkpoints = checkpoints
         self.softmax = softmax
+        self.k_best = k_best
+
 
         if type(trans_matr) == str:
             self.Transition_Matrix = load_Transition_Matrix(trans_matr)[1]
@@ -36,8 +39,17 @@ class DnnAndVit:
 
         self.selected_P_Matrix()
 
+
+
         if torch.is_tensor(self.Transition_Matrix):
             self.hybrid_predictions, self.hybrid_probs, self.hybrid_softmax = self.hybrid_predictions()
+        elif is_torch:
+            self.Transition_Matrix = torch.from_numpy(self.Transition_Matrix)
+            self.P_Matrix_probs = torch.from_numpy(self.P_Matrix_probs)
+            if self.alpha is not None:
+                self.alpha = torch.from_numpy(self.alpha)
+
+            self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
         else:
             self.hybrid_predictions, self.hybrid_probs = self.hybrid_predictions()
 
@@ -103,7 +115,7 @@ class DnnAndVit:
         """vit = Viterbi(A=torch.from_numpy(self.Transition_Matrix), P=torch.from_numpy(self.P_Matrix_probs),
         logscale=self.logscale, alpha=self.alpha, print_info=self.print_info) return vit.x.numpy()"""
         vit = Viterbi(A=self.Transition_Matrix, P=self.P_Matrix_probs, logscale=self.logscale, alpha=self.alpha,
-                      print_info=self.print_info, softmax=self.softmax)
+                      print_info=self.print_info, softmax=self.softmax, k_best=self.k_best)
         if torch.is_tensor(self.Transition_Matrix):
             return vit.x, vit.T1, vit.y
         else:
@@ -112,7 +124,7 @@ class DnnAndVit:
 
 def main():
     dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='train', logscale=True, alpha=None,
-                     checkpoints='given', dataset='Sleep-EDF-2013', trans_matr='EDF-2013')
+                     checkpoints='given', dataset='Sleep-EDF-2013', trans_matr='EDF-2013', k_best=20, is_torch=True)
     print("Start: ", dnn2.start, " length: ", dnn2.length)
     print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
           "\nHybrid Prediction:\t",
