@@ -355,7 +355,7 @@ class Viterbi:
 
             # denumerator torch
 
-        return best_paths[0], num - den
+        return best_paths[0], -(num - den)
 
 
 def main():
