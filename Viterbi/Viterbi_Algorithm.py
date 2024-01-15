@@ -203,8 +203,19 @@ class Viterbi:
             unraveled = np.array(np.unravel_index(flattened_idx.numpy(), shape=(self.k_best, self.K))).T
             T2[:, :, i, :] = torch.tensor(unraveled)
 
-        x = torch.empty((self.k_best, self.T), dtype=torch.int64, device=self.device)
+
         final_vals, final_idx = torch.topk((T1[:, :, -1]).flatten(), self.k_best)
+        last_valid = torch.where(final_vals == float('-inf'))[0]
+        if len(last_valid) > 0:
+            last_valid = last_valid[0]
+            final_idx = final_idx[0:last_valid]
+            final_vals = final_vals[0:last_valid]
+            x = torch.empty((last_valid, self.T), dtype=torch.int64, device=self.device)
+        else:
+            x = torch.empty((self.k_best, self.T), dtype=torch.int64, device=self.device)
+
+
+
         final_state = final_idx % self.K
         k_prev = final_idx // self.K
         x[:, -1] = final_state
@@ -277,29 +288,61 @@ class Viterbi:
     the first state is Healthy (shape 3,2)"""
 
     def calc_FMMIE(self):
-        # zuerst alles in Numpy
         if not self.logscale:
             raise NotImplementedError
-        if self.logscale and not self.is_torch:
-            # numerator:
+        self.k_best += 1 # if the correct path is in one of the k-best paths, then we need to have one left
+        best_paths, _, _, _, _ = self.calc_viterbi_k_best()
+        # check whether self.labels is in best_paths - maybe have to use numpy
+
+        if not self.is_torch:
+            # numerator numpy:
             num = self.Pi[self.labels[0]] + np.sum(self.P[np.arange(len(self.labels)), self.labels])
             transitions = np.zeros((self.K, self.K))
             for i in range(len(self.labels) - 1):
                 transitions[self.labels[i], self.labels[i + 1]] += 1
             num += self.alpha * (transitions * self.A).sum()
+            num = np.exp(num)
 
             # denumerator:
-            # ...
+            den = 0
+            transitions = np.zeros((self.K, self.K))
+            for i in range(self.k_best):
+                den_temp = (self.Pi[best_paths[i][0]] + np.sum(self.P[np.arange(len(best_paths[i])), best_paths[i]])).sum()
+                transitions = transitions * 0
+                for j in range(len(best_paths[i]) - 1):
+                    transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
+                den_temp += self.alpha * (transitions * self.A).sum()
+                den += np.exp(den_temp)
 
-        if self.logscale and self.is_torch:
+        else:
+            # numerator torch
             num = self.Pi[self.labels[0]] + torch.sum(self.P[torch.arange(len(self.labels)), self.labels])
-            transitions = torch.zeros((self.K, self.K), device=self.device)
+            transitions = torch.zeros((self.K, self.K))
             for i in range(len(self.labels) - 1):
                 transitions[self.labels[i], self.labels[i + 1]] += 1
-            num = num + self.alpha * (transitions * self.A).sum()
-        den = 0
+            num = (num + self.alpha * (transitions * self.A).sum()).exp()
+
+            # denumerator torch
+            den = 0
+            """den = (torch.bincount(best_paths[:,0], minlength=self.K)*self.Pi).sum()
+            transition = torch.zeros((self.K, self.K))
+            for i in range(0, len(self.labels)-1):
+                den += ((torch.bincount(best_paths[:,i], minlength=self.K)*self.P[i])).sum()"""
+            transitions = torch.zeros((self.K, self.K))
+
+            for i in range(self.k_best):
+                den_temp = (self.Pi[best_paths[i]] + torch.sum(self.P[torch.arange(len(best_paths[i])), best_paths[i]])).sum()
+                transitions = transitions * 0
+                for j in range(len(best_paths[i]) - 1):
+                    transitions[best_paths[i][j], best_paths[i][j + 1]] += 1
+                den_temp = den_temp + self.alpha * (transitions * self.A).sum()
+                den += den_temp.exp()
+
+
+            # denumerator torch
         print("Numerator: ", num)
-        return num, den
+        den = 0
+        return num, den,
 
 
 def main():
@@ -324,7 +367,7 @@ def main():
     P1 = torch.from_numpy(P).to(dtype=torch.float64, device='cpu')
 
 
-    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=True, return_log=True, k_best=2)
+    Viterbi_2 = Viterbi(A1, P1, Pi1, logscale=True, return_log=True, k_best=3, FMMIE=True, labels = labelsT)
     Viterbi_1 = Viterbi(A, P, Pi, logscale=True, return_log=True, alpha=1, k_best=1)
     x_1, T1_1, T2_1 = Viterbi_1.x, Viterbi_1.T1, Viterbi_1.T2
     x_2, T1_2, T2_2 = Viterbi_2.x.numpy(), Viterbi_2.T1.numpy(), Viterbi_2.T2.numpy()
