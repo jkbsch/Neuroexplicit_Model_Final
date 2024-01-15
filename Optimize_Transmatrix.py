@@ -7,7 +7,7 @@ from Viterbi.Viterbi_Algorithm import *
 class OptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, num_epochs=2,
                  learning_rate=0.0001, alpha=None, train_transition=True, train_alpha=False, save=False,
-                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False, FMMIE = False):
+                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False, FMMIE = False, k_best=20):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -31,6 +31,7 @@ class OptimTransMatrix:
         self.use_normalized = use_normalized
         self.softmax = softmax
         self.FMMIE = FMMIE
+        self.k_best = k_best
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
                                                  self.fold)
@@ -128,7 +129,7 @@ class OptimTransMatrix:
 
         if self.train_alpha:
             if self.alpha is None:
-                self.alpha = 0.5
+                self.alpha = 1.0
             self.alpha = torch.tensor([self.alpha], requires_grad=True, dtype=torch.float64, device=self.device)
 
         return trans
@@ -138,23 +139,27 @@ class OptimTransMatrix:
         row_sums = torch.sum(trans, dim=1) # normalize transition matrix
         row_sums = row_sums[:,None]
         normalized_trans_matr = torch.div(trans, row_sums)
-        res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False, softmax=self.softmax)
-        if self.use_normalized:
-            res_normalized = torch.exp(res.T1)
-            row_sums = torch.sum(res_normalized, dim=0)  # normalize transition matrix
-            row_sums = row_sums[None:,]
-            res_normalized = torch.div(res_normalized, row_sums)
-            res_normalized = torch.clamp(res_normalized, min=float(1e-10))
-            # res_normalized = torch.div(res_normalized, torch.sum(res_normalized, dim=1))  #  außerdem habe ich return_log auf False gesetzt?
-            res_normalized = torch.log(res_normalized)
-            if self.print_info:
-                print("[INFO]: Normalization is not correctly implemented. Optimization will not work or will be computationally heavy.")
+        if not self.FMMIE:
+            res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False, softmax=self.softmax)
+            if self.use_normalized:
+                res_normalized = torch.exp(res.T1)
+                row_sums = torch.sum(res_normalized, dim=0)  # normalize transition matrix
+                row_sums = row_sums[None:,]
+                res_normalized = torch.div(res_normalized, row_sums)
+                res_normalized = torch.clamp(res_normalized, min=float(1e-10))
+                # res_normalized = torch.div(res_normalized, torch.sum(res_normalized, dim=1))  #  außerdem habe ich return_log auf False gesetzt?
+                res_normalized = torch.log(res_normalized)
+                if self.print_info:
+                    print("[INFO]: Normalization is not correctly implemented. Optimization will not work or will be computationally heavy.")
 
+            else:
+                res_normalized = None
+            if self.softmax:
+                print(f"Percentage where x == y: {np.sum(res.x.detach().cpu().numpy() == np.round((res.y.detach().cpu().numpy())))/len(res.x)} ")
+            return res.x, res.T1, res_normalized, res.y
         else:
-            res_normalized = None
-        if self.softmax:
-            print(f"Percentage where x == y: {np.sum(res.x.detach().cpu().numpy() == np.round((res.y.detach().cpu().numpy())))/len(res.x)} ")
-        return res.x, res.T1, res_normalized, res.y
+            res = Viterbi(normalized_trans_matr, data, alpha=self.alpha, logscale=True, return_log=True, print_info=False, softmax=self.softmax, FMMIE=True, k_best=self.k_best)
+            return res.x, res.res_FMMIE
 
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
@@ -165,27 +170,24 @@ class OptimTransMatrix:
             targets = targets.to(device=self.device)
             if self.softmax:
                 targets = targets.to(dtype=torch.float64)
-            labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
+            if not self.FMMIE:
+                labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
+            else:
+                labels_predicted, loss = self.forward(inputs)
             labels_predicted = labels_predicted.to(dtype=torch.int64)
             # one_hot = (nn.functional.one_hot(labels_predicted, 5)).to(dtype=torch.float64)
             """if i % 10 == 0:
                 print(self.trans)"""
 
-            if self.use_normalized:
-                pred = y_predicted_normalized
-            else:
-                pred = y_predicted_unnormalized
-            if self.softmax:
-                loss = self.loss(torch.log(res_softmax), targets)
-            elif self.FMMIE:
-                raise NotImplementedError
-            else:
-                loss = self.loss(torch.transpose(pred, 0, 1), targets)
-
-            ### Loss jetzt mal mit Predicted Labels - funktioniert noch nicht aber vlt. könnte man das implementieren
-            # loss = self.loss(torch.transpose(nn.functional.one_hot(labels_predicted), 0, 1), targets)
-            # loss = self.loss(torch.clamp(nn.functional.one_hot(labels_predicted), min=float(1e-12)), targets)
-            # loss = self.loss(one_hot, targets)
+            if not self.FMMIE:
+                if self.use_normalized:
+                    pred = y_predicted_normalized
+                else:
+                    pred = y_predicted_unnormalized
+                if self.softmax:
+                    loss = self.loss(torch.log(res_softmax), targets)
+                else:
+                    loss = self.loss(torch.transpose(pred, 0, 1), targets)
 
             if torch.isnan(loss):
                 if self.print_info:
@@ -227,21 +229,23 @@ class OptimTransMatrix:
                     targets = targets.to(device=self.device)
                     inputs = torch.squeeze(inputs, dim=0)
                     targets = torch.squeeze(targets, dim=0)
-                    labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
+                    if self.FMMIE:
+                        labels_predicted, loss = self.forward(inputs)
+                    else:
+                        labels_predicted, y_predicted_unnormalized, y_predicted_normalized, res_softmax = self.forward(inputs)
 
                     labels_predicted = labels_predicted.to(dtype=torch.int64)
-                    # one_hot = nn.functional.one_hot(labels_predicted, 5).to(dtype=torch.float64)
 
-                    if self.use_normalized:
-                        pred = y_predicted_normalized
-                    else:
-                        pred = y_predicted_unnormalized
-                    if self.softmax:
-                        loss = self.loss(torch.log(res_softmax), targets)
-                    else:
-                        loss = self.loss(torch.transpose(pred, 0, 1), targets)
+                    if not self.FMMIE:
+                        if self.use_normalized:
+                            pred = y_predicted_normalized
+                        else:
+                            pred = y_predicted_unnormalized
+                        if self.softmax:
+                            loss = self.loss(torch.log(res_softmax), targets)
+                        else:
+                            loss = self.loss(torch.transpose(pred, 0, 1), targets)
                     test_loss += loss.item()
-                    #test_loss += self.loss(one_hot, targets)
                     correct += (labels_predicted == targets).sum().item() / len(labels_predicted)
                     nr += 1
 
@@ -311,10 +315,11 @@ class OptimTransMatrix:
 
 
 def main():
-    """OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=200, learning_rate=0.0001, print_results=True,
+    OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0001, print_results=True,
                      train_alpha=True, train_transition=True, alpha=1.0, fold=1, save=False,
-                     save_unsuccesful=True, use_normalized=False, softmax=False)"""
+                     save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True)
     for alpha in [0.3, 1.0]:
+        break
         """for fold in range(1, 21):
             print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
             OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
@@ -328,6 +333,7 @@ def main():
                              save_unsuccesful=True, use_normalized=False)"""
 
         for train_alpha in [False, True]:
+            break
             """for fold in range(1, 21):
                 print(
                     f'Sleep-EDF-2013, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
