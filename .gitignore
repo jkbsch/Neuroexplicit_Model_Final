@@ -132,7 +132,5 @@ datasets/
 checkpoints_copied/
 *.pt
 *.pth
-*.npz
-*.edf
 *.log
 results/
