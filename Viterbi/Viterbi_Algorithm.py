@@ -287,9 +287,12 @@ class Viterbi:
                 self.Pi = torch.from_numpy(self.Pi)
         else:
             A_optimizable = torch.clone(self.A)
-            alpha_optimizable = torch.clone(self.alpha)
+            if torch.is_tensor(self.alpha):
+                alpha_optimizable = torch.clone(self.alpha)
+                self.alpha.detach()
+            else:
+                alpha_optimizable = self.alpha
             self.A.detach()
-            self.alpha.detach()
         best_paths, _, _, _, _ = self.calc_viterbi_k_best()
 
         if not self.is_torch:
@@ -326,12 +329,22 @@ class Viterbi:
         else:
             # numerator torch
             exclude_path = len(best_paths)
+
             for i in range(len(best_paths) -1):
+                """try:
+                    torch.equal(self.labels, best_paths[i])
+                except:
+                    if self.print_info:
+                        print("[INFO]: self.labels is NoneType. Training continues")
+                    print("Stop")
+                    continue"""
                 if torch.equal(self.labels, best_paths[i]):
                     exclude_path = i
                     break
-
-            num = self.Pi[self.labels[0]] + torch.sum(self.P[torch.arange(len(self.labels)), self.labels])
+            try:
+                num = self.Pi[self.labels[0]] + torch.sum(self.P[torch.arange(len(self.labels)), self.labels])
+            except:
+                print('error')
             transitions = torch.zeros((self.K, self.K))
             for i in range(len(self.labels) - 1):
                 transitions[self.labels[i], self.labels[i + 1]] += 1
