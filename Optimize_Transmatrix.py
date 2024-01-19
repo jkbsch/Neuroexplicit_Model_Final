@@ -2,6 +2,9 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from HMM_utils import *
 from Viterbi.Viterbi_Algorithm import *
+import json
+import argparse
+import warnings
 
 
 class OptimTransMatrix:
@@ -17,6 +20,7 @@ class OptimTransMatrix:
 
         self.length = length
         self.min_length = min_length
+        self.train_with_test = train_with_test
 
         self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold, self.length, train_with_test)
         # print("Train Dataset getitem:", self.TrainDataset.__getitem__(0), "length:", self.TrainDataset.__len__())
@@ -203,7 +207,7 @@ class OptimTransMatrix:
                 temp_length = len(targets[0])
             except:
                 if self.print_info:
-                    print("[INFO]: Error: targets has no length, this datapoint is skipped")
+                    print("[INFO]: Error: targets has no length, one datapoint is skipped")
                 continue
             if temp_length > 1:
                 all_targets.extend(targets[0].tolist())
@@ -255,11 +259,11 @@ class OptimTransMatrix:
 
                 # zero the gradients after updating
                 self.optimizer.zero_grad()
-                if (epoch % 1 == 0 or epoch == self.num_epochs-1) and self.print_results:
+                if (epoch % 1 == 0 or epoch == self.num_epochs-1) and self.print_results: #  ergibt diese Zeile einen Sinn?
                     total_acc += (np.array(all_labels_predicted) == np.array(all_targets)).sum().item() / len(all_labels_predicted)
                     total_loss += loss.item()/len(all_labels_predicted)
                     nr += 1
-                    if i == self.TrainDataset.end_nr - 1 or True:
+                    if i == self.TrainDataset.end_nr - 1 or i > 1700:
                         rel_total_acc = total_acc / nr
                         rel_total_loss = total_loss / nr
                         # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
@@ -290,8 +294,8 @@ class OptimTransMatrix:
                         try:
                             len(targets)
                         except:
-                            if self.print_info:
-                                print("[INFO]: Error: targets or inputs have no length, this datapoint is skipped")
+                            """if self.print_info:
+                                print("[INFO]: Error: targets or inputs have no length, this datapoint is skipped")"""
                             continue
                     inputs = inputs.to(device=self.device)
                     if self.FMMIE:
@@ -354,7 +358,7 @@ class OptimTransMatrix:
 
         out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
                     str(self.checkpoints) + "_lr_" + str(self.learning_rate) + "_otrans_" + str(self.train_transition) + "_oalpha_" + str(
-                    self.train_alpha) + "_epochs_" + str(self.num_epochs)+"_FMMIE_"+str(self.FMMIE)+"length_"+str(self.length))
+                    self.train_alpha) + "_epochs_" + str(self.num_epochs)+"_FMMIE_"+str(self.FMMIE)+"_length_"+str(self.length)+"_trwtest_"+str(self.train_with_test))
 
         if self.successful and self.no_nan and not save_unsuccessful:
 
@@ -380,53 +384,45 @@ class OptimTransMatrix:
 
 
 def main():
-    OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=10, learning_rate=0.0001, print_results=True,
-                     train_alpha=True, train_transition=False, alpha=1.0, fold=1, save=True,
-                     save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_test=True, min_length=200)
-    for alpha in [0.3, 1.0]:
-        break
-        """for fold in range(1, 21):
-            print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
-            OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
-                             train_alpha=True, train_transition=True, alpha=alpha, fold=fold, save=True,
-                             save_unsuccesful=True, use_normalized=False)
+    try:
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
+
+        parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        parser.add_argument('--lower_alpha', type=float, default=0.1, help='random seed')
+        parser.add_argument('--num_epochs', type=int, default=100, help='random seed')
+        parser.add_argument('--learning_rate', type=float, default=0.001, help='random seed')
+        parser.add_argument('--train_alpha', type=int, default=1, help='random seed')
+        parser.add_argument('--train_transition', type=int, default=0, help='random seed')
+        args = parser.parse_args()
+
+        lower_alpha = args.lower_alpha
+        num_epochs = args.num_epochs
+        learning_rate = args.learning_rate
+        if args.train_alpha == 1:
+            train_alpha = True
+        else:
+            train_alpha = False
+        if args.train_transition == 1:
+            train_transition = True
+        else:
+            train_transition = False
+
+    except:
+        print("Error: No config given via console")
+        num_epochs = 100
+        learning_rate = 0.001
+        train_alpha = True
+        train_transition = False
+        lower_alpha = 0.1
+
+    for alpha in [lower_alpha, 1.0]:
         for fold in range(1, 11):
-            print(
-                f'Sleep-EDF-2018, 60 epochs, lr = 0.0001, train_alpha = True, train_transition = True, alpha = {alpha}, fold={fold}')
-            OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0001, print_results=True,
-                             train_alpha=True, train_transition=True, alpha=alpha, fold=fold, save=True,
-                             save_unsuccesful=True, use_normalized=False)"""
+            print(f'Optimization for alpha: {alpha}, fold: {fold}, learning rate: {learning_rate}, epochs: {num_epochs}, train_alpha: {train_alpha}, train_transition: {train_transition}, train with test True, min_length = 200, ')
+            OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=num_epochs, learning_rate=learning_rate, print_results=True,
+                         train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
+                         save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_test=True, min_length=200)
 
-        for train_alpha in [False, True]:
-            break
-            """for fold in range(1, 21):
-                print(
-                    f'Sleep-EDF-2013, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
-                OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0005, print_results=True,
-                                 train_alpha=train_alpha, train_transition=True, alpha=alpha, fold=fold, save=True,
-                                 save_unsuccesful=True, use_normalized=False)"""
-            for learning_rate in [0.0005, 0.0001]:
-                for train_transition in [False, True]:
-                    if train_transition == False and train_alpha == False:
-                        continue
-                    for fold in range(1, 11):
-                        print(
-                            f'Sleep-EDF-2018, 60 epochs, lr = 0.0005, train_alpha = {train_alpha}, train_transition = True, alpha = {alpha}, fold={fold}')
-                        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=120, learning_rate=learning_rate, print_results=True,
-                                         train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
-                                         save_unsuccesful=True, use_normalized=False)
-
-    """for fold in range(1, 21):
-        print(f'Sleep-EDF-2013, 60 epochs, lr = 0.0001, train_alpha = False, train_transition = True, alpha = 0.5, fold={fold}')
-        OptimTransMatrix(dataset='Sleep-EDF-2013', num_epochs=60, learning_rate=0.0001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True,
-                         save_unsuccesful=True, use_normalized=False)
-    for fold in range(1, 11):
-        print(
-            f'Sleep-EDF-2018, 60 epochs, lr = 0.0001, train_alpha = False, train_transition = True, alpha = 0.5, fold={fold}')
-        OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=60, learning_rate=0.0001, print_results=True,
-                         train_alpha=False, train_transition=True, alpha=0.5, fold=fold, save=True,
-                         save_unsuccesful=True, use_normalized=False)"""
 
 
 if __name__ == "__main__":
