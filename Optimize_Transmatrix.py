@@ -79,8 +79,10 @@ class OptimTransMatrix:
             self.fold = fold
             self.device = device,
             self.length = length
-            self.dataset, self.trans_matrix, self.end_fold, self.end_nr, _ = set_dataset(self.used_set,
+            self.dataset, self.trans_matrix, self.end_fold, self.end_nr, self.leave_out = set_dataset(self.used_set,
                                                                                          dataset, trans_matrix)
+            while (self.fold, self.end_nr) in self.leave_out:
+                self.end_nr -= 1
             self.end_nr += 1
             self.train_data_probs = []
             self.train_data_labels = []
