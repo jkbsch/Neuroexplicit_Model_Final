@@ -219,10 +219,10 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.3, end_alpha=0.3, step=0.2,
-                                   print_all_results=False, trans_matrix=None, otrans=True, oalpha=False,
-                                   evaluate_result=False, visualize=True,
-                                   optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given')
+    optimize_alpha = OptimizeAlpha(used_set='val', dataset='Sleep-EDF-2018', start_alpha=0.0, end_alpha=1.0, step=0.02,
+                                   print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
+                                   evaluate_result=False, visualize=False,
+                                   optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
     """alphas = []
     accuracies = []
     for dataset in ['Sleep-EDF-2013', 'Sleep-EDF-2018']:
