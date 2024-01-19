@@ -132,5 +132,8 @@ datasets/
 checkpoints_copied/
 *.pt
 *.pth
-*.log
+*.npz
+*.edf
 results/
+/dset/Sleep-EDF-2018/edf/
+/dset/Sleep-EDF-2018/npz/Fpz-Cz/

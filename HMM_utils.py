@@ -83,7 +83,7 @@ def set_dataset(used_set, dataset, trans_matrix):
         elif used_set == 'val':
             end_fold = 20
             end_nr = 2
-            leave_out = [()]
+            leave_out = [(5, 13), (6, 13), (7, 13), (9, 13)]
             print("[ATTENTION]: val set must be checked")
     elif dataset == 'Sleep-EDF-2018':
         if used_set == 'test':
@@ -97,7 +97,7 @@ def set_dataset(used_set, dataset, trans_matrix):
         elif used_set == 'val':
             end_fold = 10
             end_nr = 13
-            leave_out = [()]
+            leave_out = [(5, 13), (6, 13), (7, 13), (9, 13)]
             print("[ATTENTION]: val set must be checked")
     else:
         print("[INFO]: Dataset is not or incorrectly defined. Dataset is set to Sleep-EDF-2013")
