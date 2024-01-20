@@ -200,6 +200,7 @@ class OptimTransMatrix:
 
     def train(self, epoch):
         nr, total_loss, total_acc = 0, 0, 0
+        cnt_print = 0
         loss = 0.0
         count_elements = 0
         all_targets = []
@@ -208,8 +209,8 @@ class OptimTransMatrix:
             try:
                 temp_length = len(targets[0])
             except:
-                if self.print_info:
-                    print("[INFO]: Error: targets has no length, one datapoint is skipped")
+                """if self.print_info:
+                    print("[INFO]: Error: targets has no length, one datapoint is skipped")"""
                 continue
             if temp_length > 1:
                 all_targets.extend(targets[0].tolist())
@@ -261,11 +262,13 @@ class OptimTransMatrix:
 
                 # zero the gradients after updating
                 self.optimizer.zero_grad()
+
                 if (epoch % 1 == 0 or epoch == self.num_epochs-1) and self.print_results: #  ergibt diese Zeile einen Sinn?
                     total_acc += (np.array(all_labels_predicted) == np.array(all_targets)).sum().item() / len(all_labels_predicted)
                     total_loss += loss.item()/len(all_labels_predicted)
                     nr += 1
-                    if i == self.TrainDataset.end_nr - 1 or i > 1700:
+                    # if i == self.TrainDataset.end_nr - 1 or i > 1700:
+                    if cnt_print % 10 == 0:
                         rel_total_acc = total_acc / nr
                         rel_total_loss = total_loss / nr
                         # print(f"i {i + 1} new Trans Matrix = {self.trans} Training loss: {loss.item():>7f}")
@@ -276,6 +279,7 @@ class OptimTransMatrix:
                                 alpha = self.alpha
                             print(f"Epoch: {epoch}, i = {i + 1}, Alpha = {alpha:.5f}  \nTrain Accuracy (Average): "
                                   f"\t{(100 * rel_total_acc):0.5f}%\tTrain loss (Average): \t{rel_total_loss:.7f}")
+                    cnt_print += 1
                 loss = 0.0
                 count_elements = 0
                 all_labels_predicted = []
@@ -360,7 +364,7 @@ class OptimTransMatrix:
 
         out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
                     str(self.checkpoints) + "_lr_" + str(self.learning_rate) + "_otrans_" + str(self.train_transition) + "_oalpha_" + str(
-                    self.train_alpha) + "_epochs_" + str(self.num_epochs)+"_FMMIE_"+str(self.FMMIE)+"_length_"+str(self.length)+"_trwtest_"+str(self.train_with_test))
+                    self.train_alpha) + "_epochs_" + str(self.num_epochs)+"_FMMIE_"+str(self.FMMIE)+"_length_"+str(self.length)+"_trwtest_"+str(self.train_with_test))+"_startalpha_"+str(self.save_alpha)
 
         if self.successful and self.no_nan and not save_unsuccessful:
 
