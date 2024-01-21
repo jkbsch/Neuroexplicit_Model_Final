@@ -83,7 +83,8 @@ class OptimizeAlpha:
                           'all_alphas': self.all_alphas,
                           'set': self.used_set,
                           'checkpoints': self.checkpoints,
-                          'sizes': sizes}
+                          'sizes': sizes,
+                          'max_length': self.max_length}
 
             # self.end_fold = 1
             for fold in range(1, self.end_fold + 1):
@@ -183,7 +184,7 @@ class OptimizeAlpha:
         print(f'best alpha between {self.start_alpha*self.step:.2f} and {(self.end_alpha - 1)*self.step:.2f} is {self.alpha:.2f}')
         print(f'best accuracy: {(self.best_correct / self.length)*100:.4f}%')
 
-    def plot(self, start_alpha, end_alpha):
+    def plot(self, start_alpha, end_alpha): # only works with entire night, so max length is not considered
         config = {
             'fold': 1,
             'nr': 0,
@@ -197,20 +198,71 @@ class OptimizeAlpha:
             'dataset': self.dataset,
             'alpha': (start_alpha + end_alpha) / 2, ### !!! GGF. ist das hier falsch, wenn mit optimiertem Alpha gearbeitet wird - das ist noch zu sehen
             'used_set': self.used_set,
-            'checkpoints': self.checkpoints
+            'checkpoints': self.checkpoints,
+            'max_length': self.max_length
         }
         alpha, trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'])
         if alpha is not None:
             config["alpha"] = alpha
-        dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
+        if config['max_length'] is None or config['max_length'] == 0:
+            dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
                                         trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
                                         checkpoints=config['checkpoints'])
-        y_true = dnn_vit.P_Matrix_labels
-        y_pred_sleepy = dnn_vit.pure_predictions
-        probs_sleepy = dnn_vit.P_Matrix_probs
-        y_pred_hybrid = dnn_vit.hybrid_predictions
-        probs_hybrid = dnn_vit.hybrid_probs
-        if dnn_vit.logscale:
+            correct_hybrid = dnn_vit.korrekt_hybrid
+            correct_SleePy = dnn_vit.korrekt_SleePy
+            hybrid_length = dnn_vit.length
+            P_Matrix_labels = dnn_vit.P_Matrix_labels
+            hybrid_predictions = dnn_vit.hybrid_predictions
+            pure_predictions = dnn_vit.pure_predictions
+            P_Matrix_probs = dnn_vit.P_Matrix_probs
+            hybrid_probs = dnn_vit.hybrid_probs
+            vitlogscale = dnn_vit.logscale
+        else:
+            length = len(load_P_Matrix(config['checkpoints'], config['dataset'], config['used_set'], config['fold'], config['nr'], True)[0])
+            correct_hybrid = 0
+            hybrid_length = 0
+            correct_SleePy = 0
+            P_Matrix_labels = []
+            hybrid_predictions = []
+            pure_predictions = []
+            P_Matrix_probs = []
+            hybrid_probs = []
+
+            for i in range(0, length - config['max_length'], config['max_length']):
+                dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
+                                        trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
+                                        checkpoints=config['checkpoints'],length=config['max_length'], start=i)
+                correct_hybrid += dnn_vit.korrekt_hybrid
+                correct_SleePy += dnn_vit.korrekt_SleePy
+                hybrid_length += dnn_vit.length
+                P_Matrix_labels.extend(dnn_vit.P_Matrix_labels)
+                hybrid_predictions.extend(dnn_vit.hybrid_predictions)
+                pure_predictions.extend(dnn_vit.pure_predictions)
+                P_Matrix_probs.extend(dnn_vit.P_Matrix_probs)
+                hybrid_probs.extend(dnn_vit.hybrid_probs.T)
+                vitlogscale = dnn_vit.logscale
+
+            mod = length % config['max_length']
+            if mod != 0:
+                dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
+                                        trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
+                                        checkpoints=config['checkpoints'], length=mod, start=length - mod)
+                correct_hybrid += dnn_vit.korrekt_hybrid
+                correct_SleePy += dnn_vit.korrekt_SleePy
+                hybrid_length += dnn_vit.length
+                P_Matrix_labels.extend(dnn_vit.P_Matrix_labels)
+                hybrid_predictions.extend(dnn_vit.hybrid_predictions)
+                pure_predictions.extend(dnn_vit.pure_predictions)
+                P_Matrix_probs.extend(dnn_vit.P_Matrix_probs)
+                hybrid_probs.extend(dnn_vit.hybrid_probs.T)
+            hybrid_probs = np.array(hybrid_probs).T
+
+        y_true = np.array(P_Matrix_labels)
+        y_pred_sleepy = np.array(pure_predictions)
+        probs_sleepy = np.array(P_Matrix_probs)
+        y_pred_hybrid = np.array(hybrid_predictions)
+        probs_hybrid = np.array(hybrid_probs)
+        if vitlogscale:
             probs_hybrid = np.exp(probs_hybrid)
         probs_hybrid = np.divide(probs_hybrid, np.sum(probs_hybrid, axis=0)).T
 
@@ -230,15 +282,11 @@ class OptimizeAlpha:
         best_start_index_for_sleepy = 0
         best_start_index_for_hybrid = 0
         for i in range(len(y_true)-index_length-1):
-            # best_sleepy_new_1 = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_sleepy[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
             best_sleepy_new = np.sum(((y_true[i:i + index_length] == y_pred_sleepy[i:i + index_length])*(y_pred_sleepy[i:i + index_length] != y_pred_hybrid[i:i + index_length])))
-            # assert(best_sleepy_new_1 == best_sleepy_new)
             if best_sleepy_new > best_sleepy:
                 best_sleepy = best_sleepy_new
                 best_start_index_for_sleepy = i
-            # best_hybrid_new_1 = np.sum(np.where(np.where(y_true[i:i+index_length] == y_pred_hybrid[i:i+index_length], 1, 0) == np.where(y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length], 1, 2), 1, 0))
             best_hybrid_new = np.sum(((y_true[i:i+index_length] == y_pred_hybrid[i:i+index_length]) * (y_pred_sleepy[i:i+index_length] != y_pred_hybrid[i:i+index_length])))
-            # assert(best_hybrid_new_1 == best_hybrid_new)
 
             if best_hybrid_new > best_hybrid:
                 best_hybrid = best_hybrid_new
@@ -253,13 +301,12 @@ class OptimizeAlpha:
         visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
 def main():
-    print("Start")
     # visualize_alphas()
-    """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.001,
+    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.001,
                                    print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
-                                   evaluate_result=False, visualize=False,
-                                   optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=10)"""
-    alphas = []
+                                   evaluate_result=False, visualize=True,
+                                   optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=None)
+    """alphas = []
     accuracies = []
     dataset = 'Sleep-EDF-2018'
     for used_set in ['train', 'test', 'val']:
@@ -269,8 +316,8 @@ def main():
         accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
-    np.savetxt("results/new_alphas_notrain_exact_maxlength10.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_exact_maxlength10.txt", accuracies, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_alphas_notrain_exact_maxlength10_v2.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_exact_maxlength10_v2.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
 
 if __name__ == "__main__":
