@@ -302,22 +302,22 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.001,
+    """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.05,
                                    print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
                                    evaluate_result=False, visualize=True,
-                                   optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=None)
-    """alphas = []
+                                   optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=None)"""
+    alphas = []
     accuracies = []
     dataset = 'Sleep-EDF-2018'
     for used_set in ['train', 'test', 'val']:
         print(f'Dataset: {dataset}, used_set: {used_set}')
-        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=10.0, step=0.001, print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False, evaluate_result=False, visualize=False,optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=10)
+        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=2.0, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False, evaluate_result=False, visualize=False,optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=10)
         alphas.append(optimize_alpha.alphas)
         accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
-    np.savetxt("results/new_alphas_notrain_exact_maxlength10_v2.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_exact_maxlength10_v2.txt", accuracies, fmt="%.15f", delimiter=",")"""
+    np.savetxt("results/new_alphas_notrain_exact_maxlength10_step0.05.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_exact_maxlength10_step0.05.txt", accuracies, fmt="%.15f", delimiter=",")
 
 
 if __name__ == "__main__":
