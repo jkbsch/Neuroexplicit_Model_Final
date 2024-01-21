@@ -428,7 +428,7 @@ def main():
             print(f'Optimization for alpha: {alpha}, fold: {fold}, learning rate: {learning_rate}, epochs: {num_epochs}, train_alpha: {train_alpha}, train_transition: {train_transition}, train with test True, min_length = 200, ')
             OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=num_epochs, learning_rate=learning_rate, print_results=True,
                          train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
-                         save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_test=True, min_length=200, length=1000)
+                         save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_test=True, min_length=200, length=2000)
 
 
 
