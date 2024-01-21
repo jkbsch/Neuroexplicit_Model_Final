@@ -193,25 +193,25 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     plt.xlabel('Predicted Class')
     plt.ylabel('Actual Class')
     ax.set_title('Confusion Matrix')
-    plt.figtext(0.01, 0.01,f'Confusion Matrix for : \nDataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, \ncheckpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}', fontsize=6)
+    plt.figtext(0.01, 0.01,f'Confusion Matrix for : \nDataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, \ncheckpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}', fontsize=6)
 
     plt.show()
 
     fig.savefig(
-        f'results/ConfusionMatrix_Dataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}.png', dpi=1200)
+        f'results/ConfusionMatrix_Dataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}.png', dpi=1200)
 
     overall_dt = SingleTable(overall_data, colored('OVERALL RESULT', 'red'))
     perclass_dt = SingleTable(perclass_data, colored('PER-CLASS RESULT', 'red'))
 
     print('\n[INFO] Evaluation result from fold 1 to {}'.format(fold))
-    print(f'\nDataset: "{config["dataset"]}" Transition Matrix: {config["transmatrix"]}, Set: "{config["set"]}", trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}')
+    print(f'\nDataset: "{config["dataset"]}" Transition Matrix: {config["transmatrix"]}, Set: "{config["set"]}", trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}')
     print('\n' + overall_dt.table)
     print('\n' + perclass_dt.table)
     print(colored(' A', 'cyan') + ': Actual Class, ' + colored('P', 'green') + ': Predicted Class' + '\n\n')
 
     if save:
         with open(os.path.join('results',
-                               config['dataset'] + '_transmatrix_' + config['transmatrix'] + '_alpha_' + config['alpha'] + '_set_' + config['set'] + '_oalpha_' + config["oalpha"] + '_otrans_' + config["otrans"] + '_epochs_'+ config["epochs"] + '_lr_' + config["lr"] + '_set_' + config["set"] + '_checkpoints_' + config["checkpoints"] + '.txt'),
+                               str(config['dataset']) + '_transmatrix_' + str(config['transmatrix']) + '_alpha_' + str(config['alpha']) + '_set_' + str(config['set']) + '_oalpha_' + str(config["oalpha"]) + '_otrans_' + str(config["otrans"]) + '_epochs_'+ str(config["epochs"]) + '_lr_' + str(config["lr"]) + '_set_' + str(config["set"]) + '_checkpoints_' + str(config["checkpoints"]) +'_maxlength_' + str(config["max_length"])+ '.txt'),
                   'w') as f:
             f.write(
                 str(fold) + ' ' +
@@ -233,24 +233,24 @@ def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
 
     # fig.suptitle('Comparison Hybrid and Labels')
     # plt.figure(figsize=(600, 100))
-    ax[0].set_xlim(xmin, xmax)
-    ax[1].set_xlim(0, length)
+    ax[1].set_xlim(xmin, xmax)
+    ax[0].set_xlim(0, length)
     y_true = y_true * -1
     y_pred = y_pred * -1
     sleepy_pred = sleepy_pred * -1
 
-    ax[0].scatter(X, y_true, color='black', label='Labels')
-    ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
-    ax[0].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', label='Sleepy Predictions where SleePy != Hybrid')
-    ax[0].set_ylim(-4.5, 0.5)
-    ax[0].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
-
-    ax[1].step(X, y_true, color='black')
-    ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
-    ax[1].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
-    ax[1].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', s=6)
+    ax[1].scatter(X, y_true, color='black', label='Labels')
+    ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
+    ax[1].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', label='Sleepy Predictions where SleePy != Hybrid')
     ax[1].set_ylim(-4.5, 0.5)
     ax[1].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
+
+    ax[0].step(X, y_true, color='black')
+    ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
+    ax[0].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
+    ax[0].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', s=6)
+    ax[0].set_ylim(-4.5, 0.5)
+    ax[0].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     fig.legend(loc='outside right upper', prop={'size': 6})
 
@@ -259,7 +259,7 @@ def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
     else:
         alpha = config["all_alphas"][config["fold"] - 1]
 
-    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha} trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]} checkpoints: {config["checkpoints"]}'
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha} trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}, checkpoints: {config["checkpoints"]}, maxlength: {config["max_length"]}'
     plt.figtext(0.1, 0.01, description, fontsize=6)
 
     plt.show()
@@ -277,7 +277,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     y_pred_sleepy = y_pred_sleepy[xmin:xmax]
     y_pred_hybrid = y_pred_hybrid[xmin:xmax]
 
-    ax[0].matshow(probs_sleepy.T, label='Probabilities')
+    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='Purples')
     # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
     # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
     ax[0].scatter(X, y_true, color='black', label='Labels', edgecolors='cornsilk')
@@ -290,7 +290,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     B = A + np.array(xmin)
     ax[0].set_xticks(A, B)
 
-    ax[1].matshow(probs_hybrid.T, label='Probabilites')
+    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='Purples')
     # ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
     # ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
     ax[1].scatter(X, y_true, color='black', edgecolors='cornsilk')
@@ -302,7 +302,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
 
     fig.legend()
 
-    plt.colorbar(cm.ScalarMappable(norm=None, cmap=None), orientation='horizontal', pad=0.2, shrink=0.6,
+    plt.colorbar(cm.ScalarMappable(norm=None, cmap='Purples'), orientation='horizontal', pad=0.2, shrink=0.6,
                  label='Predicted Probabilites')
 
     if not config["oalpha"]:
@@ -310,24 +310,28 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     else:
         alpha = config["all_alphas"][config["fold"] - 1]
 
-    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}'
+    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}, maxlength: {config["max_length"]}'
     plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
     fig.savefig(f'results/probs_{description}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('results/new_alphas_notrain.txt', delimiter=',')
-    accuracies = np.loadtxt('results/new_accuracies_notrain.txt', delimiter=',')
+    alphas = np.loadtxt('results/new_alphas_notrain_exact_maxlength10.txt', delimiter=',')
+    accuracies = np.loadtxt('results/new_accuracies_notrain_exact_maxlength10.txt', delimiter=',')
 
-    fig, ax = plt.subplots(2,2)
-    length = len(alphas[0])
+    """fig, ax = plt.subplots(2,2)
+    length = len(alphas[0])"""
+    fig, ax = plt.subplots()
 
-    fig.suptitle('Alphas and respective Accuracies without trained Transition Matrix')
+    fig.suptitle('Alphas and respective Accuracies for Sleep-EDF-2018')
+    ax.plot(alphas[0][:-4], accuracies[0][:-4], label='Trainset', color='blue')
+    ax.plot(alphas[1][:-4], accuracies[1][:-4], label='Testset', color='mediumpurple')
+    ax.plot(alphas[2][:-4], accuracies[2][:-4], label='Valset', color='indigo')
 
-    for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
+    """for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
         for j, used_set in enumerate(['train', 'test']):
             ax[i][j].scatter(alphas[i][:-4], accuracies[j][:-4])
-            ax[i][j].set_title(f'Dataset: {dataset}, set: {used_set}')
+            ax[i][j].set_title(f'Dataset: {dataset}, set: {used_set}')"""
 
     plt.xlabel('alpha')
     plt.ylabel('Accuracy in %')
@@ -335,7 +339,7 @@ def visualize_alphas():
     plt.show()
 
     fig.tight_layout()
-    fig.savefig(f'results/new_Comparing alphas_untrained.png', dpi=1200)
+    fig.savefig(f'results/new_Comparing alphas_untrained_exact_maxlength10.png', dpi=1200)
 
 def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     length = len(y_true)
@@ -368,9 +372,6 @@ def analyze_errors(y_true, hybrid_pred,sleepy_pred):
         middle = y_true[i+half]
 
         if np.all(arr1 == arr1[0]) and np.all(arr2 == arr2[0]) and arr1[0] == arr2[0] and middle != arr1[0]:
-            debug_true = y_true[i:i + nr_same_epochs]
-            debug_hybrid = hybrid_pred[i:i + nr_same_epochs]
-            debug_sleepy = sleepy_pred[i:i + nr_same_epochs]
             nr_single += 1
             if hybrid_pred[i+half] != middle:
                 errors_single_hybrid[middle] += 1
@@ -385,9 +386,6 @@ def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     threshold = 4
 
     for i in range(length-nr_changing):
-        """debug_true= y_true[i:i+nr_changing]
-        debug_hybrid = hybrid_pred[i:i+nr_changing]
-        debug_sleepy = sleepy_pred[i:i+nr_changing]"""
         count_changes = 0
         for j in range(nr_changing-1):
             if(y_true[i+j] != y_true[i+j+1]):
