@@ -269,8 +269,8 @@ def main():
         accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
-    np.savetxt("results/new_alphas_notrain_exact_unlimited.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_exact_unlimited.txt", accuracies, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_alphas_notrain_exact_maxlength10.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_exact_maxlength10.txt", accuracies, fmt="%.15f", delimiter=",")
 
 
 if __name__ == "__main__":
