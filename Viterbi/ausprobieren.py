@@ -162,13 +162,13 @@ A[:,:,1] = B.T"""
 print(A)
 C = np.unravel_index([[10],[2]], A.shape)
 print(C)"""
-B = torch.tensor([[2,1], [0,1]])
+"""B = torch.tensor([[2,1], [0,1]])
 # Ziel: [0][1][0], [0][0][1], [1][0][0], [1][0][1]
 # aktueller State - bester Vorgängerpfad - Vorgängerstate
 D = np.array(np.unravel_index([[2,1], [0,1]], (2,2))).T
 
 
-print(D)
+print(D)"""
 
 
 
