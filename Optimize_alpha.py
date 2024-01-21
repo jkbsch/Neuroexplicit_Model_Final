@@ -254,7 +254,6 @@ class OptimizeAlpha:
 
 def main():
     print("Start")
-    np.savetxt("results/debug_save.txt", np.array([1.0]), fmt="%.15f", delimiter=",")
     # visualize_alphas()
     """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.001,
                                    print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
