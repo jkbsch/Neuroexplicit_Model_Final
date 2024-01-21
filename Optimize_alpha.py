@@ -264,7 +264,7 @@ def main():
     dataset = 'Sleep-EDF-2018'
     for used_set in ['train', 'test', 'val']:
         print(f'Dataset: {dataset}, used_set: {used_set}')
-        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=10.0, step=0.001, print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False, evaluate_result=False, visualize=False,optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given')
+        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=10.0, step=0.001, print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False, evaluate_result=False, visualize=False,optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=10)
         alphas.append(optimize_alpha.alphas)
         accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
