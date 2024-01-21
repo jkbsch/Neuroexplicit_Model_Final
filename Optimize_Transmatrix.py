@@ -423,7 +423,7 @@ def main():
         lower_alpha = 0.1
 
     for alpha in [lower_alpha, 1.0]:
-        learning_rate = 0.001
+        learning_rate = 0.00001
         for fold in range(1, 11):
             print(f'Optimization for alpha: {alpha}, fold: {fold}, learning rate: {learning_rate}, epochs: {num_epochs}, train_alpha: {train_alpha}, train_transition: {train_transition}, train with test True, min_length = 200, ')
             OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=num_epochs, learning_rate=learning_rate, print_results=True,
