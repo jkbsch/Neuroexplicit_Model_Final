@@ -253,6 +253,7 @@ class OptimizeAlpha:
         visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
 def main():
+    print("Start")
     # visualize_alphas()
     """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.001,
                                    print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
@@ -274,5 +275,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-# warum ist accuracy so hoch? Vielleicht weil nur 30 min wake eingerechnet werden sollen?
-# warum ging es, als ich andere Werte für Fold genommen hatte?
+
