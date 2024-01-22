@@ -340,7 +340,7 @@ def main():
                                             descr = [otrans, oalpha, lr, epochs, checkpoints, max_length, mlength, startalpha]
                                             descr.extend(optimize_alpha.res)
                                             #res.append(",".join([str(x) for x in descr]))
-                                            with open("results/overall_results_given_None.txt", "a") as f:
+                                            with open("results/overall_results_given_10.txt", "a") as f:
                                                 f.write(",".join([str(x) for x in descr]) + "\n")
                                         except:
                                             continue
