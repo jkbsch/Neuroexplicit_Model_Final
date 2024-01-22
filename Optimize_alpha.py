@@ -328,7 +328,7 @@ def main():
         for oalpha in [False, True]:
             for lr in [0.001, 0.00001]:
                 for epochs in [100, 300]:
-                    for checkpoints in ['own']:
+                    for checkpoints in ['given']:
                         for max_length in [10]:
                             for mlength in [10, 1000]:
                                 for startalpha in [0.1, 0.2, 1.0]:
