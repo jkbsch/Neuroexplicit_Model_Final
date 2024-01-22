@@ -13,7 +13,7 @@ class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=10.0, step=0.1, dataset='Sleep-EDF-2018', trans_matrix=None,
                  used_set='train', print_all_results=False, checkpoints='given', oalpha=False, otrans=False, evaluate_result=True,
-                 visualize=False, optimize_alpha=True, max_length=None, lr=0.001, epochs=60, successful=True):
+                 visualize=False, optimize_alpha=True, max_length=None, lr=0.001, epochs=60, successful=True, FMMIE=None, mlength=None, trwtest=None, startalpha=None):
 
         self.best_correct = 0
         self.lr = lr
@@ -27,6 +27,10 @@ class OptimizeAlpha:
         self.alphas = []
         self.accuracies = []
         self.max_length = max_length
+        self.FMMIE = FMMIE
+        self.mlength = mlength
+        self.trwtest = trwtest
+        self.startalpha = startalpha
 
         self.oalpha = oalpha
         self.all_alphas = []
@@ -84,7 +88,11 @@ class OptimizeAlpha:
                           'set': self.used_set,
                           'checkpoints': self.checkpoints,
                           'sizes': sizes,
-                          'max_length': self.max_length}
+                          'max_length': self.max_length,
+                          'FMMIE': self.FMMIE,
+                          'mlength': self.mlength,
+                          'trwtest': self.trwtest,
+                          'startalpha': self.startalpha}
 
             # self.end_fold = 1
             for fold in range(1, self.end_fold + 1):
@@ -96,7 +104,9 @@ class OptimizeAlpha:
                                                                      otrans=self.otrans, fold=fold,
                                                                      alpha=alpha, lr=self.lr,
                                                                      successful=self.successful,
-                                                                     epochs=self.epochs)
+                                                                     epochs=self.epochs, FMMIE=self.FMMIE, mlength=self.mlength, trwtest=self.trwtest, startalpha=self.startalpha)
+                    if new_alpha is not None and self.oalpha:
+                        alpha = new_alpha
                     if nr == 0:
                         self.all_alphas.append(new_alpha)
                     if self.max_length is None or self.max_length == 0:
@@ -160,7 +170,7 @@ class OptimizeAlpha:
                         nr_fast += nrf
 
             if self.evaluate_result:
-                summarize_result(config=config, save=False, fold=fold, y_pred=pred, y_true=labels)
+                summarize_result(config=config, save=True, fold=fold, y_pred=pred, y_true=labels)
 
                 print(f'Long sleep phases according to labels with a wrong prediction: \n "Pure":\t'
                       f'{errors_long_sleepy}\n "Hybrid":\t{errors_long_hybrid} \n\nLong sleep phases according to '
@@ -199,9 +209,13 @@ class OptimizeAlpha:
             'alpha': (start_alpha + end_alpha) / 2, ### !!! GGF. ist das hier falsch, wenn mit optimiertem Alpha gearbeitet wird - das ist noch zu sehen
             'used_set': self.used_set,
             'checkpoints': self.checkpoints,
-            'max_length': self.max_length
+            'max_length': self.max_length,
+            'FMMIE': self.FMMIE,
+            'mlength': self.mlength,
+            'trwtest': self.trwtest,
+            'startalpha': self.startalpha
         }
-        alpha, trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'])
+        alpha, trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'], FMMIE = config['FMMIE'], mlength=config['mlength'], trwtest=config['trwtest'], startalpha=config['startalpha'])
         if alpha is not None:
             config["alpha"] = alpha
         if config['max_length'] is None or config['max_length'] == 0:
@@ -302,11 +316,12 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.05,
-                                   print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
-                                   evaluate_result=False, visualize=True,
-                                   optimize_alpha=False, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=None)"""
-    alphas = []
+    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.05,
+                                   print_all_results=False, trans_matrix=None, otrans=True, oalpha=True,
+                                   evaluate_result=True, visualize=False,
+                                   optimize_alpha=False, lr=0.00001, successful=True, epochs=100, checkpoints='given',
+                                   max_length=None, FMMIE=True, mlength=10, trwtest=True, startalpha=0.1)
+    """alphas = []
     accuracies = []
     dataset = 'Sleep-EDF-2018'
     for used_set in ['train', 'test', 'val']:
@@ -317,7 +332,7 @@ def main():
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
     np.savetxt("results/new_alphas_notrain_exact_unlimited_step0.05.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_exact_unlimited_step0.05.txt", accuracies, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_exact_unlimited_step0.05.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
 
 if __name__ == "__main__":
