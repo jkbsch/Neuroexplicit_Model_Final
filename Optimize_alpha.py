@@ -336,8 +336,8 @@ def main():
         accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
-    np.savetxt("results/new_alphas_notrain_long_unlimited_step.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_long_unlimited_step.txt", accuracies, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_alphas_notrain_long_unlimited.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_long_unlimited.txt", accuracies, fmt="%.15f", delimiter=",")
 
 
 
