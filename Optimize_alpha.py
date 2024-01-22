@@ -329,7 +329,7 @@ def main():
             for lr in [0.001, 0.00001]:
                 for epochs in [100, 300]:
                     for checkpoints in ['own']:
-                        for max_length in [None]:
+                        for max_length in [10]:
                             for mlength in [10, 1000]:
                                 for startalpha in [0.1, 0.2, 1.0]:
                                     for used_set in ['train', 'test', 'val']:
@@ -340,7 +340,7 @@ def main():
                                             descr = [otrans, oalpha, lr, epochs, checkpoints, max_length, mlength, startalpha]
                                             descr.extend(optimize_alpha.res)
                                             #res.append(",".join([str(x) for x in descr]))
-                                            with open("results/overall_results_own_none.txt", "a") as f:
+                                            with open("results/overall_results_own_10.txt", "a") as f:
                                                 f.write(",".join([str(x) for x in descr]) + "\n")
                                         except:
                                             continue
