@@ -328,17 +328,19 @@ def main():
         for oalpha in [False, True]:
             for lr in [0.001, 0.00001]:
                 for epochs in [100, 300]:
-                    for checkpoints in ['given', 'own']:
+                    for checkpoints in ['given']:
                         for max_length in [None, 10]:
                             for mlength in [10, 1000]:
                                 for startalpha in [0.1, 0.2, 1.0]:
                                     for used_set in ['train', 'test', 'val']:
+                                        if not otrans and not oalpha and not (lr == 0.001 and epochs == 100 and startalpha == 0.1):
+                                            continue
                                         try:
                                             optimize_alpha = OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=otrans, oalpha=oalpha, evaluate_result=True, visualize=False,optimize_alpha=True, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints, max_length=max_length, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
                                             descr = [otrans, oalpha, lr, epochs, checkpoints, max_length, mlength, startalpha]
                                             descr.extend(optimize_alpha.res)
                                             #res.append(",".join([str(x) for x in descr]))
-                                            with open("results/overall_results_v1.txt", "a") as f:
+                                            with open("results/overall_results_given.txt", "a") as f:
                                                 f.write(",".join([str(x) for x in descr]) + "\n")
                                         except:
                                             continue
