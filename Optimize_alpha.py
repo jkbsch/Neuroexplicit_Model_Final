@@ -323,7 +323,25 @@ def main():
                                    evaluate_result=True, visualize=False,
                                    optimize_alpha=False, lr=0.001, successful=True, epochs=100, checkpoints='given',
                                    max_length=None, FMMIE=True, mlength=10, trwtest=True, startalpha=0.1)"""
-    res = []
+    alphas = []
+    accuracies = []
+    dataset = 'Sleep-EDF-2018'
+    for used_set in ['train', 'test', 'val']:
+        print(f'Dataset: {dataset}, used_set: {used_set}')
+        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=10.0, step=0.2,
+                                       print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False,
+                                       evaluate_result=False, visualize=False, optimize_alpha=True, lr=0.0001,
+                                       successful=False, epochs=60, checkpoints='given', max_length=None)
+        alphas.append(optimize_alpha.alphas)
+        accuracies.append(optimize_alpha.accuracies)
+    alphas = np.array(alphas)
+    accuracies = np.array(accuracies)
+    np.savetxt("results/new_alphas_notrain_long_unlimited_step.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_long_unlimited_step.txt", accuracies, fmt="%.15f", delimiter=",")
+
+
+
+    """res = []
     for otrans in [False, True]:
         for oalpha in [False, True]:
             for lr in [0.001, 0.00001]:
@@ -343,7 +361,7 @@ def main():
                                             with open("results/overall_results_given_10.txt", "a") as f:
                                                 f.write(",".join([str(x) for x in descr]) + "\n")
                                         except:
-                                            continue
+                                            continue"""
     # np.savetxt("results/overall_results_v1.txt", np.array(res), fmt="%.15f", delimiter=",")
     #np.savetxt("results/new_accuracies_notrain_exact_unlimited_step0.05.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
