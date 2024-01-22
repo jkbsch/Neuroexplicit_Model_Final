@@ -331,13 +331,13 @@ def main():
         optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=10.0, step=0.2,
                                        print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False,
                                        evaluate_result=False, visualize=False, optimize_alpha=True, lr=0.0001,
-                                       successful=False, epochs=60, checkpoints='given', max_length=None)
+                                       successful=False, epochs=60, checkpoints='given', max_length=10)
         alphas.append(optimize_alpha.alphas)
         accuracies.append(optimize_alpha.accuracies)
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
-    np.savetxt("results/new_alphas_notrain_long_unlimited.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_long_unlimited.txt", accuracies, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_alphas_notrain_long_maxlength10.txt", alphas, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_long_maxlength10.txt", accuracies, fmt="%.15f", delimiter=",")
 
 
 
