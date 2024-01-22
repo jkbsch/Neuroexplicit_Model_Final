@@ -332,8 +332,7 @@ def main():
                         for max_length in [None, 10]:
                             for mlength in [10, 1000]:
                                 for startalpha in [0.1, 0.2, 1.0]:
-                                    #for used_set in ['train', 'test', 'val']:
-                                    for used_set in ['test']:
+                                    for used_set in ['train', 'test', 'val']:
                                         try:
                                             optimize_alpha = OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=otrans, oalpha=oalpha, evaluate_result=True, visualize=False,optimize_alpha=True, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints, max_length=max_length, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
                                             descr = [otrans, oalpha, lr, epochs, checkpoints, max_length, mlength, startalpha]
