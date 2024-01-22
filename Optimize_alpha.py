@@ -31,6 +31,7 @@ class OptimizeAlpha:
         self.mlength = mlength
         self.trwtest = trwtest
         self.startalpha = startalpha
+        self.res = None
 
         self.oalpha = oalpha
         self.all_alphas = []
@@ -50,6 +51,7 @@ class OptimizeAlpha:
             self.step = step
             self.alpha = 0
             self.optim()
+
 
         if self.visualize:
             self.plot(start_alpha, end_alpha)
@@ -170,7 +172,7 @@ class OptimizeAlpha:
                         nr_fast += nrf
 
             if self.evaluate_result:
-                summarize_result(config=config, save=True, fold=fold, y_pred=pred, y_true=labels)
+                self.res = summarize_result(config=config, save=False, fold=fold, y_pred=pred, y_true=labels)
 
                 print(f'Long sleep phases according to labels with a wrong prediction: \n "Pure":\t'
                       f'{errors_long_sleepy}\n "Hybrid":\t{errors_long_hybrid} \n\nLong sleep phases according to '
@@ -316,39 +318,35 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    """optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1.0, end_alpha=1.0, step=0.05,
+    """optimize_alpha = OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
                                    print_all_results=False, trans_matrix=None, otrans=True, oalpha=True,
                                    evaluate_result=True, visualize=False,
-                                   optimize_alpha=False, lr=0.00001, successful=True, epochs=100, checkpoints='given',
+                                   optimize_alpha=False, lr=0.001, successful=True, epochs=100, checkpoints='given',
                                    max_length=None, FMMIE=True, mlength=10, trwtest=True, startalpha=0.1)"""
-    """alphas = []
-    accuracies = []
-    dataset = 'Sleep-EDF-2018'
-    for used_set in ['train', 'test', 'val']:
-        print(f'Dataset: {dataset}, used_set: {used_set}')
-        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.0, end_alpha=2.0, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=False, oalpha=False, evaluate_result=False, visualize=False,optimize_alpha=True, lr=0.0001, successful=False, epochs=60, checkpoints='given', max_length=None)
-        alphas.append(optimize_alpha.alphas)
-        accuracies.append(optimize_alpha.accuracies)
-    alphas = np.array(alphas)
-    accuracies = np.array(accuracies)
-    np.savetxt("results/new_alphas_notrain_exact_unlimited_step0.05.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_exact_unlimited_step0.05.txt", accuracies, fmt="%.15f", delimiter=",")"""
+    res = []
+    for otrans in [False, True]:
+        for oalpha in [False, True]:
+            for lr in [0.001, 0.00001]:
+                for epochs in [100, 300]:
+                    for checkpoints in ['given', 'own']:
+                        for max_length in [None, 10]:
+                            for mlength in [10, 1000]:
+                                for startalpha in [0.1, 0.2, 1.0]:
+                                    #for used_set in ['train', 'test', 'val']:
+                                    for used_set in ['test']:
+                                        try:
+                                            optimize_alpha = OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=otrans, oalpha=oalpha, evaluate_result=True, visualize=False,optimize_alpha=True, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints, max_length=max_length, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
+                                            descr = [otrans, oalpha, lr, epochs, checkpoints, max_length, mlength, startalpha]
+                                            descr.extend(optimize_alpha.res)
+                                            #res.append(",".join([str(x) for x in descr]))
+                                            with open("results/overall_results_v1.txt", "a") as f:
+                                                f.write(",".join([str(x) for x in descr]) + "\n")
+                                        except:
+                                            continue
+    # np.savetxt("results/overall_results_v1.txt", np.array(res), fmt="%.15f", delimiter=",")
+    #np.savetxt("results/new_accuracies_notrain_exact_unlimited_step0.05.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
-    alphas = []
-    accuracies = []
-    dataset = 'Sleep-EDF-2018'
-    for used_set in ['test']:
-        print(f'Dataset: {dataset}, used_set: {used_set}')
-        optimize_alpha = OptimizeAlpha(used_set=used_set, dataset=dataset, start_alpha=0.9, end_alpha=1.0, step=0.05,
-                                       print_all_results=True, trans_matrix='EDF-2018', otrans=False, oalpha=False,
-                                       evaluate_result=False, visualize=False, optimize_alpha=True, lr=0.0001,
-                                       successful=False, epochs=60, checkpoints='given', max_length=None)
-        alphas.append(optimize_alpha.alphas)
-        accuracies.append(optimize_alpha.accuracies)
-    alphas = np.array(alphas)
-    accuracies = np.array(accuracies)
-    np.savetxt("results/test_optimization_hpc.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/test_optimization_hpc.txt", accuracies, fmt="%.15f", delimiter=",")
+
 
 
 if __name__ == "__main__":

@@ -232,6 +232,8 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
                 str(round(result_dict["4"]["f1-score"] * 100, 1)) + ' '
             )
 
+    return [accuracy, macro_f1, kappa, wpr, wre, wf1, n1pr, n1re, n1f1, n2pr, n2re, n2f1, n3pr, n3re, n3f1, rpr, rre, rf1]
+
 
 def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
     length = len(y_true)
@@ -283,7 +285,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     y_pred_sleepy = y_pred_sleepy[xmin:xmax]
     y_pred_hybrid = y_pred_hybrid[xmin:xmax]
 
-    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='Purples')
+    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='copper')
     # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
     # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
     ax[0].scatter(X, y_true, color='black', label='Labels', edgecolors='cornsilk')
@@ -296,7 +298,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     B = A + np.array(xmin)
     ax[0].set_xticks(A, B)
 
-    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='Purples')
+    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='copper')
     # ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
     # ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
     ax[1].scatter(X, y_true, color='black', edgecolors='cornsilk')
@@ -308,7 +310,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
 
     fig.legend()
 
-    plt.colorbar(cm.ScalarMappable(norm=None, cmap='Purples'), orientation='horizontal', pad=0.2, shrink=0.6,
+    plt.colorbar(cm.ScalarMappable(norm=None, cmap='copper'), orientation='horizontal', pad=0.2, shrink=0.6,
                  label='Predicted Probabilites')
 
     if not config["oalpha"]:
