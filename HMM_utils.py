@@ -324,17 +324,17 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     fig.savefig(f'results/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('results/new_alphas_notrain_exact_maxlength10.txt', delimiter=',')
-    accuracies = np.loadtxt('results/new_accuracies_notrain_exact_maxlength10.txt', delimiter=',')
+    alphas = np.loadtxt('results/new_alphas_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
+    accuracies = np.loadtxt('results/new_accuracies_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
 
     """fig, ax = plt.subplots(2,2)
     length = len(alphas[0])"""
     fig, ax = plt.subplots()
 
     fig.suptitle('Alphas and respective Accuracies for Sleep-EDF-2018')
-    ax.plot(alphas[0][:-4], accuracies[0][:-4], label='Trainset', color='blue')
-    ax.plot(alphas[1][:-4], accuracies[1][:-4], label='Testset', color='mediumpurple')
-    ax.plot(alphas[2][:-4], accuracies[2][:-4], label='Valset', color='indigo')
+    ax.plot(alphas[0], accuracies[0], label='Trainset', color='blue')
+    ax.plot(alphas[1], accuracies[1], label='Testset', color='mediumpurple')
+    ax.plot(alphas[2], accuracies[2], label='Valset', color='indigo')
 
     """for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
         for j, used_set in enumerate(['train', 'test']):
@@ -343,11 +343,12 @@ def visualize_alphas():
 
     plt.xlabel('alpha')
     plt.ylabel('Accuracy in %')
+    plt.legend()
 
     plt.show()
 
     fig.tight_layout()
-    fig.savefig(f'results/new_Comparing alphas_untrained_exact_maxlength10.png', dpi=1200)
+    fig.savefig(f'results/new_Comparing alphas_untrained_maxlength10.png', dpi=1200)
 
 def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     length = len(y_true)
