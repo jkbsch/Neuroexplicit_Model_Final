@@ -329,7 +329,7 @@ def main():
             for lr in [0.001, 0.00001]:
                 for epochs in [100, 300]:
                     for checkpoints in ['given']:
-                        for max_length in [10]:
+                        for max_length in [None]:
                             for mlength in [10, 1000]:
                                 for startalpha in [0.1, 0.2, 1.0]:
                                     for used_set in ['train', 'test', 'val']:
