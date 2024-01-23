@@ -183,7 +183,7 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
 
     confusion_matrix = np.divide(cm, (np.sum(cm, 1)).reshape(5, 1))
     fig, ax = plt.subplots()
-    ax.matshow(confusion_matrix, cmap='copper')
+    ax.matshow(confusion_matrix, cmap='pink')
     ax.set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
     ax.set_xticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
 
@@ -285,7 +285,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     y_pred_sleepy = y_pred_sleepy[xmin:xmax]
     y_pred_hybrid = y_pred_hybrid[xmin:xmax]
 
-    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='copper')
+    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='pink')
     # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
     # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
     ax[0].scatter(X, y_true, color='black', label='Labels', edgecolors='cornsilk')
@@ -298,9 +298,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     B = A + np.array(xmin)
     ax[0].set_xticks(A, B)
 
-    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='copper')
-    # ax[1].scatter(X, np.where(y_true == y_pred_hybrid, y_true, None), color='black')
-    # ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red')
+    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='pink')
     ax[1].scatter(X, y_true, color='black', edgecolors='cornsilk')
     ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red', edgecolors='cornsilk')
 
@@ -310,7 +308,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
 
     fig.legend()
 
-    plt.colorbar(cm.ScalarMappable(norm=None, cmap='copper'), orientation='horizontal', pad=0.2, shrink=0.6,
+    plt.colorbar(cm.ScalarMappable(norm=None, cmap='pink'), orientation='horizontal', pad=0.2, shrink=0.6,
                  label='Predicted Probabilites')
 
     if not config["oalpha"]:
@@ -324,17 +322,21 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     fig.savefig(f'results/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('results/new_alphas_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
-    accuracies = np.loadtxt('results/new_accuracies_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
+    alphas = np.loadtxt('results/new_alphas_notrain_long_unlimited.txt', delimiter=',')
+    accuracies = np.loadtxt('results/new_accuracies_notrain_long_unlimited.txt', delimiter=',')
 
     """fig, ax = plt.subplots(2,2)
     length = len(alphas[0])"""
     fig, ax = plt.subplots()
 
-    fig.suptitle('Alphas and respective Accuracies for Sleep-EDF-2018')
-    ax.plot(alphas[0], accuracies[0], label='Trainset', color='blue')
-    ax.plot(alphas[1], accuracies[1], label='Testset', color='mediumpurple')
-    ax.plot(alphas[2], accuracies[2], label='Valset', color='indigo')
+    fig.suptitle('Alphas and respective Accuracies, predictions for N = length of entire night')
+    ax.scatter(alphas[0], accuracies[0], label='Trainset', color='blue')
+    ax.scatter(alphas[1], accuracies[1], label='Testset', color='mediumpurple')
+    ax.scatter(alphas[2], accuracies[2], label='Valset', color='indigo')
+
+    plt.grid(True)
+    plt.xlim((0, 10))
+    plt.ylim((80, 100))
 
     """for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
         for j, used_set in enumerate(['train', 'test']):
@@ -348,7 +350,7 @@ def visualize_alphas():
     plt.show()
 
     fig.tight_layout()
-    fig.savefig(f'results/new_Comparing alphas_untrained_maxlength10.png', dpi=1200)
+    fig.savefig(f'results/new_Comparing alphas_untrained_unlimited_long.png', dpi=1200)
 
 def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     length = len(y_true)

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import HMM_utils
 
 
-def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3, epochs=1, checkpoints='given'):
+def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3, epochs=1, checkpoints='given'):
     fig, ax = plt.subplots(2, 1)
     res_alpha1, transmatrix1 = HMM_utils.load_Transition_Matrix(trans_matr=trans_matr, oalpha=False, otrans=False, fold=fold, check=False,
                                                     successful=successful,
@@ -13,7 +13,7 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
                                                     successful=successful,
                                                     checkpoints=checkpoints, lr=lr, alpha=alpha, epochs=epochs)
 
-    ax[0].matshow(transmatrix1, cmap='magma')
+    ax[0].matshow(transmatrix1, cmap='bone')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
     ax[0].set_xticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
 
@@ -42,7 +42,8 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
     ax[1].set_title(f"Optimized Transition Matrix of Dataset {trans_matr}:", fontsize=12)
 
     fig.tight_layout()
-
+    if res_alpha2 is None:
+        res_alpha2 = float('-inf')
     plt.figtext(0.01, 0.01,
                 f'Transition Matrices for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and final alpha = {res_alpha2:.3f} on {epochs} Epochs. Alpha trained: {oalpha}, Trans trained: {otrans}', size=6)
 
@@ -53,4 +54,4 @@ def plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successfu
         dpi=1200)
 
 
-plot_transmatrix(trans_matr="EDF_2013", oalpha=False, otrans=True, successful=True, fold=1, lr=0.01, alpha=1.0, epochs=60, checkpoints='given')
+plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=False, successful=True, fold=1, lr=0.01, alpha=1.0, epochs=60, checkpoints='given')
