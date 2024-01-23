@@ -318,12 +318,12 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    """optimize_alpha = OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
+    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
                                    print_all_results=False, trans_matrix=None, otrans=True, oalpha=True,
-                                   evaluate_result=True, visualize=False,
+                                   evaluate_result=True, visualize=True,
                                    optimize_alpha=False, lr=0.001, successful=True, epochs=100, checkpoints='given',
-                                   max_length=None, FMMIE=True, mlength=10, trwtest=True, startalpha=0.1)"""
-    alphas = []
+                                   max_length=None, FMMIE=True, mlength=10, trwtest=True, startalpha=0.1)
+    """alphas = []
     accuracies = []
     dataset = 'Sleep-EDF-2018'
     for used_set in ['train', 'test', 'val']:
@@ -337,7 +337,7 @@ def main():
     alphas = np.array(alphas)
     accuracies = np.array(accuracies)
     np.savetxt("results/new_alphas_notrain_long_maxlength10.txt", alphas, fmt="%.15f", delimiter=",")
-    np.savetxt("results/new_accuracies_notrain_long_maxlength10.txt", accuracies, fmt="%.15f", delimiter=",")
+    np.savetxt("results/new_accuracies_notrain_long_maxlength10.txt", accuracies, fmt="%.15f", delimiter=",")"""
 
 
 
