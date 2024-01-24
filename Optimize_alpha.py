@@ -318,7 +318,7 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    optimize_alpha = OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
+    optimize_alpha = OptimizeAlpha(used_set='val', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
                                    print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
                                    evaluate_result=True, visualize=False,
                                    optimize_alpha=False, lr=0.00001, successful=True, epochs=100, checkpoints='given',
