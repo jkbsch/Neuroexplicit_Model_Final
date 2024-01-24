@@ -183,21 +183,24 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
 
     confusion_matrix = np.divide(cm, (np.sum(cm, 1)).reshape(5, 1))
     fig, ax = plt.subplots()
-    ax.matshow(confusion_matrix, cmap='pink')
+    ax.matshow(confusion_matrix, cmap='Blues')
     ax.set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
     ax.set_xticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
 
     for i in range(5):
         for j in range(5):
             c = confusion_matrix[j, i] * 100
-            if c >= 60:
+            if c < 60:
                 ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='black')
             else:
                 ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='cornsilk')
-    plt.xlabel('Predicted Class')
+    plt.title('Predicted Class', fontsize=10)
+    # plt.xaxis.set_label_position('top')
+    # set x label to the top of the plot
+
     plt.ylabel('Actual Class')
-    ax.set_title('Confusion Matrix')
-    plt.figtext(0.01, 0.01,f'Confusion Matrix for : \nDataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, \ncheckpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}', fontsize=6)
+    # ax.set_title('Confusion Matrix')
+    plt.figtext(0.01, 0.01,f' \nDataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, \ncheckpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}', fontsize=6)
 
     plt.show()
     if type(alpha) != float:
@@ -250,14 +253,14 @@ def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
 
     ax[1].scatter(X, y_true, color='black', label='Labels')
     ax[1].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', label='Wrong Hybrid Predictions')
-    ax[1].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', label='Sleepy Predictions where SleePy != Hybrid')
+    ax[1].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='indigo', label='SleePyCo predictions, when different from Hybrid predictions')
     ax[1].set_ylim(-4.5, 0.5)
     ax[1].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
     ax[0].step(X, y_true, color='black')
     ax[0].scatter(X, np.where(y_true != y_pred, y_pred, None), color='red', s=6)
-    ax[0].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
-    ax[0].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='blue', s=6)
+    # ax[0].scatter(X, np.where(y_true != y_pred, y_true, None), color='green', s=6)
+    ax[0].scatter(X, np.where(y_pred != sleepy_pred, sleepy_pred, None), color='indigo', s=6)
     ax[0].set_ylim(-4.5, 0.5)
     ax[0].set_yticks([0, -1, -2, -3, -4], ["W", "N1", "N2", "N3", "REM"])
 
@@ -285,20 +288,20 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     y_pred_sleepy = y_pred_sleepy[xmin:xmax]
     y_pred_hybrid = y_pred_hybrid[xmin:xmax]
 
-    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='pink')
+    ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='Blues')
     # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
     # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
     ax[0].scatter(X, y_true, color='black', label='Labels', edgecolors='cornsilk')
     ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red', label='Wrong Predictions', edgecolors='cornsilk')
 
-    ax[0].set_title('Pure Predictions')
+    ax[0].set_title('SleePyCo Predictions')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
     # A = np.arange(0, xmax-xmin, int((xmax-xmin)/6))
     A = np.arange(0, xmax - xmin, 5)
     B = A + np.array(xmin)
     ax[0].set_xticks(A, B)
 
-    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='pink')
+    ax[1].matshow(probs_hybrid.T, label='Probabilites', cmap='Blues')
     ax[1].scatter(X, y_true, color='black', edgecolors='cornsilk')
     ax[1].scatter(X, np.where(y_true != y_pred_hybrid, y_pred_hybrid, None), color='red', edgecolors='cornsilk')
 
@@ -308,7 +311,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
 
     fig.legend()
 
-    plt.colorbar(cm.ScalarMappable(norm=None, cmap='pink'), orientation='horizontal', pad=0.2, shrink=0.6,
+    plt.colorbar(cm.ScalarMappable(norm=None, cmap='Blues'), orientation='horizontal', pad=0.2, shrink=0.6,
                  label='Predicted Probabilites')
 
     if not config["oalpha"]:
@@ -316,7 +319,7 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     else:
         alpha = config["all_alphas"][config["fold"] - 1]
 
-    description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}'
+    description = f'\n Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} Transition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, \n trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}'
     plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
     fig.savefig(f'results/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)

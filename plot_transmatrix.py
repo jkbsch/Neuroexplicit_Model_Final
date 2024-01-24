@@ -13,14 +13,14 @@ def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successfu
                                                     successful=successful,
                                                     checkpoints=checkpoints, lr=lr, alpha=alpha, epochs=epochs)
 
-    ax[0].matshow(transmatrix1, cmap='bone')
+    ax[0].matshow(transmatrix1, cmap='Purples')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
     ax[0].set_xticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
 
     for i in range(5):
         for j in range(5):
             c = transmatrix1[j, i]
-            if c >= 0.6:
+            if c < 0.6:
                 ax[0].text(i, j, str(f'{c:.2f}'), va='center', ha='center', color='black')
             else:
                 ax[0].text(i, j, str(f'{c:.2f}'), va='center', ha='center', color='white')
