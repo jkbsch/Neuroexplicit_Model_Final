@@ -138,7 +138,7 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     else:
         alpha = config["alpha"]
 
-    os.makedirs('results', exist_ok=True)
+    os.makedirs('results_n', exist_ok=True)
     result_dict = skmet.classification_report(y_true, y_pred, digits=3, output_dict=True)
     cm = skmet.confusion_matrix(y_true, y_pred)
     print(cm)
@@ -208,8 +208,8 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
             alpha = alpha[0]
 
     fig.savefig(
-        # f'results/ConfusionMatrix_Dataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}.png', dpi=1200)
-        f'results/ConfusionMatrix_Ds{config["dataset"][-1]}TM{config["transmatrix"][-1]}{config["set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}.png',dpi=1200)
+        # f'results_n/ConfusionMatrix_Dataset: {config["dataset"]} Transition Matrix: {config["transmatrix"]}, Set: {config["set"]}, trained alpha: {config["oalpha"]}, trained Transition Matrix: {config["otrans"]}, Alpha: {alpha}, checkpoints: {config["checkpoints"]}, epochs: {config["epochs"]}, lr: {config["lr"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}.png', dpi=1200)
+        f'results_n/ConfusionMatrix_Ds{config["dataset"][-1]}TM{config["transmatrix"][-1]}{config["set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}.png',dpi=1200)
 
     overall_dt = SingleTable(overall_data, colored('OVERALL RESULT', 'red'))
     perclass_dt = SingleTable(perclass_data, colored('PER-CLASS RESULT', 'red'))
@@ -221,7 +221,7 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
     print(colored(' A', 'cyan') + ': Actual Class, ' + colored('P', 'green') + ': Predicted Class' + '\n\n')
 
     if save:
-        with open(os.path.join(f'results/numbers_Ds{config["dataset"][-1]}TM{config["transmatrix"][-1]}{config["set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}'+ '.txt'),
+        with open(os.path.join(f'results_n/numbers_Ds{config["dataset"][-1]}TM{config["transmatrix"][-1]}{config["set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}'+ '.txt'),
                   'w') as f:
             f.write(
                 str(fold) + ' ' +
@@ -274,7 +274,7 @@ def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
     description = f'Predictions for: Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} \nTransition Matrix: {config["trans_matrix"]} Alpha: {alpha} trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}, checkpoints: {config["checkpoints"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}'
     plt.figtext(0.1, 0.01, description, fontsize=6)
     plt.show()
-    fig.savefig(f'results/figure_posteriogram_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
+    fig.savefig(f'results_n/figure_posteriogram_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
 
 
 def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin=400, xmax=440):
@@ -322,11 +322,11 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     description = f'\n Dataset: {config["dataset"]} Set: {config["used_set"]} Fold: {config["fold"]} Nr: {config["nr"]} Transition Matrix: {config["trans_matrix"]} Alpha: {alpha:.3f}, checkpoints: {config["checkpoints"]}, \n trained Transition: {config["otrans"]}, trained Alpha: {config["oalpha"]}, maxlength: {config["max_length"]}, FMMIE: {config["FMMIE"]}, mlength: {config["mlength"]}, trwtest: {config["trwtest"]}, startalpha: {config["startalpha"]}'
     plt.figtext(0.1, 0.01, description, wrap=True, fontsize=6)
     plt.show()
-    fig.savefig(f'results/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
+    fig.savefig(f'results_n/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('results/new_alphas_notrain_long_unlimited.txt', delimiter=',')
-    accuracies = np.loadtxt('results/new_accuracies_notrain_long_unlimited.txt', delimiter=',')
+    alphas = np.loadtxt('results_n/new_alphas_notrain_long_unlimited.txt', delimiter=',')
+    accuracies = np.loadtxt('results_n/new_accuracies_notrain_long_unlimited.txt', delimiter=',')
 
     """fig, ax = plt.subplots(2,2)
     length = len(alphas[0])"""
@@ -353,7 +353,7 @@ def visualize_alphas():
     plt.show()
 
     fig.tight_layout()
-    fig.savefig(f'results/new_Comparing alphas_untrained_unlimited_long.png', dpi=1200)
+    fig.savefig(f'results_n/new_Comparing alphas_untrained_unlimited_long.png', dpi=1200)
 
 def analyze_errors(y_true, hybrid_pred,sleepy_pred):
     length = len(y_true)

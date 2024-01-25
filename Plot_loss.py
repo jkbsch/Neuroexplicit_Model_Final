@@ -120,7 +120,7 @@ def plot_loss_acc(extracted_data):
     plt.show()
     fig.tight_layout()
 
-    fig.savefig(f'results/loss.png', dpi=1200)
+    fig.savefig(f'results_n/loss.png', dpi=1200)
 
 
 
@@ -140,4 +140,4 @@ if __name__ == "__main__":
     # save_to_txt(extracted_data, output_folder)
     plot_loss_acc(extracted_data)
 
-    print("Extraction and saving complete. Results saved in 'results/output.txt'.")
+    print("Extraction and saving complete. Results saved in 'results_n/output.txt'.")
