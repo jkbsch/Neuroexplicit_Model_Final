@@ -235,7 +235,7 @@ def summarize_result(config, fold, y_true, y_pred, save=True):
                 str(round(result_dict["4"]["f1-score"] * 100, 1)) + ' '
             )
 
-    return [accuracy, macro_f1, kappa, wpr, wre, wf1, n1pr, n1re, n1f1, n2pr, n2re, n2f1, n3pr, n3re, n3f1, rpr, rre, rf1]
+    return [accuracy, macro_f1, kappa, wpr, wre, wf1, n1pr, n1re, n1f1, n2pr, n2re, n2f1, n3pr, n3re, n3f1, rpr, rre, rf1, confusion_matrix]
 
 
 def posteriogram(y_true, y_pred,sleepy_pred, config, xmin=400, xmax=450):
