@@ -61,8 +61,8 @@ def save_to_txt(data, output_folder):
         for row in data:
             writer.writerow(row)
 
-def plot_loss_acc(extracted_data):
-    show_alpha = False
+def plot_loss_acc(extracted_data, show_alpha = False, fail=False):
+
 
     if show_alpha:
         fig, ax = plt.subplots(3, 1)
@@ -87,28 +87,39 @@ def plot_loss_acc(extracted_data):
     avg_acc = []
     avg_alpha = []
     avg_epochs = []
-    av = 1
-    av2 = av-1
+    if fail:
+        av = 1
+        av2 = av-1
+    else:
+        av = 1
+        av2 = av-1
     for i in range(av2, len(loss), av):
         avg_loss.append(sum(loss[i-av2:i+1])/av)
         avg_acc.append(sum(accuracy[i-av2:i+1])/av)
         avg_epochs.append(np.min(epoch[i-av2:i+av]))
         avg_alpha.append(sum(alpha[i-av2:i+1])/av)
+    if fail:
+        color = 'slategrey'
+    else:
+        color = 'navy'
 
     fig.suptitle('Average Results during Training')
     ax[0].sharex(ax[1])
     ax[0].set_ylabel('Loss')
-    ax[0].plot(avg_epochs, avg_loss, label='Loss', color='slategrey')
+    ax[0].plot(avg_epochs, avg_loss, label='Loss', color=color)
+    ax[0].set_ylim([0, 0.35])
 
     if show_alpha:
         ax[1].sharex(ax[2])
         ax[2].set_xlabel('Epochs')
         ax[2].set_ylabel('Alpha')
-        ax[2].plot(avg_epochs, avg_alpha, label='Alpha', color='slategrey')
+        ax[2].plot(avg_epochs, avg_alpha, label='Alpha', color=color)
+        ax[2].set_ylim([0.05, 0.2])
     else:
         ax[1].set_xlabel('Epochs')
-    ax[1].set_ylabel('Accuracy')
-    ax[1].plot(avg_epochs, avg_acc, label='Accuracy', color='slategrey')
+    ax[1].set_ylabel('Accuracy [%]')
+    ax[1].plot(avg_epochs, avg_acc, label='Accuracy', color=color)
+    ax[1].set_ylim([80, 100])
 
 
 
@@ -120,13 +131,16 @@ def plot_loss_acc(extracted_data):
     plt.show()
     fig.tight_layout()
 
-    fig.savefig(f'results_n/loss.png', dpi=1200)
+    if show_alpha:
+        fig.savefig(f'results_n/loss_acc_alpha.png', dpi=1200)
+    else:
+        fig.savefig(f'results_n/loss_acc.png', dpi=1200)
 
 
 
 if __name__ == "__main__":
     # Input file path
-    input_file = "Kopie_HPC/scripts/slurm-23146407.out"
+    input_file = "Kopie_HPC/scripts/slurm-23153868.out"
     # hat negativen Loss, geht deshalb nicht: auch ganz okay: 23153384 Optimization for alpha: 0.1, fold: 1, learning rate: 0.001, epochs: 100, train_alpha: True, train_transition: True, train with test True, min_length = 200,
     # ein ganz okayes: Optimization for alpha: 0.1, fold: 1, learning rate: 1e-05, epochs: 100, train_alpha: True, train_transition: True, train with test True, min_length = 200,
 
@@ -138,6 +152,7 @@ if __name__ == "__main__":
 
     # Save extracted data to a .txt file in the 'results' folder
     # save_to_txt(extracted_data, output_folder)
-    plot_loss_acc(extracted_data)
+    for show_alpha in [True, False]:
+        plot_loss_acc(extracted_data, show_alpha, fail=False)
 
     print("Extraction and saving complete. Results saved in 'results_n/output.txt'.")
