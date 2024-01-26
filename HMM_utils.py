@@ -289,14 +289,11 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     y_pred_hybrid = y_pred_hybrid[xmin:xmax]
 
     ax[0].matshow(probs_sleepy.T, label='Probabilities', cmap='Blues')
-    # ax[0].scatter(X, np.where(y_true == y_pred_sleepy, y_true, None), color='black')
-    # ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red')
     ax[0].scatter(X, y_true, color='black', label='Labels', edgecolors='cornsilk')
     ax[0].scatter(X, np.where(y_true != y_pred_sleepy, y_pred_sleepy, None), color='red', label='Wrong Predictions', edgecolors='cornsilk')
 
     ax[0].set_title('SleePyCo Predictions')
     ax[0].set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
-    # A = np.arange(0, xmax-xmin, int((xmax-xmin)/6))
     A = np.arange(0, xmax - xmin, 5)
     B = A + np.array(xmin)
     ax[0].set_xticks(A, B)
@@ -325,21 +322,21 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     fig.savefig(f'results_n/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwtest"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('results_n/new_alphas_notrain_long_unlimited.txt', delimiter=',')
-    accuracies = np.loadtxt('results_n/new_accuracies_notrain_long_unlimited.txt', delimiter=',')
+    alphas = np.loadtxt('results/new_alphas_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
+    accuracies = np.loadtxt('results/new_accuracies_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
 
     """fig, ax = plt.subplots(2,2)
     length = len(alphas[0])"""
     fig, ax = plt.subplots()
 
-    fig.suptitle('Alphas and respective Accuracies, predictions for N = length of entire night')
+    fig.suptitle('Alphas and respective Accuracies, predictions for N = 10')
     ax.scatter(alphas[0], accuracies[0], label='Trainset', color='blue')
     ax.scatter(alphas[1], accuracies[1], label='Testset', color='mediumpurple')
     ax.scatter(alphas[2], accuracies[2], label='Valset', color='indigo')
 
     plt.grid(True)
-    plt.xlim((0, 10))
-    plt.ylim((80, 100))
+    plt.xlim((0, 2))
+    plt.ylim((82.5, 92.5))
 
     """for i, dataset in enumerate(['Sleep-EDF-2013', 'Sleep-EDF-2018']):
         for j, used_set in enumerate(['train', 'test']):
@@ -417,4 +414,4 @@ def analyze_errors(y_true, hybrid_pred,sleepy_pred):
 
 
 
-#visualize_alphas()
+visualize_alphas()
