@@ -285,7 +285,8 @@ class OptimizeAlpha:
         xmin=400
         xmax = 450
         posteriogram(y_true, y_pred_hybrid,y_pred_sleepy, config, xmin, xmax)
-        xmax = 440
+        xmin=410
+        xmax = 450
         visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
         # now special posteriograms
@@ -318,7 +319,7 @@ class OptimizeAlpha:
 
 def main():
     # visualize_alphas()
-    optimize_alpha = OptimizeAlpha(used_set='test', dataset='Sleep-EDF-2018', start_alpha=1, end_alpha=1, step=0.05,
+    optimize_alpha = OptimizeAlpha(used_set='val', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
                                    print_all_results=False, trans_matrix=None, otrans=False, oalpha=False,
                                    evaluate_result=True, visualize=False,
                                    optimize_alpha=False, lr=0.00001, successful=True, epochs=100, checkpoints='given',
