@@ -57,8 +57,16 @@ def plot_bar_context():
 
 
 
-    labels = ['W', 'N1', 'N2', 'N3', 'REM', 'W', 'N1', 'N2', 'N3', 'REM', 'W', 'N1', 'N2', 'N3', 'REM']
-    res = np.concatenate((diff1, diff2, diff3))
+    labels = ['W', 'N1', 'N2', 'N3', 'REM']
+    # res = np.concatenate((diff1, diff2, diff3))
+    diff1pos = diff1*[diff1>=0][0]
+    diff1neg = diff1*[diff1<0][0]
+
+    diff2pos = diff2*[diff2>=0][0]
+    diff2neg = diff2*[diff2<0][0]
+
+    diff3pos = diff3*[diff3>=0][0]
+    diff3neg = diff3*[diff3<0][0]
 
     fig, ax = plt.subplots(1, 3)
     ax[0].set(ylim=(-250, 100))
@@ -67,33 +75,44 @@ def plot_bar_context():
     ax[0].grid(axis='y')
     ax[1].grid(axis='y')
     ax[2].grid(axis='y')
-    ax[0].bar(labels[0:5], res[0:5], label='Constant phase', color='mediumslateblue') # navy
-    ax[1].bar(labels[5:10], res[5:10], label='Constant phase with one outlier', color='mediumslateblue') # cornflowerblue
-    ax[2].bar(labels[10:15], res[10:15], label='Phase with rapid changes', color='mediumslateblue') # mediumslateblue
+    ax[0].bar(labels, diff1pos, label='More Errors committed by Hybrid Model', color='mediumslateblue') # navy
+    ax[1].bar(labels, diff2pos, label='More Errors committed by Hybrid Model', color='mediumslateblue') # cornflowerblue
+    ax[2].bar(labels, diff3pos, label='More Errors committed by Hybrid Model', color='mediumslateblue') # mediumslateblue
+
+    ax[0].bar(labels, diff1neg, label='More Errors committed by SleePyCo', color='navy')
+    ax[1].bar(labels, diff2neg, label='More Errors committed by SleePyCo', color='navy')
+    ax[2].bar(labels, diff3neg, label='More Errors committed by SleePyCo', color='navy')
     # plt.title('Difference in Number of Errors in Context')
-    fontsize=10
+    fontsize = 9
     ax[0].set_title('Constant phase', fontsize=fontsize)
     ax[1].set_title('Constant phase with one outlier', fontsize=fontsize)
     ax[2].set_title('Phase with rapid changes', fontsize=fontsize)
     plt.yticks([-350, -300, -250, -200, -150, -100, -50, 0, 50, 100], [350, 300, 250, 200, 150, 100, 50, 0, 50, 100])
 
-    # plt.legend()
+    # ax[0].legend(loc=3, fontsize=fontsize-3)
 
     fig.tight_layout()
     plt.show()
 
     fig.savefig(f'results_n/context_v1.png', dpi=1200)
+    fig, ax = plt.subplots()
+    ax.bar(labels, diff1pos, label='More Errors committed by Hybrid Model', color='mediumslateblue')  # navy
+    ax.bar(labels, diff1neg, label='More Errors committed by SleePyCo', color='navy')
+    plt.legend(framealpha=1, fancybox=False)
+    fig.tight_layout
+    plt.show()
+    # fig.savefig(f'results_n/context_legend.png', dpi=1200)
 
 def plot_difference_confusion():
-    alpha = 1.0
+    alpha = 0.2
     otrans = True
-    oalpha = False
+    oalpha = True
     lr = 0.00001
     epochs = 100
     checkpoints = 'given'
     max_length = 10
     mlength = 1000
-    startalpha = 1.0
+    startalpha = 0.1
     used_set='val'
     eval1 = Optimize_alpha.OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=alpha, end_alpha=alpha, step=0.05,
                                    print_all_results=False, trans_matrix=None, otrans=otrans, oalpha=oalpha,
@@ -104,6 +123,8 @@ def plot_difference_confusion():
 
     alpha = 0.0
     max_length = None
+    otrans = False
+    oalpha = False
     eval2 = Optimize_alpha.OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=alpha, end_alpha=alpha,
                                          step=0.05,
                                          print_all_results=False, trans_matrix=None, otrans=otrans, oalpha=oalpha,
@@ -230,6 +251,6 @@ def plot_difference_transition(average = False):
         plt.show()
 
 # plot_transmatrix(trans_matr="EDF_2018", oalpha=True, otrans=True, successful=True, fold=1, lr=0.001, epochs=100, checkpoints='given', FMMIE=True, mlength=10, trwtest=True, startalpha=1.0)
-plot_bar_context()
-# plot_difference_confusion()
+# plot_bar_context()
+plot_difference_confusion()
 # plot_difference_transition(average=True)
