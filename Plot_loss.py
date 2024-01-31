@@ -19,7 +19,6 @@ def extract_information(file_path):
             # Extract information using regular expressions
             epoch_match = re.match(r'Epoch: (\d+), i = (\d+), Alpha = ([\d.]+)', line)
             accuracy_loss_match = re.match(r'Train Accuracy \(Average\):[^\d]+([\d.]+)%[^\d]+([\d.]+)', line)
-            # accuracy_loss_match = re.match(r'Train Accuracy \(Average\):[^\d]+([\d.]+)%[^\d]*(-?[\d.]+)', line)
             if epoch_match:
                 # Update current_epoch and initialize a new dictionary for the data
                 current_epoch = int(epoch_match.group(1))
@@ -139,6 +138,10 @@ def plot_loss_acc(extracted_data, show_alpha = False, fail=False):
 
 
 if __name__ == "__main__":
+    """
+    This script extracts information from the .out file from training and saves it to a .txt file in the 'results' folder.
+    You will need to store the output from training in a .out file and adjust the input_file variable below to use it
+    """
     # Input file path
     input_file = "../Kopie_HPC/scripts/slurm-23153868.out"
     # Extract information from the .out file
