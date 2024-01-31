@@ -132,9 +132,9 @@ def plot_loss_acc(extracted_data, show_alpha = False, fail=False):
     fig.tight_layout()
 
     if show_alpha:
-        fig.savefig(f'results_n/loss_acc_alpha.png', dpi=1200)
+        fig.savefig(f'results/loss_acc_alpha.png', dpi=1200)
     else:
-        fig.savefig(f'results_n/loss_acc.png', dpi=1200)
+        fig.savefig(f'results/loss_acc.png', dpi=1200)
 
 
 

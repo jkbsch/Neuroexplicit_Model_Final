@@ -40,7 +40,7 @@ def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successfu
 
 
     fig.savefig(
-        f'results_n/transmatr_TM{transmatrix[-1]}oa{oalpha:0}ot{otrans:0}a{alpha:.2f}{checkpoints}e{epochs}lr{lr}FMMIE{FMMIE:0}mlen{mlength}trw{trwval:0}sa{startalpha}.png.png',
+        f'results/transmatr_TM{transmatrix[-1]}oa{oalpha:0}ot{otrans:0}a{alpha:.2f}{checkpoints}e{epochs}lr{lr}FMMIE{FMMIE:0}mlen{mlength}trw{trwval:0}sa{startalpha}.png.png',
         dpi=1200)
 
     plt.show()
@@ -93,14 +93,14 @@ def plot_bar_context():
     fig.tight_layout()
     plt.show()
 
-    fig.savefig(f'results_n/context_v1.png', dpi=1200)
+    fig.savefig(f'results/context_v1.png', dpi=1200)
     fig, ax = plt.subplots()
     ax.bar(labels, diff1pos, label='More Errors committed by Hybrid Model', color='mediumslateblue')  # navy
     ax.bar(labels, diff1neg, label='More Errors committed by SleePyCo', color='navy')
     plt.legend(framealpha=1, fancybox=False)
     fig.tight_layout
     plt.show()
-    # fig.savefig(f'results_n/context_legend.png', dpi=1200)
+    # fig.savefig(f'results/context_legend.png', dpi=1200)
 
 def plot_difference_confusion():
     alpha = 0.2
@@ -160,7 +160,7 @@ def plot_difference_confusion():
 
     fig.tight_layout()
 
-    plt.savefig(f'results_n/difference_confusion_matrix.png', dpi=1200)
+    plt.savefig(f'results/difference_confusion_matrix.png', dpi=1200)
     plt.show()
 
 def plot_difference_transition(average = False):
@@ -228,7 +228,7 @@ def plot_difference_transition(average = False):
 
     fig.tight_layout()
 
-    plt.savefig(f'results_n/difference_transition_matrix.png', dpi=1200)
+    plt.savefig(f'results/difference_transition_matrix.png', dpi=1200)
     plt.show()
 
     if oalpha and average:
@@ -246,7 +246,7 @@ def plot_difference_transition(average = False):
 
         fig.tight_layout()
 
-        plt.savefig(f'results_n/alphas_in_folds.png', dpi=1200)
+        plt.savefig(f'results/alphas_in_folds.png', dpi=1200)
         plt.show()
 
 # plot_transmatrix(trans_matr="EDF_2018", oalpha=True, otrans=True, successful=True, fold=1, lr=0.001, epochs=100, checkpoints='given', FMMIE=True, mlength=10, trwval=True, startalpha=1.0)

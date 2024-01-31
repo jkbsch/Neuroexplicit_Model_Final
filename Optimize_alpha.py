@@ -283,10 +283,10 @@ class OptimizeAlpha:
 
         xmin=400
         xmax = 450
-        posteriogram(y_true, y_pred_hybrid,y_pred_sleepy, config, xmin, xmax)
+        plot_entire_night(y_true, y_pred_hybrid, y_pred_sleepy, config, xmin, xmax)
         xmin=410
         xmax = 450
-        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
+        posteriogram(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
         # now special posteriograms
         # where SleePy is very good and hybrid is bad and the other way round
@@ -310,11 +310,11 @@ class OptimizeAlpha:
 
         xmin = best_start_index_for_sleepy
         xmax = best_start_index_for_sleepy + index_length
-        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
+        posteriogram(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
         xmin = best_start_index_for_hybrid
         xmax = best_start_index_for_hybrid + index_length
-        visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
+        posteriogram(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hybrid, config, xmin, xmax)
 
 def main():
     optimize_alpha = OptimizeAlpha(used_set='train', dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05,
