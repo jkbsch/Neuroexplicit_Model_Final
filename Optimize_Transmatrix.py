@@ -10,7 +10,7 @@ import warnings
 class OptimTransMatrix:
     def __init__(self, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, num_epochs=2,
                  learning_rate=0.0001, alpha=None, train_transition=True, train_alpha=False, save=False,
-                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False, FMMIE=False, k_best=20, length=10, train_with_test=True, min_length=200):
+                 print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False, FMMIE=False, k_best=20, length=10, train_with_val=True, min_length=200):
 
         # Device configuration
         # torch.autograd.set_detect_anomaly(True)
@@ -20,9 +20,9 @@ class OptimTransMatrix:
 
         self.length = length
         self.min_length = min_length
-        self.train_with_test = train_with_test
+        self.train_with_val = train_with_val
 
-        self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold, self.length, train_with_test)
+        self.TrainDataset = self.TrainSleepDataset(self.device, dataset, checkpoints, trans_matrix, fold, self.length, train_with_val)
         # print("Train Dataset getitem:", self.TrainDataset.__getitem__(0), "length:", self.TrainDataset.__len__())
         self.dataset = self.TrainDataset.dataset
         self.trans_matrix = self.TrainDataset.trans_matrix
@@ -42,7 +42,7 @@ class OptimTransMatrix:
         self.k_best = k_best
 
         self.TestDataset = self.TestSleepDataset(self.device, self.dataset, self.checkpoints, self.trans_matrix,
-                                                 self.fold, self.length, train_with_test)
+                                                 self.fold, self.length, train_with_val)
         self.train_loader = DataLoader(dataset=self.TrainDataset, batch_size=1, shuffle=True, num_workers=2)
         self.test_loader = DataLoader(dataset=self.TestDataset, batch_size=1, shuffle=True, num_workers=2)
         # self.one_hot = nn.functional.one_hot(self.labels)
@@ -70,10 +70,10 @@ class OptimTransMatrix:
             self.save(save_unsuccesful)
 
     class TrainSleepDataset(Dataset):
-        def __init__(self, device, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, length=None, train_with_test=True):
+        def __init__(self, device, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, length=None, train_with_val=True):
             self.checkpoints = checkpoints
-            if train_with_test:
-                self.used_set = 'test'
+            if train_with_val:
+                self.used_set = 'val'
             else:
                 self.used_set = 'train'
             self.fold = fold
@@ -115,12 +115,12 @@ class OptimTransMatrix:
                 return len(self.train_data_probs)
 
     class TestSleepDataset(Dataset):
-        def __init__(self, device, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, length=10, train_with_test=True):
+        def __init__(self, device, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, length=10, train_with_val=True):
             self.checkpoints = checkpoints
-            if train_with_test:
-                self.used_set = 'val'
+            if train_with_val:
+                self.used_set = 'train'
             else:
-                self.used_set = 'test'
+                self.used_set = 'val'
             self.fold = fold
             self.device = device,
             self.length = length
@@ -364,7 +364,7 @@ class OptimTransMatrix:
 
         out_name = ("./Transition_Matrix/optimized_" + self.dataset + "_fold_" + str(self.fold) + "_checkpoints_" +
                     str(self.checkpoints) + "_lr_" + str(self.learning_rate) + "_otrans_" + str(self.train_transition) + "_oalpha_" + str(
-                    self.train_alpha) + "_epochs_" + str(self.num_epochs)+"_FMMIE_"+str(self.FMMIE)+"_length_"+str(self.length)+"_trwtest_"+str(self.train_with_test))+"_startalpha_"+str(self.save_alpha)
+                    self.train_alpha) + "_epochs_" + str(self.num_epochs)+"_FMMIE_"+str(self.FMMIE)+"_length_"+str(self.length)+"_trwval_"+str(self.train_with_val))+"_startalpha_"+str(self.save_alpha)
 
         if self.successful and self.no_nan and not save_unsuccessful:
 
@@ -425,10 +425,10 @@ def main():
     for alpha in [lower_alpha, 1.0]:
         learning_rate = 0.001
         for fold in range(1, 11):
-            print(f'Optimization for alpha: {alpha}, fold: {fold}, learning rate: {learning_rate}, epochs: {num_epochs}, train_alpha: {train_alpha}, train_transition: {train_transition}, train with test True, min_length = 200, ')
+            print(f'Optimization for alpha: {alpha}, fold: {fold}, learning rate: {learning_rate}, epochs: {num_epochs}, train_alpha: {train_alpha}, train_transition: {train_transition}, train with val True, min_length = 200, ')
             OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=num_epochs, learning_rate=learning_rate, print_results=True,
-                         train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
-                         save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_test=True, min_length=200, length=2000)
+                             train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
+                             save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_val=True, min_length=200, length=2000)
 
 
 
