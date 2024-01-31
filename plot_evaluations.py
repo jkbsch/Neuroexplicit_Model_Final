@@ -57,10 +57,8 @@ def plot_bar_context():
     context3 = np.array([[1341, 2312, 2655, 1735, 583], [1419, 2344, 2677, 1807, 598]])
     diff3 = context3[1] - context3[0]
 
-
-
     labels = ['W', 'N1', 'N2', 'N3', 'REM']
-    # res = np.concatenate((diff1, diff2, diff3))
+
     diff1pos = diff1*[diff1>=0][0]
     diff1neg = diff1*[diff1<0][0]
 
@@ -77,14 +75,13 @@ def plot_bar_context():
     ax[0].grid(axis='y')
     ax[1].grid(axis='y')
     ax[2].grid(axis='y')
-    ax[0].bar(labels, diff1pos, label='More Errors committed by Hybrid Model', color='mediumslateblue') # navy
-    ax[1].bar(labels, diff2pos, label='More Errors committed by Hybrid Model', color='mediumslateblue') # cornflowerblue
-    ax[2].bar(labels, diff3pos, label='More Errors committed by Hybrid Model', color='mediumslateblue') # mediumslateblue
+    ax[0].bar(labels, diff1pos, label='Relative Error Count for the Hybrid Model', color='mediumslateblue') # navy
+    ax[1].bar(labels, diff2pos, label='Relative Error Count for the Hybrid Model', color='mediumslateblue') # cornflowerblue
+    ax[2].bar(labels, diff3pos, label='Relative Error Count for the Hybrid Model', color='mediumslateblue') # mediumslateblue
 
-    ax[0].bar(labels, diff1neg, label='More Errors committed by SleePyCo', color='navy')
-    ax[1].bar(labels, diff2neg, label='More Errors committed by SleePyCo', color='navy')
-    ax[2].bar(labels, diff3neg, label='More Errors committed by SleePyCo', color='navy')
-    # plt.title('Difference in Number of Errors in Context')
+    ax[0].bar(labels, diff1neg, label='Relative Error Count for SleePyCo', color='navy')
+    ax[1].bar(labels, diff2neg, label='Relative Error Count for SleePyCo', color='navy')
+    ax[2].bar(labels, diff3neg, label='Relative Error Count for SleePyCo', color='navy')
     fontsize = 9
     ax[0].set_title('Constant phase', fontsize=fontsize)
     ax[1].set_title('Constant phase with one outlier', fontsize=fontsize)
@@ -98,12 +95,12 @@ def plot_bar_context():
 
     fig.savefig(f'results/context_v1.png', dpi=1200)
     fig, ax = plt.subplots()
-    ax.bar(labels, diff1pos, label='Relative Error Count of the Hybrid Model', color='mediumslateblue')  # navy
-    ax.bar(labels, diff1neg, label='Relative Error Count of SleePyCo', color='navy')
+    ax.bar(labels, diff1pos, label='Relative Error Count for the Hybrid Model', color='mediumslateblue')  # navy
+    ax.bar(labels, diff1neg, label='Relative Error Count for SleePyCo', color='navy')
     plt.legend(framealpha=1, fancybox=False)
     fig.tight_layout
     plt.show()
-    # fig.savefig(f'results/context_legend.png', dpi=1200)
+    fig.savefig(f'results/context_legend.png', dpi=1200)
 
 def plot_difference_confusion():
     # compares two confusion matrices
