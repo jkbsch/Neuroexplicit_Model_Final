@@ -148,6 +148,8 @@ class TransMatrStatic:
 
 
 def main():
+    # This Class creates one transition matrix for every dataset selected and an average transition matrix over all datasets.
+    # If you want to use other datasets, choose an according output file name and adapt the HMM_utils.py file
     trans_matrix = TransMatrStatic(edf_2013=False, edf_2018=True, mass=False, shhs=False, physio_2018=False)
     out_name = "./Transition_Matrix/"
     #np.savetxt(out_name + "Sleep-EDF-2013-And-Sleep-EDF-2018.txt",trans_matrix.average_trans_matr, fmt="%.15f", delimiter=",")
