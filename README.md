@@ -4,9 +4,10 @@ By Jakob Scheytt
 This repository provides the full source code of the Bachelor's Thesis "A Neuro-explicit Model For Single-channel EEG-based Sleep Staging" by Jakob Scheytt. 
 The thesis was written at the Technische Universität Berlin, Faculty IV, Department of Electronic Systems of Medical Engineering
 
-To reproduce the results of SleePyCo, please follow the instructions on the bottom of this page.
+To reproduce the results of SleePyCo, please follow the instructions on the bottom of this page. Keep in mind that SleePyCo is regularly updated and this version is not up to date.
 
 To reproduce the results achieved by the hybrid model, follow the steps below.
+
 
 1. Follow steps 1-4 of SleePyCo's instructions to set up the environment and download the Sleep-EDF dataset. It is sufficient to download the Sleep-EDF-2018 dataset.
 Note: if you want to use different datasets, you will need to adapt the code in all below-mentioned functions accordingly.
@@ -16,12 +17,46 @@ Note: if you want to use different datasets, you will need to adapt the code in 
 You need to create three different P matrices, for the training, test, and validation set. Therefore, you need to run the
 function three times and adapt the parameter "self.set" and the name of the output file accordingly.
 - If you want to run the function on the HPC, you can use the commented out code to determine the right gpu ids.
+- If you want to use the checkpoints created during own training (and not the ones provided by SleePyCo) adjust the path: self.ckpt_path.
+You might also want to change the name of the output directory for the P-Matrices to "Own-Probability_Data".
 
 3. Run the function "Calc_Trans_Matr_Static.py" to calculate the transition matrix from train and validation labels.
 
 4. If you have adapted the output name, you will have to adapt the functions "load_P_Matrix" and "load_Transition_Matrix" 
 in the HMM_utils.py file. If not, you can now run the hybrid model by running the function "DNN_and_Vit.py" which will call
-the function "Viterbi_Algorithm""
+the function "Viterbi_Algorithm". Feel free to try different values for the parameters "alpha", k_best", etc.
+
+5. To find the best alpha globally, you can use the function "Optimize_Alpha.py". Set the start_alpha, end_alpha and step and evaluate the accuracies.
+Additionally, you have many more options: you can create the confusion matrix and a detailed analysis with evaluate_result=True.
+Posteriograms and the evaluation of an entire night will be done if visualize=True.
+max_length will determine the maximum length the viterbi algorithm can use.
+All other options are used to choose the transition matrix and are explained in the function.
+
+6. To train the transition matrix, alpha, or both parameters, use the "Train_HMM.py" function. You can either run the
+function with the following arguments (change the values to your liking):
+"--lower_alpha 0.5 --num_epochs 100 --learning_rate 0.001 --train_alpha 0 --train_transition 0"
+or by calling Train_HMM without arguments by manually setting the parameters. Choose the loss function and whether the
+Viterbi algorithm should use the argmax or the softmax. However, it is recommended to use softmax=False and FMMIE = True
+
+7. With these results, you may want to rerun the Optimize_alpha.py function to visualize your results and to evaluate them. Just keep start_alpha=end_alpha.
+Remember to choose the right parameters, so that the correct transition matrix can be loaded.
+
+8. Use plot_evaluations to plot the transition matrix, the difference between two confusion matrices, the evaluation in context, etc.
+
+9. If you want to plot the loss resulted from training and you have the .out file, you can use the function "plot_loss.py". You may need to adapt the code.
+
+The files created or adapted for the hybrid model are:
+- Calc_P_Matr.py
+- Calc_Trans_Matr_Static.py
+- DNN_and_Vit.py
+- HMM_utils.py
+- Optimize_alpha.py
+- plot_evaluations.py
+- Plot_loss.py
+- README.md
+- requirements.txt
+- Train_HMM.py
+- Viterbi_Algorithm.py
 
 
 
