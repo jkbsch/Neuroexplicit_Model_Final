@@ -163,7 +163,7 @@ class OneFoldTrainer:
             raise NotImplementedError
 
     @torch.no_grad()  # evaluation, so no gradient needs to be calculated
-    def Evalute_P_Matr(self):
+    def Evaluate_P_Matr(self):
         self.model.eval()  # set model in evaluation mode
         correct, total, eval_loss = 0, 0, 0  # init counters
         y_true = np.zeros(0)  # init arrays

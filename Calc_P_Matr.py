@@ -57,7 +57,7 @@ class OneFoldEvaluator(OneFoldTrainer):
     def run(self):
         print('\n[INFO] Fold: {}'.format(self.fold))
         self.model.load_state_dict(torch.load(os.path.join(self.ckpt_path, self.ckpt_name), map_location=self.device))  # load checkpoints
-        y_true, y_pred, y_probs = self.Evalute_P_Matr()  # open Evaluate_P_Matr function in train_mtcl
+        y_true, y_pred, y_probs = self.Evaluate_P_Matr()  # open Evaluate_P_Matr function in train_mtcl, which is adapted for returning the softmax
         print('')
 
         return y_true, y_pred, y_probs
@@ -75,6 +75,7 @@ def main():
     args = parser.parse_args()
 
 
+    # To find the gpu IDs of the HPC, use the currently commented-out code below.
     """# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
