@@ -29,7 +29,7 @@ class OneFoldEvaluator(OneFoldTrainer):
         self.loader_dict = self.build_dataloader()
 
         self.criterion = nn.CrossEntropyLoss()
-        self.ckpt_path = os.path.join('checkpoints_copied', config['name'])
+        self.ckpt_path = os.path.join('../checkpoints_copied', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
 
     def build_model(self):  # build nn model
@@ -75,7 +75,7 @@ def main():
     args = parser.parse_args()
 
 
-    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    """# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     # Source for setting gpu_devices: ChatGPT -
@@ -89,7 +89,7 @@ def main():
     # Set CUDA_VISIBLE_DEVICES to the allocated GPU devices
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
     args.gpu = gpu_devices
-    print(gpu_devices)
+    print(gpu_devices)"""
 
     with open(args.config) as config_file:  # load config data
         config = json.load(config_file)
@@ -110,7 +110,7 @@ def main():
 
         prev = 0
         for i in range(len(evaluator.lengths)):  # save the results separated by the subject
-            out_name = "./Probability_Data/Sleep-EDF-2013-val/" + "_dataset_" + config['dataset'][
+            out_name = "./Probability_Data/Sleep-EDF-2018-val/" + "_dataset_" + config['dataset'][
                 'name'] + "_set_" + evaluator.set + "_fold_" + str(evaluator.fold)
             current = prev + evaluator.lengths[i]
             np.savetxt(out_name + "_nr_" + str(i) + "_labels.txt", (Y_true[prev:current]), fmt="%d", delimiter=",")

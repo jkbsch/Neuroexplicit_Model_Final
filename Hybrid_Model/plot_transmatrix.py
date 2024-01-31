@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import HMM_utils
 import Optimize_alpha
 import matplotlib as mpl
 import HMM_utils
@@ -115,10 +114,10 @@ def plot_difference_confusion():
     startalpha = 0.1
     used_set='val'
     eval1 = Optimize_alpha.OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=alpha, end_alpha=alpha, step=0.05,
-                                   print_all_results=False, trans_matrix=None, otrans=otrans, oalpha=oalpha,
-                                   evaluate_result=True, visualize=False,
-                                   optimize_alpha=False, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints,
-                                   max_length=max_length, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
+                                         print_all_results=False, trans_matrix=None, otrans=otrans, oalpha=oalpha,
+                                         evaluate_result=True, visualize=False,
+                                         optimize_alpha=False, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints,
+                                         max_length=max_length, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
     confusion_matrix_1 = eval1.res[-1]
 
     alpha = 0.0
@@ -190,9 +189,9 @@ def plot_difference_transition(average = False):
         all_alphas = [alpha1]
         for fold in range(2,11):
             alpha, trans_matr = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans,
-                                                                    fold=fold, lr=lr, successful=True, epochs=epochs,
-                                                                    FMMIE=True, mlength=mlength, trwval=True,
-                                                                    startalpha=startalpha)
+                                                                 fold=fold, lr=lr, successful=True, epochs=epochs,
+                                                                 FMMIE=True, mlength=mlength, trwval=True,
+                                                                 startalpha=startalpha)
             all_transmatr.append(trans_matr)
             all_alphas.append(alpha)
 

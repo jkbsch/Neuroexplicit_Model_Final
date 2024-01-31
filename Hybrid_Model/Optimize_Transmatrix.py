@@ -1,8 +1,7 @@
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from HMM_utils import *
-from Viterbi.Viterbi_Algorithm import *
-import json
+from Viterbi_Algorithm import *
 import argparse
 import warnings
 

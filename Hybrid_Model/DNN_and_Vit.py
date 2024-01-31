@@ -1,4 +1,4 @@
-from Viterbi.Viterbi_Algorithm import *
+from Viterbi_Algorithm import *
 from HMM_utils import *
 import torch
 
@@ -128,19 +128,19 @@ class DnnAndVit:
 
 
 def main():
-    dnn2 = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='train', logscale=True, alpha=None,
-                     checkpoints='given', dataset='Sleep-EDF-2013', trans_matr='EDF-2013', k_best=20, is_torch=True)
-    print("Start: ", dnn2.start, " length: ", dnn2.length)
-    print("Labels: \t \t \t", dnn2.P_Matrix_labels, "\nSleePyCo Prediction:", dnn2.pure_predictions,
+    hybrid = DnnAndVit(length=None, start=-20, fold=1, nr=0, used_set='train', logscale=True, alpha=None,
+                     checkpoints='given', dataset='Sleep-EDF-2018', trans_matr='EDF-2018', k_best=None, is_torch=False)
+    print("Start: ", hybrid.start, " length: ", hybrid.length)
+    print("Labels: \t \t \t", hybrid.P_Matrix_labels, "\nSleePyCo Prediction:", hybrid.pure_predictions,
           "\nHybrid Prediction:\t",
-          dnn2.hybrid_predictions)
-    if dnn2.k_best == 1:
-        print("Korrekt SleePy: ", dnn2.korrekt_SleePy, " Korrekt Hybrid: ", dnn2.korrekt_hybrid)
-        print("Korrekt SleePy: ", dnn2.korrekt_SleePy / dnn2.length, "Korrekt Hybrid: ", dnn2.korrekt_hybrid / dnn2.length)
+          hybrid.hybrid_predictions)
+    if hybrid.k_best == 1:
+        print("Korrekt SleePy: ", hybrid.korrekt_SleePy, " Korrekt Hybrid: ", hybrid.korrekt_hybrid)
+        print("Korrekt SleePy: ", hybrid.korrekt_SleePy / hybrid.length, "Korrekt Hybrid: ", hybrid.korrekt_hybrid / hybrid.length)
     else:
-        for i in range(dnn2.k_best):
-            print("Korrekt SleePy: ", dnn2.korrekt_SleePy / dnn2.length)
-            print(f'Korrekt Hybrid in {i}-best path:', dnn2.korrekt_hybrid[i] / dnn2.length)
+        for i in range(hybrid.k_best):
+            print("Korrekt SleePy: ", hybrid.korrekt_SleePy / hybrid.length)
+            print(f'Korrekt Hybrid in {i}-best path:', hybrid.korrekt_hybrid[i] / hybrid.length)
 
 
 if __name__ == '__main__':

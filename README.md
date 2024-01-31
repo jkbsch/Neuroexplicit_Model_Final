@@ -1,3 +1,36 @@
+# A Neuro-explicit Model For Single-channel EEG-based Sleep Staging
+By Jakob Scheytt
+
+This repository provides the full source code of the Bachelor's Thesis "A Neuro-explicit Model For Single-channel EEG-based Sleep Staging" by Jakob Scheytt. 
+The thesis was written at the Technische Universität Berlin, Faculty IV, Department of Electronic Systems of Medical Engineering
+
+To reproduce the results of SleePyCo, please follow the instructions on the bottom of this page.
+
+To reproduce the results achieved by the hybrid model, follow the steps below.
+
+1. Follow steps 1-4 of SleePyCo's instructions to set up the environment and download the Sleep-EDF dataset. It is sufficient to download the Sleep-EDF-2018 dataset.
+Note: if you want to use different datasets, you will need to adapt the code in all below-mentioned functions accordingly.
+
+2. Run the function "Calc_P_Matr" with the following argument:
+"--config "configs/SleePyCo-Transformer_SL-10_numScales-3_Sleep-EDF-2018_freezefinetune.json" --gpu  GPU_IDs"
+You need to create three different P matrices, for the training, test, and validation set. Therefore, you need to run the
+function three times and adapt the parameter "self.set" and the name of the output file accordingly.
+- If you want to run the function on the HPC, you can use the commented out code to determine the right gpu ids.
+
+3. Run the function "Calc_Trans_Matr_Static.py" to calculate the transition matrix from train and validation labels.
+
+4. If you have adapted the output name, you will have to adapt the functions "load_P_Matrix" and "load_Transition_Matrix" 
+in the HMM_utils.py file. If not, you can now run the hybrid model by running the function "DNN_and_Vit.py" which will call
+the function "Viterbi_Algorithm""
+
+
+
+
+
+
+
+
+
 # SleePyCo
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/sleepyco-automatic-sleep-scoring-with-feature/sleep-stage-detection-on-sleep-edf)](https://paperswithcode.com/sota/sleep-stage-detection-on-sleep-edf?p=sleepyco-automatic-sleep-scoring-with-feature) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/sleepyco-automatic-sleep-scoring-with-feature/sleep-stage-detection-on-sleep-edfx)](https://paperswithcode.com/sota/sleep-stage-detection-on-sleep-edfx?p=sleepyco-automatic-sleep-scoring-with-feature) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/sleepyco-automatic-sleep-scoring-with-feature/sleep-stage-detection-on-mass-single-channel)](https://paperswithcode.com/sota/sleep-stage-detection-on-mass-single-channel?p=sleepyco-automatic-sleep-scoring-with-feature) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/sleepyco-automatic-sleep-scoring-with-feature/sleep-stage-detection-on-physionet-challenge)](https://paperswithcode.com/sota/sleep-stage-detection-on-physionet-challenge?p=sleepyco-automatic-sleep-scoring-with-feature) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/sleepyco-automatic-sleep-scoring-with-feature/sleep-stage-detection-on-shhs-single-channel)](https://paperswithcode.com/sota/sleep-stage-detection-on-shhs-single-channel?p=sleepyco-automatic-sleep-scoring-with-feature)

@@ -1,5 +1,4 @@
 import DNN_and_Vit
-import utils
 from HMM_utils import *
 
 
@@ -142,7 +141,7 @@ class OptimizeAlpha:
 
                         mod = length % self.max_length
                         if mod != 0:
-                            dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=fold, nr=nr,used_set=self.used_set, trans_matr=trans_matrix, alpha=alpha, print_info=True, checkpoints=self.checkpoints, length=mod, start=length - mod)
+                            dnn_vit = DNN_and_Vit.DnnAndVit(dataset=self.dataset, fold=fold, nr=nr, used_set=self.used_set, trans_matr=trans_matrix, alpha=alpha, print_info=True, checkpoints=self.checkpoints, length=mod, start=length - mod)
                             correct_hybrid += dnn_vit.korrekt_hybrid
                             correct_SleePy += dnn_vit.korrekt_SleePy
                             hybrid_length += dnn_vit.length
@@ -222,8 +221,8 @@ class OptimizeAlpha:
             config["alpha"] = alpha
         if config['max_length'] is None or config['max_length'] == 0:
             dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
-                                        trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
-                                        checkpoints=config['checkpoints'])
+                                            trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
+                                            checkpoints=config['checkpoints'])
             correct_hybrid = dnn_vit.korrekt_hybrid
             correct_SleePy = dnn_vit.korrekt_SleePy
             hybrid_length = dnn_vit.length
@@ -246,8 +245,8 @@ class OptimizeAlpha:
 
             for i in range(0, length - config['max_length'], config['max_length']):
                 dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
-                                        trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
-                                        checkpoints=config['checkpoints'],length=config['max_length'], start=i)
+                                                trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
+                                                checkpoints=config['checkpoints'], length=config['max_length'], start=i)
                 correct_hybrid += dnn_vit.korrekt_hybrid
                 correct_SleePy += dnn_vit.korrekt_SleePy
                 hybrid_length += dnn_vit.length
@@ -261,8 +260,8 @@ class OptimizeAlpha:
             mod = length % config['max_length']
             if mod != 0:
                 dnn_vit = DNN_and_Vit.DnnAndVit(dataset=config['dataset'], fold=config['fold'], nr=config['nr'], used_set=config['used_set'],
-                                        trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
-                                        checkpoints=config['checkpoints'], length=mod, start=length - mod)
+                                                trans_matr=trans_matrix, alpha=config['alpha'], print_info=False,
+                                                checkpoints=config['checkpoints'], length=mod, start=length - mod)
                 correct_hybrid += dnn_vit.korrekt_hybrid
                 correct_SleePy += dnn_vit.korrekt_SleePy
                 hybrid_length += dnn_vit.length

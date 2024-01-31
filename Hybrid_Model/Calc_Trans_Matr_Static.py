@@ -9,7 +9,7 @@ class TransMatrStatic:
     TransMatrStatic: class; instances contain the transition matrix derived from the chosen datasets;
     Transition matrices are solely based on the statistical averages over the datasets
         """
-    def __init__(self, edf_2013=True, edf_2018=True, mass=False, shhs=False, physio_2018=False):
+    def __init__(self, edf_2013=False, edf_2018=True, mass=False, shhs=False, physio_2018=False):
 
         self.edf_2013 = edf_2013  # the datasets that should be used for calculating the trans matrix can be chosen
         self.edf_2018 = edf_2018
@@ -148,12 +148,12 @@ class TransMatrStatic:
 
 
 def main():
-    trans_matrix = TransMatrStatic(edf_2013=True, edf_2018=True, mass=False, shhs=False, physio_2018=False)
-    #out_name = "./Transition_Matrix/"
+    trans_matrix = TransMatrStatic(edf_2013=False, edf_2018=True, mass=False, shhs=False, physio_2018=False)
+    out_name = "./Transition_Matrix/"
     #np.savetxt(out_name + "Sleep-EDF-2013-And-Sleep-EDF-2018.txt",trans_matrix.average_trans_matr, fmt="%.15f", delimiter=",")
 
-    #for i in range(len(trans_matrix.all_trans_matr)):
-        #np.savetxt(out_name +trans_matrix.all_trans_matr[i]["dataset"] +".txt", trans_matrix.all_trans_matr[i]["trans_matr"], fmt="%.15f", delimiter=",")
+    for i in range(len(trans_matrix.all_trans_matr)):
+        np.savetxt(out_name +trans_matrix.all_trans_matr[i]["dataset"] +".txt", trans_matrix.all_trans_matr[i]["trans_matr"], fmt="%.15f", delimiter=",")
 
 
 if __name__ == "__main__":
