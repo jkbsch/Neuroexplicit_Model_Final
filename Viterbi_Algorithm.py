@@ -6,30 +6,29 @@ import torch
 
 class Viterbi:
     """
-            Return the MAP estimate of state trajectory of Hidden Markov Model.
-            Creates an object with containing the best bath.
-
-            Inputs: ---------- A : array (K, K) State transition matrix. See HiddenMarkovModel.state_transition  for
-            details. Example: [[1->1, 1->2],[2->1, 2->2]] P: array(T, K) Probability of being of state k given
-            observation in time t - calculated via DNN. Example: [[Prob. of 0.3 to be in state 1 at time 0 given the
-            data, Prob of 0.7 to be in state 2 at t = 0], [prob of 0.4 for state 1 at time 1, prob of 0.6 for state 2
-            at time 2]] Pi: optional, (K,) Initial state probabilities: Pi[i] is the probability x[0] == i. If None,
-            uniform initial distribution is assumed (Pi[:] == 1/K). logscale: optional, (bool) Defines whether the
-            calculation is logarithmic or not. Default is False; if true, T1 will contain logarithmic probabilities
-
-
-
-            Calculates: ------- x : array (T,) Maximum a posteriori probability estimate of hidden state trajectory,
-            conditioned on observation sequence y under the model parameters A, B, Pi. Example: [0 0 1] means that
-            the most likely a posteriori path is state 0, state 0, state 1 T1: array (K, T) the probability of the
-            most likely path so far Example: [[0.3     0.084   0.00588] [0.04    0.027   0.01512]] means prob. of 0.3
-            to be in State 0 at time 0 and  prob. of 0.04 to be in Staate 1 at t=0;  prob. of 0.084 to be in State 0
-            at t=1, (c.f. T2 to find the most likely path to get there); prob of 0.027 to be in State 1 at time t=1 (
-            c.f. T2 to find the most likely path to get there) the x_j-1 of the most likely path so far
+            Applies the Viterbi algorithm to a given HMM model, and returns the most likely state trajectory.
+            It is also able to calculate the k-best paths, and the MMIE loss.
+            It works with numpy arrays and torch tensors.
     """
 
     def __init__(self, A, P, Pi=None, logscale=True, alpha=None, return_log=None, print_info=True, softmax=False,
                  FMMIE=False, labels=None, k_best=1):
+        """
+        :param A: Transition matrix of the HMM model
+        :param P: P-matrix of the HMM model
+        :param Pi: Initial distribution of the HMM model; if not given, it is set to uniform
+        :param logscale: Whether the calculation is done in logscale; Caution: most calculations can only be realized in
+                        logscale, such as the calculation with alpha
+        :param alpha: Parameter alpha for weighing the transition matrix and the P-matrix
+        :param return_log: Whether the output should be in logscale
+        :param print_info: Whether additional information should be printed
+        :param softmax: Whether softmax is used in the Viterbi algorithm; Does not work for FMMIE or k_best > 1
+        :param FMMIE: Whether the FMMIE loss should be calculated
+        :param labels: Labels of the dataset; only needed for FMMIE
+        :param k_best: Number of the best paths returned by the Viterbi algorithm
+
+        Find more information of how the (k-best) Viterbi algorithm works in the corresponding bachelor's thesis
+        """
         # check if the input is a torch tensor or a numpy array
         if torch.is_tensor(A):
             self.is_torch = True
@@ -39,7 +38,6 @@ class Viterbi:
 
         # Initialize the model given the parameters
         self.A = A
-        # self.A[A<0] = 0
         self.P = P
         self.logscale = logscale
         self.print_info = print_info
@@ -69,7 +67,7 @@ class Viterbi:
         elif self.softmax and not self.is_torch:
             raise NotImplementedError
 
-        self.T = len(P)
+        self.T = len(P)  # length of the sequence
         # convert to logscale if needed
         if self.logscale:  # convert to logscale
             if self.is_torch:
@@ -82,16 +80,16 @@ class Viterbi:
                 self.Pi = np.log(self.Pi)
 
         if FMMIE:
-            self.x, self.res_FMMIE = self.calc_FMMIE()
+            self.x, self.res_FMMIE = self.calc_FMMIE()  # calculate the FMMIE loss
         elif self.is_torch:
-            if k_best > 1:
+            if k_best > 1:  #  k-best paths
                 self.x, self.T1, self.T2, self.T3, self.y = self.calc_viterbi_k_best()
-            else:
+            else:  # 1-best path
                 self.x, self.T1, self.T2, self.T3, self.y = self.calc_viterbi()
-        else:
+        else:  # numpy
             self.x, self.T1, self.T2 = self.calc_viterbi()
 
-    # check if alpha is None and set it to 0.5 if it is
+    # check if alpha is None and set it to 1 if it is
     def alpha(self, alpha):
         if alpha is None:
             if self.is_torch:
@@ -171,7 +169,7 @@ class Viterbi:
             if self.is_torch and self.softmax:
                 y[i - 1] = T3[x[i], i]
 
-        if self.logscale != self.return_log:
+        if self.logscale != self.return_log:  # convert to logscale if necessary
             if self.return_log:
                 if self.is_torch:
                     T1 = torch.log(T1)
@@ -189,13 +187,15 @@ class Viterbi:
             return x, T1, T2
 
     def calc_viterbi_k_best(self):
+        # Initialize the tracking tables
         T1 = torch.full((self.k_best, self.K, self.T), fill_value=float('-inf'), dtype=torch.float64,device=self.device)
         T2 = torch.full((self.k_best, self.K, self.T, 2), fill_value=-1, dtype=torch.int, device=self.device)
 
+        # only the first-best path can be given for initialization; It is initialized with the initial distribution
         T1[0, :, 0] = self.Pi + self.P[0]
         T2[0, :, 0] = 0
 
-
+        # Iterate through the observations updating the tracking tables
         for i in range(1, self.T):
             temp = T1[:, :, i - 1] + self.alpha * self.A.T[:, None]
             flattened_vals, flattened_idx = torch.topk(temp.flatten(start_dim=1, end_dim=2), self.k_best)
@@ -206,7 +206,7 @@ class Viterbi:
 
         final_vals, final_idx = torch.topk((T1[:, :, -1]).flatten(), self.k_best)
         last_valid = torch.where(final_vals == float('-inf'))[0]
-        if len(last_valid) > 0:
+        if len(last_valid) > 0:  # check if there are less than k_best valid paths
             last_valid = last_valid[0]
             final_idx = final_idx[0:last_valid]
             final_vals = final_vals[0:last_valid]
@@ -214,12 +214,11 @@ class Viterbi:
         else:
             x = torch.empty((self.k_best, self.T), dtype=torch.int64, device=self.device)
 
-
-
-        final_state = final_idx % self.K
+        final_state = final_idx % self.K  # find the last state of the k-best paths
         k_prev = final_idx // self.K
         x[:, -1] = final_state
 
+        # iterate through T to find the previous states
         for i in reversed(range(1, self.T)):
             x[:,i-1] = T2[k_prev, x[:,i], i, 1]
             k_prev = T2[k_prev, x[:,i], i, 0]
@@ -229,26 +228,26 @@ class Viterbi:
     def calc_FMMIE(self):
         if not self.logscale:
             raise NotImplementedError
-        self.k_best += 1 # if the correct path is in one of the k-best paths, then we need to have one left
+        self.k_best += 1 # if the correct path is in one of the k-best paths, then we need to have one more path
 
-        if not self.is_torch:
+        if not self.is_torch:  #  finding k best paths only works with torch tensors
             self.A = torch.from_numpy(self.A)
             self.P = torch.from_numpy(self.P)
             if self.Pi is not None:
                 self.Pi = torch.from_numpy(self.Pi)
         else:
-            A_optimizable = torch.clone(self.A)
+            A_optimizable = torch.clone(self.A)  # finding k_best paths should not be used for backpropagation
             if torch.is_tensor(self.alpha):
                 alpha_optimizable = torch.clone(self.alpha)
                 self.alpha.detach()
             else:
                 alpha_optimizable = self.alpha
             self.A.detach()
-        best_paths, _, _, _, _ = self.calc_viterbi_k_best()
+        best_paths, _, _, _, _ = self.calc_viterbi_k_best()  # only the k_best paths are of interest
 
-        if not self.is_torch:
+        if not self.is_torch:  # numpy
             best_paths = best_paths.numpy()
-            exclude_path = len(best_paths)
+            exclude_path = len(best_paths)  # exclude the path that equals the correct one, or exclude the last path
             for i in range(len(best_paths) - 1):
                 if np.all(self.labels, best_paths[i]):
                     exclude_path = i
@@ -277,21 +276,14 @@ class Viterbi:
                 den += np.exp(den_temp)
             den = np.log(den)
 
-        else:
-            # numerator torch
-            exclude_path = len(best_paths)
-
+        else:  # torch
+            exclude_path = len(best_paths) # exclude the path that equals the correct one, or exclude the last path
             for i in range(len(best_paths) -1):
-                """try:
-                    torch.equal(self.labels, best_paths[i])
-                except:
-                    if self.print_info:
-                        print("[INFO]: self.labels is NoneType. Training continues")
-                    print("Stop")
-                    continue"""
                 if torch.equal(self.labels, best_paths[i]):
                     exclude_path = i
                     break
+
+            # numerator torch
             try:
                 num = self.Pi[self.labels[0]] + torch.sum(self.P[torch.arange(len(self.labels)), self.labels])
             except:
@@ -317,12 +309,13 @@ class Viterbi:
             den = torch.log(den)
 
 
-            # denumerator torch
 
         return best_paths[0], -(num - den)
 
 
 def main():
+
+    # here are some exemplary inputs for the Viterbi algorithm
     A = np.array([[0.7, 0.3], [0.9, 0.1]])
     Pi = np.array([0.8, 0.2])
     P = np.array([[0.1, .9], [0.9, 0.1], [0.01, 0.99]])
@@ -337,7 +330,6 @@ def main():
     alphaT = torch.tensor([1], dtype=torch.float64, requires_grad=True)
 
 
-    # Viterbi3 = Viterbi(A, P, Pi, logscale=True, alpha=alpha, labels=labelsT, FMMIE=True)
 
     A1 = torch.from_numpy(A).to(dtype=torch.float64, device='cpu')
     Pi1 = torch.from_numpy(Pi).to(dtype=torch.float64, device='cpu')
@@ -353,7 +345,6 @@ def main():
     print(T2_1)
     print(T2_2)
 
-    # ohne das 2* unterscheiden sich T1 und T2, je nachdem ob in logscale oder nicht gerechnet wird? Oder falsch implementiert? """
 
 if __name__ == "__main__":
     main()
