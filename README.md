@@ -57,6 +57,7 @@ The files created or adapted for the hybrid model are:
 - requirements.txt
 - Train_HMM.py
 - Viterbi_Algorithm.py
+- train_mtcl.py (added the function "Evaluate_P_Matr" to return the softmax)
 
 
 
