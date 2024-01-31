@@ -356,9 +356,9 @@ def visualize_alphas():
     fig, ax = plt.subplots()
 
     fig.suptitle('Alphas and respective Accuracies, predictions for N = 10')
-    ax.scatter(alphas[0], accuracies[0], label='Trainset', color='blue')
-    ax.scatter(alphas[1], accuracies[1], label='Testset', color='mediumpurple')
-    ax.scatter(alphas[2], accuracies[2], label='Valset', color='indigo')
+    ax.scatter(alphas[0], accuracies[0], label='Training Set', color='blue')
+    ax.scatter(alphas[1], accuracies[1], label='Test Set', color='mediumpurple')
+    ax.scatter(alphas[2], accuracies[2], label='Validation Set', color='indigo')
 
     plt.grid(True)
     plt.xlim((0, 2))
