@@ -7,6 +7,7 @@ import HMM_utils
 
 def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3,
                      epochs=1, checkpoints='given', FMMIE=False, mlength=10, trwval=True, startalpha=0.1):
+    # loads and plots the transition matrices
     fig, ax = plt.subplots()
 
     res_alpha, transmatrix = HMM_utils.load_Transition_Matrix(trans_matr=trans_matr, oalpha=oalpha, otrans=otrans,
@@ -47,6 +48,8 @@ def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successfu
 
 
 def plot_bar_context():
+    # plots the context bar plot; Data is taken from the results of the evaluation of the context and entered manually
+    # this function could be included into the optimize_alpha.py file
     context1 = np.array([[609, 971, 1621, 407, 1437], [537, 907, 1280, 333, 1261]])
     diff1 = context1[1] - context1[0]
     context2 = np.array([[68, 448, 61, 302, 7], [68, 515, 74, 320, 6]])
@@ -95,14 +98,15 @@ def plot_bar_context():
 
     fig.savefig(f'results/context_v1.png', dpi=1200)
     fig, ax = plt.subplots()
-    ax.bar(labels, diff1pos, label='More Errors committed by Hybrid Model', color='mediumslateblue')  # navy
-    ax.bar(labels, diff1neg, label='More Errors committed by SleePyCo', color='navy')
+    ax.bar(labels, diff1pos, label='Relative Error Count of the Hybrid Model', color='mediumslateblue')  # navy
+    ax.bar(labels, diff1neg, label='Relative Error Count of SleePyCo', color='navy')
     plt.legend(framealpha=1, fancybox=False)
     fig.tight_layout
     plt.show()
     # fig.savefig(f'results/context_legend.png', dpi=1200)
 
 def plot_difference_confusion():
+    # compares two confusion matrices
     alpha = 0.2
     otrans = True
     oalpha = True
@@ -135,7 +139,7 @@ def plot_difference_confusion():
     confusion_matrix_2 = eval2.res[-1]
     difference = confusion_matrix_1 - confusion_matrix_2
 
-    arr = np.ones(np.shape(difference))
+    arr = np.ones(np.shape(difference)) # the desired change should be printed in blue, undesired in red. Therefore, the diagonal is set to -1
     np.fill_diagonal(arr, -1)
 
     norm = mpl.colors.Normalize(vmin=-0.1, vmax=0.1)
@@ -153,8 +157,6 @@ def plot_difference_confusion():
             else:
                 ax.text(i, j, str(f'{c:.1f}%'), va='center', ha='center', color='cornsilk')
     plt.title('Predicted Class', fontsize=10)
-    # plt.xaxis.set_label_position('top')
-    # set x label to the top of the plot
 
     plt.ylabel('Actual Class')
 
@@ -164,6 +166,9 @@ def plot_difference_confusion():
     plt.show()
 
 def plot_difference_transition(average = False):
+    # compares different transition matrices
+    # if average = True, then it compares the transition matrix to the average transition matrix over all folds
+    # if average = False, then it only compares to transition matrices
     trans_matrix = "EDF_2018"
     oalpha = True
     otrans = True
@@ -173,9 +178,6 @@ def plot_difference_transition(average = False):
     epochs = 100
     mlength = 10
     startalpha = 1.0
-
-
-
 
     alpha1, trans_matr_1 = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans, fold=fold, lr=lr, successful=True, epochs=epochs, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
 
@@ -195,7 +197,7 @@ def plot_difference_transition(average = False):
             all_transmatr.append(trans_matr)
             all_alphas.append(alpha)
 
-        avg_transmatr = np.mean(all_transmatr, axis=0)
+        avg_transmatr = np.mean(all_transmatr, axis=0) # calculate average transition matrix
         for i in range(10):
             difference += np.absolute(all_transmatr[i] - avg_transmatr)
 
@@ -231,7 +233,7 @@ def plot_difference_transition(average = False):
     plt.savefig(f'results/difference_transition_matrix.png', dpi=1200)
     plt.show()
 
-    if oalpha and average:
+    if oalpha and average: # if alpha was optimized, plot the alphas in the different folds
 
         max_alpha = np.max(np.array(all_alphas))
         if max_alpha < 0.3:
@@ -249,7 +251,10 @@ def plot_difference_transition(average = False):
         plt.savefig(f'results/alphas_in_folds.png', dpi=1200)
         plt.show()
 
-# plot_transmatrix(trans_matr="EDF_2018", oalpha=True, otrans=True, successful=True, fold=1, lr=0.001, epochs=100, checkpoints='given', FMMIE=True, mlength=10, trwval=True, startalpha=1.0)
-# plot_bar_context()
-plot_difference_confusion()
-# plot_difference_transition(average=True)
+# different plots can be created using this file. For plot_transmatrix, the parameters can be changed in the function call,
+# the parameters for all other plots are set in the function itself.
+plot_transmatrix(trans_matr="EDF_2018", oalpha=True, otrans=True, successful=True, fold=1, lr=0.001, epochs=100,
+                 checkpoints='given', FMMIE=True, mlength=10, trwval=True, startalpha=1.0) # plots the transition matrix
+plot_bar_context() # plots the context bar plot
+plot_difference_confusion() # compares two confusion matrices
+plot_difference_transition(average=True) # compares two or all transition matrices from one or different folds and plots alpha
