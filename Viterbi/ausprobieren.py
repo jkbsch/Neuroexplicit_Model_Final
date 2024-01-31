@@ -169,7 +169,8 @@ D = np.array(np.unravel_index([[2,1], [0,1]], (2,2))).T
 
 
 print(D)"""
-print("Start")
+"""print("Start")
+print(0.5**2000)"""
 
 
 
