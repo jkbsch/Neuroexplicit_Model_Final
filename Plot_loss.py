@@ -141,9 +141,6 @@ def plot_loss_acc(extracted_data, show_alpha = False, fail=False):
 if __name__ == "__main__":
     # Input file path
     input_file = "../Kopie_HPC/scripts/slurm-23153868.out"
-    # hat negativen Loss, geht deshalb nicht: auch ganz okay: 23153384 Optimization for alpha: 0.1, fold: 1, learning rate: 0.001, epochs: 100, train_alpha: True, train_transition: True, train with test True, min_length = 200,
-    # ein ganz okayes: Optimization for alpha: 0.1, fold: 1, learning rate: 1e-05, epochs: 100, train_alpha: True, train_transition: True, train with test True, min_length = 200,
-
     # Extract information from the .out file
     extracted_data = extract_information(input_file)
 
@@ -155,4 +152,4 @@ if __name__ == "__main__":
     for show_alpha in [True, False]:
         plot_loss_acc(extracted_data, show_alpha, fail=False)
 
-    print("Extraction and saving complete. Results saved in 'results_n/output.txt'.")
+
