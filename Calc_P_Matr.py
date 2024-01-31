@@ -29,7 +29,7 @@ class OneFoldEvaluator(OneFoldTrainer):
         self.loader_dict = self.build_dataloader()
 
         self.criterion = nn.CrossEntropyLoss()
-        self.ckpt_path = os.path.join('../checkpoints_copied', config['name'])
+        self.ckpt_path = os.path.join('checkpoints_copied', config['name'])
         self.ckpt_name = 'ckpt_fold-{0:02d}.pth'.format(self.fold)
 
     def build_model(self):  # build nn model
@@ -110,6 +110,10 @@ def main():
 
         prev = 0
         for i in range(len(evaluator.lengths)):  # save the results separated by the subject
+            """if you want to use your own checkpoints, change the otuput path:
+            out_name = "./Own-Probability_Data/Own-Sleep-EDF-2018-val/" + "_dataset_" + config['dataset'][
+                'name'] + "_set_" + evaluator.set + "_fold_" + str(evaluator.fold)"""
+
             out_name = "./Probability_Data/Sleep-EDF-2018-val/" + "_dataset_" + config['dataset'][
                 'name'] + "_set_" + evaluator.set + "_fold_" + str(evaluator.fold)
             current = prev + evaluator.lengths[i]

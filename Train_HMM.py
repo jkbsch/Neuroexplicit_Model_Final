@@ -6,7 +6,7 @@ import argparse
 import warnings
 
 
-class OptimTransMatrix:
+class Train_HMM:
     def __init__(self, dataset='Sleep-EDF-2018', checkpoints='given', trans_matrix='EDF_2018', fold=1, num_epochs=2,
                  learning_rate=0.0001, alpha=None, train_transition=True, train_alpha=False, save=False,
                  print_info=True, print_results=False, save_unsuccesful=False, use_normalized=True, softmax=False, FMMIE=False, k_best=20, length=10, train_with_val=True, min_length=200):
@@ -425,9 +425,9 @@ def main():
         learning_rate = 0.001
         for fold in range(1, 11):
             print(f'Optimization for alpha: {alpha}, fold: {fold}, learning rate: {learning_rate}, epochs: {num_epochs}, train_alpha: {train_alpha}, train_transition: {train_transition}, train with val True, min_length = 200, ')
-            OptimTransMatrix(dataset='Sleep-EDF-2018', num_epochs=num_epochs, learning_rate=learning_rate, print_results=True,
-                             train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
-                             save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_val=True, min_length=200, length=2000)
+            Train_HMM(dataset='Sleep-EDF-2018', num_epochs=num_epochs, learning_rate=learning_rate, print_results=True,
+                      train_alpha=train_alpha, train_transition=train_transition, alpha=alpha, fold=fold, save=True,
+                      save_unsuccesful=False, use_normalized=False, softmax=False, FMMIE=True, train_with_val=True, min_length=200, length=2000, k_best=20)
 
 
 

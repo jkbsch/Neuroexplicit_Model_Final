@@ -322,8 +322,8 @@ def visualize_probs(y_true, probs_hybrid, probs_sleepy, y_pred_sleepy, y_pred_hy
     fig.savefig(f'results_n/figure_probs_Ds{config["dataset"][-1]}TM{config["trans_matrix"][-1]}{config["used_set"]}oa{config["oalpha"]:0}ot{config["otrans"]:0}a{alpha:.2f}{config["checkpoints"]}e{config["epochs"]}lr{config["lr"]}maxlen{config["max_length"]}FMMIE{config["FMMIE"]:0}mlen{config["mlength"]}trw{config["trwval"]:0}sa{config["startalpha"]}{xmin, xmax}.png', dpi=1200)
 
 def visualize_alphas():
-    alphas = np.loadtxt('../results/new_alphas_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
-    accuracies = np.loadtxt('../results/new_accuracies_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
+    alphas = np.loadtxt('results/new_alphas_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
+    accuracies = np.loadtxt('results/new_accuracies_notrain_exact_maxlength10_step0.05.txt', delimiter=',')
 
     """fig, ax = plt.subplots(2,2)
     length = len(alphas[0])"""
