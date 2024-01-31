@@ -7,7 +7,7 @@ import HMM_utils
 
 
 def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successful=False, fold=20, lr=0.01, alpha=0.3,
-                     epochs=1, checkpoints='given', FMMIE=False, mlength=10, trwtest=True, startalpha=0.1):
+                     epochs=1, checkpoints='given', FMMIE=False, mlength=10, trwval=True, startalpha=0.1):
     fig, ax = plt.subplots()
 
     res_alpha, transmatrix = HMM_utils.load_Transition_Matrix(trans_matr=trans_matr, oalpha=oalpha, otrans=otrans,
@@ -15,7 +15,7 @@ def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successfu
                                                               successful=successful,
                                                               checkpoints=checkpoints, lr=lr, alpha=alpha,
                                                               epochs=epochs, FMMIE=FMMIE, mlength=mlength,
-                                                              trwtest=trwtest, startalpha=startalpha)
+                                                              trwval=trwval, startalpha=startalpha)
 
     ax.matshow(transmatrix, cmap='Purples')
     ax.set_yticks([0, 1, 2, 3, 4], ["W", "N1", "N2", "N3", "REM"])
@@ -35,13 +35,13 @@ def plot_transmatrix(trans_matr="EDF_2018", oalpha=False, otrans=True, successfu
     if res_alpha is None:
         res_alpha = float('-inf')
     plt.figtext(0.01, 0.01,
-                f'Transition Matrix for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and final alpha = {res_alpha:.3f} on {epochs} Epochs. Alpha trained: {oalpha}, Trans trained: {otrans}, mlength = {mlength}, trwtest: {trwtest}, startalpha: {startalpha}',
+                f'Transition Matrix for {trans_matr}, evaluated on fold {fold}, with lr = {lr} and final alpha = {res_alpha:.3f} on {epochs} Epochs. Alpha trained: {oalpha}, Trans trained: {otrans}, mlength = {mlength}, trwval: {trwval}, startalpha: {startalpha}',
                 size=4)
 
 
 
     fig.savefig(
-        f'results_n/transmatr_TM{transmatrix[-1]}oa{oalpha:0}ot{otrans:0}a{alpha:.2f}{checkpoints}e{epochs}lr{lr}FMMIE{FMMIE:0}mlen{mlength}trw{trwtest:0}sa{startalpha}.png.png',
+        f'results_n/transmatr_TM{transmatrix[-1]}oa{oalpha:0}ot{otrans:0}a{alpha:.2f}{checkpoints}e{epochs}lr{lr}FMMIE{FMMIE:0}mlen{mlength}trw{trwval:0}sa{startalpha}.png.png',
         dpi=1200)
 
     plt.show()
@@ -118,7 +118,7 @@ def plot_difference_confusion():
                                    print_all_results=False, trans_matrix=None, otrans=otrans, oalpha=oalpha,
                                    evaluate_result=True, visualize=False,
                                    optimize_alpha=False, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints,
-                                   max_length=max_length, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
+                                   max_length=max_length, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
     confusion_matrix_1 = eval1.res[-1]
 
     alpha = 0.0
@@ -131,7 +131,7 @@ def plot_difference_confusion():
                                          evaluate_result=True, visualize=False,
                                          optimize_alpha=False, lr=lr, successful=True, epochs=epochs,
                                          checkpoints=checkpoints,
-                                         max_length=max_length, FMMIE=True, mlength=mlength, trwtest=True,
+                                         max_length=max_length, FMMIE=True, mlength=mlength, trwval=True,
                                          startalpha=startalpha)
     confusion_matrix_2 = eval2.res[-1]
     difference = confusion_matrix_1 - confusion_matrix_2
@@ -178,11 +178,11 @@ def plot_difference_transition(average = False):
 
 
 
-    alpha1, trans_matr_1 = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans, fold=fold, lr=lr, successful=True, epochs=epochs, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
+    alpha1, trans_matr_1 = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans, fold=fold, lr=lr, successful=True, epochs=epochs, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
 
     if not average:
 
-        alpha2, trans_matr_2 = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans, fold=fold, lr=lr, successful=True, epochs=epochs, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
+        alpha2, trans_matr_2 = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans, fold=fold, lr=lr, successful=True, epochs=epochs, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
         difference = trans_matr_1 - trans_matr_2
     else:
         difference = np.zeros(np.shape(trans_matr_1))
@@ -191,7 +191,7 @@ def plot_difference_transition(average = False):
         for fold in range(2,11):
             alpha, trans_matr = HMM_utils.load_Transition_Matrix(trans_matrix, checkpoints='given', oalpha=oalpha, otrans=otrans,
                                                                     fold=fold, lr=lr, successful=True, epochs=epochs,
-                                                                    FMMIE=True, mlength=mlength, trwtest=True,
+                                                                    FMMIE=True, mlength=mlength, trwval=True,
                                                                     startalpha=startalpha)
             all_transmatr.append(trans_matr)
             all_alphas.append(alpha)
@@ -250,7 +250,7 @@ def plot_difference_transition(average = False):
         plt.savefig(f'results_n/alphas_in_folds.png', dpi=1200)
         plt.show()
 
-# plot_transmatrix(trans_matr="EDF_2018", oalpha=True, otrans=True, successful=True, fold=1, lr=0.001, epochs=100, checkpoints='given', FMMIE=True, mlength=10, trwtest=True, startalpha=1.0)
+# plot_transmatrix(trans_matr="EDF_2018", oalpha=True, otrans=True, successful=True, fold=1, lr=0.001, epochs=100, checkpoints='given', FMMIE=True, mlength=10, trwval=True, startalpha=1.0)
 # plot_bar_context()
 plot_difference_confusion()
 # plot_difference_transition(average=True)

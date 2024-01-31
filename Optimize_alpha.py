@@ -13,7 +13,7 @@ class OptimizeAlpha:
 
     def __init__(self, start_alpha=0.0, end_alpha=10.0, step=0.1, dataset='Sleep-EDF-2018', trans_matrix=None,
                  used_set='train', print_all_results=False, checkpoints='given', oalpha=False, otrans=False, evaluate_result=True,
-                 visualize=False, optimize_alpha=True, max_length=None, lr=0.001, epochs=60, successful=True, FMMIE=None, mlength=None, trwtest=None, startalpha=None):
+                 visualize=False, optimize_alpha=True, max_length=None, lr=0.001, epochs=60, successful=True, FMMIE=None, mlength=None, trwval=None, startalpha=None):
 
         self.best_correct = 0
         self.lr = lr
@@ -29,7 +29,7 @@ class OptimizeAlpha:
         self.max_length = max_length
         self.FMMIE = FMMIE
         self.mlength = mlength
-        self.trwtest = trwtest
+        self.trwval = trwval
         self.startalpha = startalpha
         self.res = None
 
@@ -93,7 +93,7 @@ class OptimizeAlpha:
                           'max_length': self.max_length,
                           'FMMIE': self.FMMIE,
                           'mlength': self.mlength,
-                          'trwtest': self.trwtest,
+                          'trwval': self.trwval,
                           'startalpha': self.startalpha}
 
             # self.end_fold = 1
@@ -106,7 +106,7 @@ class OptimizeAlpha:
                                                                      otrans=self.otrans, fold=fold,
                                                                      alpha=alpha, lr=self.lr,
                                                                      successful=self.successful,
-                                                                     epochs=self.epochs, FMMIE=self.FMMIE, mlength=self.mlength, trwtest=self.trwtest, startalpha=self.startalpha)
+                                                                     epochs=self.epochs, FMMIE=self.FMMIE, mlength=self.mlength, trwval=self.trwval, startalpha=self.startalpha)
                     if new_alpha is not None and self.oalpha:
                         alpha = new_alpha
                     if nr == 0:
@@ -214,10 +214,10 @@ class OptimizeAlpha:
             'max_length': self.max_length,
             'FMMIE': self.FMMIE,
             'mlength': self.mlength,
-            'trwtest': self.trwtest,
+            'trwval': self.trwval,
             'startalpha': self.startalpha
         }
-        alpha, trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'], FMMIE = config['FMMIE'], mlength=config['mlength'], trwtest=config['trwtest'], startalpha=config['startalpha'])
+        alpha, trans_matrix = load_Transition_Matrix(config['trans_matrix'], oalpha=config['oalpha'], otrans=config["otrans"], lr=config["lr"], fold=config['fold'], epochs=config['epochs'], successful=config['successful'], FMMIE = config['FMMIE'], mlength=config['mlength'], trwval=config['trwval'], startalpha=config['startalpha'])
         if alpha is not None:
             config["alpha"] = alpha
         if config['max_length'] is None or config['max_length'] == 0:
@@ -323,7 +323,7 @@ def main():
                                    print_all_results=False, trans_matrix=None, otrans=True, oalpha=False,
                                    evaluate_result=True, visualize=False,
                                    optimize_alpha=False, lr=0.00001, successful=True, epochs=100, checkpoints='given',
-                                   max_length=None, FMMIE=True, mlength=1000, trwtest=True, startalpha=1.0)
+                                   max_length=None, FMMIE=True, mlength=1000, trwval=True, startalpha=1.0)
     """alphas = []
     accuracies = []
     dataset = 'Sleep-EDF-2018'
@@ -355,7 +355,7 @@ def main():
                                         if not otrans and not oalpha and not (lr == 0.001 and epochs == 100 and startalpha == 0.1):
                                             continue
                                         try:
-                                            optimize_alpha = OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=otrans, oalpha=oalpha, evaluate_result=True, visualize=False,optimize_alpha=True, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints, max_length=max_length, FMMIE=True, mlength=mlength, trwtest=True, startalpha=startalpha)
+                                            optimize_alpha = OptimizeAlpha(used_set=used_set, dataset='Sleep-EDF-2018', start_alpha=0.2, end_alpha=0.2, step=0.05, print_all_results=False, trans_matrix='EDF-2018', otrans=otrans, oalpha=oalpha, evaluate_result=True, visualize=False,optimize_alpha=True, lr=lr, successful=True, epochs=epochs, checkpoints=checkpoints, max_length=max_length, FMMIE=True, mlength=mlength, trwval=True, startalpha=startalpha)
                                             descr = [otrans, oalpha, lr, epochs, checkpoints, max_length, mlength, startalpha]
                                             descr.extend(optimize_alpha.res)
                                             #res.append(",".join([str(x) for x in descr]))
